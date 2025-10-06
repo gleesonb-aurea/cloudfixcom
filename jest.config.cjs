@@ -9,11 +9,13 @@ module.exports = {
     '\\.(css|less|scss|sass)$': '<rootDir>/test/__mocks__/styleMock.js',
   },
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
-  },
-  globals: {
-    'ts-jest': {
-      tsconfig: '<rootDir>/tsconfig.json',
-    },
+    '^.+\\.(ts|tsx)$': [
+      'ts-jest',
+      {
+        tsconfig: {
+          jsx: 'react-jsx',
+        },
+      },
+    ],
   },
 }
