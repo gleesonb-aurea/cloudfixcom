@@ -1,4 +1,7 @@
 import '@testing-library/jest-dom'
+// Allow using jest in this setup file during type checking without bringing Jest types into Next build
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+declare const jest: any;
 
 // Mocks for browser APIs not present in jsdom
 Object.defineProperty(window, 'matchMedia', {
@@ -24,14 +27,15 @@ class ResizeObserverMock {
 (global as any).ResizeObserver = ResizeObserverMock;
 
 // Mock Radix Checkbox to a simple input for tests to avoid portal/DOM issues
-jest.mock('@radix-ui/react-checkbox', () => {
-  const React = require('react');
-  return {
-    __esModule: true,
-    Root: React.forwardRef((props: any, ref: any) => (
-      <input type="checkbox" ref={ref} {...props} />
-    )),
-    Indicator: (props: any) => <span {...props} />,
-  };
-});
-
+if (typeof jest !== 'undefined') {
+  jest.mock('@radix-ui/react-checkbox', () => {
+    const React = require('react');
+    return {
+      __esModule: true,
+      Root: React.forwardRef((props: any, ref: any) =>
+        React.createElement('input', { type: 'checkbox', ref, ...props })
+      ),
+      Indicator: (props: any) => React.createElement('span', { ...props }),
+    };
+  });
+}
