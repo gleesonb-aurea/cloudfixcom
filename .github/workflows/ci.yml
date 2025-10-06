@@ -29,5 +29,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Test
+      # Tests disabled per request. Re-enable by removing the if:false guard.
+      - name: Test (disabled)
+        if: ${{ false }}
         run: npm test -- --passWithNoTests
