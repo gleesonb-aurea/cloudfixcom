@@ -243,19 +243,114 @@ export default function Header() {
           </button>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation (Task 8: Accordion) */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 space-y-4">
-            <Link href="/features" className="block text-gray-700 hover:text-primary transition">
+          <div className="md:hidden py-4 space-y-2">
+            {/* Products Accordion */}
+            <div>
+              <button
+                onClick={() => toggleDropdown('products')}
+                className="w-full flex items-center justify-between px-4 py-4 text-gray-700 hover:bg-gray-50 rounded-lg"
+                aria-expanded={openDropdown === 'products'}
+              >
+                <span className="font-medium">Products</span>
+                <svg
+                  className={cn(
+                    'w-5 h-5 transition-transform duration-200',
+                    openDropdown === 'products' && 'rotate-180'
+                  )}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {openDropdown === 'products' && (
+                <div className="overflow-hidden transition-all duration-200 accordion-content">
+                  {PRODUCTS.map((product) => (
+                    <Link
+                      key={product.href}
+                      href={product.href}
+                      className="block pl-8 pr-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg"
+                      onClick={() => {
+                        closeDropdown();
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <div className="font-semibold text-base mb-0.5">{product.name}</div>
+                      <div className="text-sm text-gray-600">{product.description}</div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Features Link */}
+            <Link
+              href="/features"
+              className="block px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg"
+              onClick={() => setMobileMenuOpen(false)}
+            >
               Features
             </Link>
-            <Link href="/pricing" className="block text-gray-700 hover:text-primary transition">
+
+            {/* Pricing Link */}
+            <Link
+              href="/pricing"
+              className="block px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg"
+              onClick={() => setMobileMenuOpen(false)}
+            >
               Pricing
             </Link>
-            <Link href="/resources" className="block text-gray-700 hover:text-primary transition">
-              Resources
-            </Link>
-            <Link href="/assessment" className="block bg-accent text-gray-900 px-6 py-2 rounded-lg hover:bg-accent-dark transition text-center font-semibold">
+
+            {/* Resources Accordion */}
+            <div>
+              <button
+                onClick={() => toggleDropdown('resources')}
+                className="w-full flex items-center justify-between px-4 py-4 text-gray-700 hover:bg-gray-50 rounded-lg"
+                aria-expanded={openDropdown === 'resources'}
+              >
+                <span className="font-medium">Resources</span>
+                <svg
+                  className={cn(
+                    'w-5 h-5 transition-transform duration-200',
+                    openDropdown === 'resources' && 'rotate-180'
+                  )}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {openDropdown === 'resources' && (
+                <div className="overflow-hidden transition-all duration-200 accordion-content">
+                  {RESOURCES.map((resource) => (
+                    <Link
+                      key={resource.href}
+                      href={resource.href}
+                      className="block pl-8 pr-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg"
+                      onClick={() => {
+                        closeDropdown();
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      {resource.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* CTA Button */}
+            <Link
+              href="/assessment"
+              className="block bg-accent text-gray-900 px-6 py-3 rounded-lg hover:bg-accent-dark transition text-center font-semibold mt-4"
+              onClick={() => setMobileMenuOpen(false)}
+            >
               Get Free Assessment
             </Link>
           </div>
