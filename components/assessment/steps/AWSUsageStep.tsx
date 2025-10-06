@@ -89,7 +89,7 @@ export function AWSUsageStep({ form }: AWSUsageStepProps) {
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <SelectTrigger className="text-base">
                 <Select.Value placeholder="Select monthly spend range" />
-              </Select.Trigger>
+              </SelectTrigger>
               <Select.Content>
                 {spendRanges.map((range) => (
                   <Select.Item key={range} value={range}>
@@ -151,7 +151,7 @@ export function AWSUsageStep({ form }: AWSUsageStepProps) {
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <SelectTrigger className="text-base">
                   <Select.Value placeholder="Select duration" />
-                </Select.Trigger>
+                </SelectTrigger>
                 <Select.Content>
                   {usageDurations.map((duration) => (
                     <Select.Item key={duration} value={duration}>
@@ -174,7 +174,7 @@ export function AWSUsageStep({ form }: AWSUsageStepProps) {
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <SelectTrigger className="text-base">
                   <Select.Value placeholder="Select status" />
-                </Select.Trigger>
+                </SelectTrigger>
                 <Select.Content>
                   {optimizationStatuses.map((status) => (
                     <Select.Item key={status} value={status}>
@@ -274,7 +274,7 @@ export function AWSUsageStep({ form }: AWSUsageStepProps) {
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <SelectTrigger className="text-base">
                 <Select.Value placeholder="Select savings goal" />
-              </Select.Trigger>
+              </SelectTrigger>
               <Select.Content>
                 {savingsGoals.map((goal) => (
                   <Select.Item key={goal} value={goal}>

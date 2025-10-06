@@ -84,7 +84,7 @@ export function CompanyInfoStep({ form }: CompanyInfoStepProps) {
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <SelectTrigger className="text-base">
                   <Select.Value placeholder="Select your industry" />
-                </Select.Trigger>
+                </SelectTrigger>
                 <Select.Content>
                   {industries.map((industry) => (
                     <Select.Item key={industry} value={industry}>
@@ -107,7 +107,7 @@ export function CompanyInfoStep({ form }: CompanyInfoStepProps) {
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <SelectTrigger className="text-base">
                   <Select.Value placeholder="Select company size" />
-                </Select.Trigger>
+                </SelectTrigger>
                 <Select.Content>
                   {companySizes.map((size) => (
                     <Select.Item key={size} value={size}>
@@ -131,7 +131,7 @@ export function CompanyInfoStep({ form }: CompanyInfoStepProps) {
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <SelectTrigger className="text-base">
                 <Select.Value placeholder="Select your role" />
-              </Select.Trigger>
+              </SelectTrigger>
               <Select.Content>
                 {roles.map((role) => (
                   <Select.Item key={role} value={role}>
