@@ -28,6 +28,7 @@ class ResizeObserverMock {
 
 // Mock Radix Checkbox to a simple input for tests to avoid portal/DOM issues
 if (typeof jest !== 'undefined') {
+  // Radix Checkbox
   jest.mock('@radix-ui/react-checkbox', () => {
     const React = require('react');
     return {
@@ -37,5 +38,45 @@ if (typeof jest !== 'undefined') {
       ),
       Indicator: (props: any) => React.createElement('span', { ...props }),
     };
+  });
+
+  // Radix Select: stub to simple passive wrappers
+  jest.mock('@radix-ui/react-select', () => {
+    const React = require('react');
+    const passthrough = (tag: any = 'div') =>
+      React.forwardRef((props: any, ref: any) => React.createElement(tag, { ref, ...props }, props.children));
+    return {
+      __esModule: true,
+      Root: passthrough('div'),
+      Group: passthrough('div'),
+      Value: passthrough('span'),
+      Trigger: passthrough('button'),
+      Content: passthrough('div'),
+      Label: passthrough('div'),
+      Item: passthrough('div'),
+      Separator: passthrough('div'),
+      Viewport: passthrough('div'),
+      Icon: passthrough('span'),
+      ScrollUpButton: passthrough('button'),
+      ScrollDownButton: passthrough('button'),
+      Portal: ({ children }: any) => React.createElement(React.Fragment, null, children),
+      ItemIndicator: passthrough('span'),
+      ItemText: passthrough('span'),
+    };
+  });
+
+  // lucide-react icons stub
+  jest.mock('lucide-react', () => {
+    const React = require('react');
+    return new Proxy({}, {
+      get: () => (props: any) => React.createElement('svg', { width: 16, height: 16, ...props }),
+    });
+  });
+
+  // next/image stub
+  jest.mock('next/image', () => {
+    const React = require('react');
+    // Note: Next/Image props vary; we forward common ones
+    return (props: any) => React.createElement('img', { ...props });
   });
 }
