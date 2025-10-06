@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 // Dropdown content constants (Task 1)
 const PRODUCTS = [
@@ -84,6 +86,25 @@ export default function Header() {
     };
   }, [openDropdown]);
 
+  // Keyboard handler for dropdown (Task 4)
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Escape' && openDropdown) {
+      event.preventDefault();
+      const previouslyOpen = openDropdown;
+      closeDropdown();
+      if (previouslyOpen === 'products') {
+        productsButtonRef.current?.focus();
+      } else if (previouslyOpen === 'resources') {
+        resourcesButtonRef.current?.focus();
+      }
+    }
+  };
+
+  // Active state detection (Task 7)
+  const pathname = usePathname() || '';
+  const isProductsActive = PRODUCTS.some((p) => pathname.startsWith(p.href));
+  const isResourcesActive = RESOURCES.some((r) => pathname.startsWith(r.href));
+
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
       <nav className="container-custom">
@@ -107,7 +128,11 @@ export default function Header() {
                 ref={productsButtonRef}
                 onClick={() => toggleDropdown('products')}
                 aria-expanded={openDropdown === 'products'}
-                className="text-gray-700 hover:text-primary transition flex items-center gap-1"
+                aria-haspopup="menu"
+                className={cn(
+                  'text-gray-700 hover:text-primary transition flex items-center gap-1',
+                  isProductsActive && 'border-b-2 border-primary font-semibold'
+                )}
               >
                 Products
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,12 +145,16 @@ export default function Header() {
                   ref={dropdownRef}
                   className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[280px] max-w-[320px] py-2"
                   role="menu"
+                  onKeyDown={handleKeyDown}
                 >
                   {PRODUCTS.map((product) => (
                     <Link
                       key={product.href}
                       href={product.href}
-                      className="block px-4 py-3 hover:bg-primary hover:text-white transition-colors duration-150"
+                      className={cn(
+                        'block px-4 py-3 hover:bg-primary hover:text-white transition-colors duration-150',
+                        pathname === product.href && 'bg-primary text-white font-bold'
+                      )}
                       role="menuitem"
                       onClick={closeDropdown}
                     >
@@ -155,7 +184,11 @@ export default function Header() {
                 ref={resourcesButtonRef}
                 onClick={() => toggleDropdown('resources')}
                 aria-expanded={openDropdown === 'resources'}
-                className="text-gray-700 hover:text-primary transition flex items-center gap-1"
+                aria-haspopup="menu"
+                className={cn(
+                  'text-gray-700 hover:text-primary transition flex items-center gap-1',
+                  isResourcesActive && 'border-b-2 border-primary font-semibold'
+                )}
               >
                 Resources
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -168,12 +201,16 @@ export default function Header() {
                   ref={dropdownRef}
                   className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[200px] max-w-[240px] py-2"
                   role="menu"
+                  onKeyDown={handleKeyDown}
                 >
                   {RESOURCES.map((resource) => (
                     <Link
                       key={resource.href}
                       href={resource.href}
-                      className="block px-4 py-2.5 text-base hover:bg-primary hover:text-white transition-colors duration-150"
+                      className={cn(
+                        'block px-4 py-2.5 text-base hover:bg-primary hover:text-white transition-colors duration-150',
+                        pathname === resource.href && 'bg-primary text-white font-bold'
+                      )}
                       role="menuitem"
                       onClick={closeDropdown}
                     >
