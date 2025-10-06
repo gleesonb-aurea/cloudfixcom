@@ -1,0 +1,298 @@
+{
+  "timestamp": "2025-10-04T08:10:31.583Z",
+  "wordpress_url": "https://cloudfix.com",
+  "site_structure": {
+    "mainPages": [
+      {
+        "title": "Home",
+        "url": "/",
+        "priority": 1
+      },
+      {
+        "title": "Pricing",
+        "url": "/pricing/",
+        "priority": 1
+      },
+      {
+        "title": "Assessment",
+        "url": "/assessment/",
+        "priority": 1
+      },
+      {
+        "title": "About Us",
+        "url": "/about/",
+        "priority": 2
+      },
+      {
+        "title": "Leadership",
+        "url": "/leadership/",
+        "priority": 2
+      },
+      {
+        "title": "Contact",
+        "url": "/contact/",
+        "priority": 2
+      },
+      {
+        "title": "Success Stories",
+        "url": "/success-stories/",
+        "priority": 1
+      }
+    ],
+    "solutions": [
+      {
+        "title": "CloudFix – Cost Optimization",
+        "url": "/cloudfix/",
+        "priority": 1
+      },
+      {
+        "title": "RightSpend – Discount Optimization",
+        "url": "/rightspend/",
+        "priority": 1
+      },
+      {
+        "title": "QueryLens – Database Upgrade",
+        "url": "/querylens/",
+        "priority": 1
+      },
+      {
+        "title": "MCP Servers",
+        "url": "/mcp-servers/",
+        "priority": 2
+      }
+    ],
+    "services": [
+      {
+        "title": "Cost Optimization Services",
+        "url": "/cost-optimization-services/",
+        "priority": 2
+      }
+    ],
+    "partnerships": [
+      {
+        "title": "AWS Partnership",
+        "url": "/aws-partnership/",
+        "priority": 2
+      },
+      {
+        "title": "Become a Referral Partner",
+        "url": "/become-a-referral-partner/",
+        "priority": 3
+      },
+      {
+        "title": "Partner Opportunity",
+        "url": "/partner-opportunity/",
+        "priority": 3
+      }
+    ],
+    "resources": [
+      {
+        "title": "All Resources",
+        "url": "/resources/",
+        "priority": 1
+      },
+      {
+        "title": "Blog",
+        "url": "/blog/",
+        "priority": 1
+      },
+      {
+        "title": "Podcast",
+        "url": "/podcast/",
+        "priority": 2
+      },
+      {
+        "title": "Livestream",
+        "url": "/livestream/",
+        "priority": 2
+      },
+      {
+        "title": "Videos",
+        "url": "/videos/",
+        "priority": 2
+      },
+      {
+        "title": "Webinar Index",
+        "url": "/webinar/",
+        "priority": 2
+      },
+      {
+        "title": "News & Events",
+        "url": "/news-events/",
+        "priority": 3
+      }
+    ],
+    "legal": [
+      {
+        "title": "Privacy Policy",
+        "url": "/privacy/",
+        "priority": 3
+      },
+      {
+        "title": "Terms of Service",
+        "url": "/terms-of-service/",
+        "priority": 3
+      }
+    ]
+  },
+  "migration_plan": {
+    "phase1_core": {
+      "name": "Core Pages - Week 1",
+      "pages": [
+        {
+          "title": "Home",
+          "url": "/",
+          "priority": 1
+        },
+        {
+          "title": "Pricing",
+          "url": "/pricing/",
+          "priority": 1
+        },
+        {
+          "title": "Assessment",
+          "url": "/assessment/",
+          "priority": 1
+        },
+        {
+          "title": "Success Stories",
+          "url": "/success-stories/",
+          "priority": 1
+        },
+        {
+          "title": "CloudFix – Cost Optimization",
+          "url": "/cloudfix/",
+          "priority": 1
+        },
+        {
+          "title": "RightSpend – Discount Optimization",
+          "url": "/rightspend/",
+          "priority": 1
+        },
+        {
+          "title": "QueryLens – Database Upgrade",
+          "url": "/querylens/",
+          "priority": 1
+        }
+      ]
+    },
+    "phase2_secondary": {
+      "name": "Secondary Pages - Week 2",
+      "pages": [
+        {
+          "title": "About Us",
+          "url": "/about/",
+          "priority": 2
+        },
+        {
+          "title": "Leadership",
+          "url": "/leadership/",
+          "priority": 2
+        },
+        {
+          "title": "Contact",
+          "url": "/contact/",
+          "priority": 2
+        },
+        {
+          "title": "MCP Servers",
+          "url": "/mcp-servers/",
+          "priority": 2
+        },
+        {
+          "title": "Cost Optimization Services",
+          "url": "/cost-optimization-services/",
+          "priority": 2
+        },
+        {
+          "title": "AWS Partnership",
+          "url": "/aws-partnership/",
+          "priority": 2
+        }
+      ]
+    },
+    "phase3_content": {
+      "name": "Content & Resources - Week 3",
+      "pages": [
+        {
+          "title": "All Resources",
+          "url": "/resources/",
+          "priority": 1
+        },
+        {
+          "title": "Blog",
+          "url": "/blog/",
+          "priority": 1
+        },
+        {
+          "title": "Podcast",
+          "url": "/podcast/",
+          "priority": 2
+        },
+        {
+          "title": "Livestream",
+          "url": "/livestream/",
+          "priority": 2
+        },
+        {
+          "title": "Videos",
+          "url": "/videos/",
+          "priority": 2
+        },
+        {
+          "title": "Webinar Index",
+          "url": "/webinar/",
+          "priority": 2
+        },
+        {
+          "title": "News & Events",
+          "url": "/news-events/",
+          "priority": 3
+        }
+      ],
+      "notes": [
+        "Set up MDX blog system",
+        "Create dynamic routing for blog posts",
+        "Migrate existing blog content",
+        "Set up podcast/video pages"
+      ]
+    },
+    "phase4_final": {
+      "name": "Final Pages & Polish - Week 4",
+      "pages": [
+        {
+          "title": "Become a Referral Partner",
+          "url": "/become-a-referral-partner/",
+          "priority": 3
+        },
+        {
+          "title": "Partner Opportunity",
+          "url": "/partner-opportunity/",
+          "priority": 3
+        },
+        {
+          "title": "Privacy Policy",
+          "url": "/privacy/",
+          "priority": 3
+        },
+        {
+          "title": "Terms of Service",
+          "url": "/terms-of-service/",
+          "priority": 3
+        }
+      ],
+      "notes": [
+        "Final QA testing",
+        "Performance optimization",
+        "SEO verification",
+        "Set up redirects"
+      ]
+    }
+  },
+  "stats": {
+    "total_pages": 24,
+    "priority_1": 9,
+    "priority_2": 10,
+    "priority_3": 5
+  }
+}
