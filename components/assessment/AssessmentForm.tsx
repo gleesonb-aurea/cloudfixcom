@@ -10,6 +10,7 @@ import { ContactInfoStep } from './steps/ContactInfoStep';
 import { FormSummary } from './FormSummary';
 import { submitAssessment } from '@/lib/assessment-api';
 import { Button } from '@/components/ui/Button';
+import { Form } from '@/components/ui/Form';
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { assessmentSchema, type AssessmentData } from '@/lib/validations/assessment';
 
@@ -184,7 +185,8 @@ export function AssessmentForm() {
       />
 
       {/* Form Content */}
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="p-8 lg:p-12">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="p-8 lg:p-12">
         {submitStatus === 'error' && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
@@ -272,7 +274,8 @@ export function AssessmentForm() {
             We’re SOC 2 Type II certified and GDPR compliant.
           </p>
         </div>
-      </form>
+        </form>
+      </Form>
     </div>
   );
 }
