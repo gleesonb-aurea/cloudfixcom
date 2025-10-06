@@ -1,7 +1,7 @@
 import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/Form';
 import { Input } from '@/components/ui/Input';
-import { Select, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/Select';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { AssessmentData } from '@/lib/validations/assessment';
 
@@ -85,13 +85,13 @@ export function CompanyInfoStep({ form }: CompanyInfoStepProps) {
                 <SelectTrigger className="text-base">
                   <SelectValue placeholder="Select your industry" />
                 </SelectTrigger>
-                <Select.Content>
+                <SelectContent>
                   {industries.map((industry) => (
-                    <Select.Item key={industry} value={industry}>
+                    <SelectItem key={industry} value={industry}>
                       {industry}
-                    </Select.Item>
+                    </SelectItem>
                   ))}
-                </Select.Content>
+                </SelectContent>
               </Select>
               <FormMessage />
             </FormItem>
@@ -108,13 +108,13 @@ export function CompanyInfoStep({ form }: CompanyInfoStepProps) {
                 <SelectTrigger className="text-base">
                   <SelectValue placeholder="Select company size" />
                 </SelectTrigger>
-                <Select.Content>
+                <SelectContent>
                   {companySizes.map((size) => (
-                    <Select.Item key={size} value={size}>
+                    <SelectItem key={size} value={size}>
                       {size}
-                    </Select.Item>
+                    </SelectItem>
                   ))}
-                </Select.Content>
+                </SelectContent>
               </Select>
               <FormMessage />
             </FormItem>
@@ -132,13 +132,13 @@ export function CompanyInfoStep({ form }: CompanyInfoStepProps) {
               <SelectTrigger className="text-base">
                 <SelectValue placeholder="Select your role" />
               </SelectTrigger>
-              <Select.Content>
+              <SelectContent>
                 {roles.map((role) => (
-                  <Select.Item key={role} value={role}>
+                  <SelectItem key={role} value={role}>
                     {role}
-                  </Select.Item>
+                  </SelectItem>
                 ))}
-              </Select.Content>
+              </SelectContent>
             </Select>
             <FormMessage />
           </FormItem>

@@ -1,6 +1,6 @@
 import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/Form';
-import { Select, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/Select';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { AssessmentData } from '@/lib/validations/assessment';
 
@@ -90,13 +90,13 @@ export function AWSUsageStep({ form }: AWSUsageStepProps) {
               <SelectTrigger className="text-base">
                 <SelectValue placeholder="Select monthly spend range" />
               </SelectTrigger>
-              <Select.Content>
+              <SelectContent>
                 {spendRanges.map((range) => (
-                  <Select.Item key={range} value={range}>
+                  <SelectItem key={range} value={range}>
                     {range}
-                  </Select.Item>
+                  </SelectItem>
                 ))}
-              </Select.Content>
+              </SelectContent>
             </Select>
             <FormMessage />
           </FormItem>
@@ -152,13 +152,13 @@ export function AWSUsageStep({ form }: AWSUsageStepProps) {
                 <SelectTrigger className="text-base">
                   <SelectValue placeholder="Select duration" />
                 </SelectTrigger>
-                <Select.Content>
+                <SelectContent>
                   {usageDurations.map((duration) => (
-                    <Select.Item key={duration} value={duration}>
+                    <SelectItem key={duration} value={duration}>
                       {duration}
-                    </Select.Item>
+                    </SelectItem>
                   ))}
-                </Select.Content>
+                </SelectContent>
               </Select>
               <FormMessage />
             </FormItem>
@@ -175,13 +175,13 @@ export function AWSUsageStep({ form }: AWSUsageStepProps) {
                 <SelectTrigger className="text-base">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
-                <Select.Content>
+                <SelectContent>
                   {optimizationStatuses.map((status) => (
-                    <Select.Item key={status} value={status}>
+                    <SelectItem key={status} value={status}>
                       {status}
-                    </Select.Item>
+                    </SelectItem>
                   ))}
-                </Select.Content>
+                </SelectContent>
               </Select>
               <FormMessage />
             </FormItem>
@@ -275,13 +275,13 @@ export function AWSUsageStep({ form }: AWSUsageStepProps) {
               <SelectTrigger className="text-base">
                 <SelectValue placeholder="Select savings goal" />
               </SelectTrigger>
-              <Select.Content>
+              <SelectContent>
                 {savingsGoals.map((goal) => (
-                  <Select.Item key={goal} value={goal}>
+                  <SelectItem key={goal} value={goal}>
                     {goal}
-                  </Select.Item>
+                  </SelectItem>
                 ))}
-              </Select.Content>
+              </SelectContent>
             </Select>
             <FormMessage />
           </FormItem>
