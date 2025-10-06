@@ -33,9 +33,14 @@ if (typeof jest !== 'undefined') {
     const React = require('react');
     return {
       __esModule: true,
-      Root: React.forwardRef((props: any, ref: any) =>
-        React.createElement('input', { type: 'checkbox', ref, ...props })
-      ),
+      Root: React.forwardRef(({ children, ...props }: any, ref: any) => {
+        // Don't pass children to input element as input is a void element
+        const { asChild, ...inputProps } = props;
+        return React.createElement('div', { ref, 'data-testid': 'checkbox-root' },
+          React.createElement('input', { type: 'checkbox', ...inputProps }),
+          children
+        );
+      }),
       Indicator: (props: any) => React.createElement('span', { ...props }),
     };
   });
@@ -44,7 +49,10 @@ if (typeof jest !== 'undefined') {
   jest.mock('@radix-ui/react-select', () => {
     const React = require('react');
     const passthrough = (tag: any = 'div') =>
-      React.forwardRef((props: any, ref: any) => React.createElement(tag, { ref, ...props }, props.children));
+      React.forwardRef(({ asChild, children, ...props }: any, ref: any) => {
+        const Component = asChild ? React.Fragment : tag;
+        return React.createElement(Component, { ref, ...props }, children);
+      });
     return {
       __esModule: true,
       Root: passthrough('div'),
@@ -62,6 +70,40 @@ if (typeof jest !== 'undefined') {
       Portal: ({ children }: any) => React.createElement(React.Fragment, null, children),
       ItemIndicator: passthrough('span'),
       ItemText: passthrough('span'),
+    };
+  });
+
+  // Radix Label mock
+  jest.mock('@radix-ui/react-label', () => {
+    const React = require('react');
+    const passthrough = (tag: any = 'label') =>
+      React.forwardRef(({ asChild, children, ...props }: any, ref: any) => {
+        const Component = asChild ? React.Fragment : tag;
+        return React.createElement(Component, { ref, ...props }, children);
+      });
+    return {
+      __esModule: true,
+      Root: passthrough('label'),
+    };
+  });
+
+  // Radix Slot mock (used in Button and Form components)
+  jest.mock('@radix-ui/react-slot', () => {
+    const React = require('react');
+    return {
+      __esModule: true,
+      Root: React.forwardRef(({ asChild, children, ...props }: any, ref: any) => {
+        if (asChild) {
+          return React.cloneElement(React.Children.only(children), { ...props, ref });
+        }
+        return React.createElement('div', { ref, ...props }, children);
+      }),
+      Slot: React.forwardRef(({ asChild, children, ...props }: any, ref: any) => {
+        if (asChild) {
+          return React.cloneElement(React.Children.only(children), { ...props, ref });
+        }
+        return React.createElement('div', { ref, ...props }, children);
+      }),
     };
   });
 
