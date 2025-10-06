@@ -55,11 +55,11 @@ export default function Header() {
     setOpenDropdown(null);
   };
 
-  // Click-outside detection (Task 3)
+  // Click-outside detection (Task 3 + mobile touch polish)
   useEffect(() => {
     if (!openDropdown) return;
 
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       const target = event.target as Node;
 
       const clickedOutside =
@@ -81,8 +81,10 @@ export default function Header() {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside, { passive: true });
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
     };
   }, [openDropdown]);
 
@@ -129,8 +131,9 @@ export default function Header() {
                 onClick={() => toggleDropdown('products')}
                 aria-expanded={openDropdown === 'products'}
                 aria-haspopup="menu"
+                id="products-menu-button"
                 className={cn(
-                  'text-gray-700 hover:text-primary transition flex items-center gap-1',
+                  'text-gray-700 hover:text-primary transition flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                   isProductsActive && 'border-b-2 border-primary font-semibold'
                 )}
               >
@@ -145,6 +148,7 @@ export default function Header() {
                   ref={dropdownRef}
                   className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[280px] max-w-[320px] py-2"
                   role="menu"
+                  aria-labelledby="products-menu-button"
                   onKeyDown={handleKeyDown}
                 >
                   {PRODUCTS.map((product) => (
@@ -152,7 +156,7 @@ export default function Header() {
                       key={product.href}
                       href={product.href}
                       className={cn(
-                        'block px-4 py-3 hover:bg-primary hover:text-white transition-colors duration-150',
+                        'block px-4 py-3 hover:bg-primary hover:text-white transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                         pathname === product.href && 'bg-primary text-white font-bold'
                       )}
                       role="menuitem"
@@ -185,8 +189,9 @@ export default function Header() {
                 onClick={() => toggleDropdown('resources')}
                 aria-expanded={openDropdown === 'resources'}
                 aria-haspopup="menu"
+                id="resources-menu-button"
                 className={cn(
-                  'text-gray-700 hover:text-primary transition flex items-center gap-1',
+                  'text-gray-700 hover:text-primary transition flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                   isResourcesActive && 'border-b-2 border-primary font-semibold'
                 )}
               >
@@ -201,6 +206,7 @@ export default function Header() {
                   ref={dropdownRef}
                   className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[200px] max-w-[240px] py-2"
                   role="menu"
+                  aria-labelledby="resources-menu-button"
                   onKeyDown={handleKeyDown}
                 >
                   {RESOURCES.map((resource) => (
@@ -208,7 +214,7 @@ export default function Header() {
                       key={resource.href}
                       href={resource.href}
                       className={cn(
-                        'block px-4 py-2.5 text-base hover:bg-primary hover:text-white transition-colors duration-150',
+                        'block px-4 py-2.5 text-base hover:bg-primary hover:text-white transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                         pathname === resource.href && 'bg-primary text-white font-bold'
                       )}
                       role="menuitem"
