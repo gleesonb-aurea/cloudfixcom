@@ -1,6 +1,6 @@
 import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/Form';
-import { Select, SelectTrigger } from '@/components/ui/Select';
+import { Select, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { AssessmentData } from '@/lib/validations/assessment';
 
@@ -88,7 +88,7 @@ export function AWSUsageStep({ form }: AWSUsageStepProps) {
             <FormLabel>Monthly AWS Spend *</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <SelectTrigger className="text-base">
-                <Select.Value placeholder="Select monthly spend range" />
+                <SelectValue placeholder="Select monthly spend range" />
               </SelectTrigger>
               <Select.Content>
                 {spendRanges.map((range) => (
@@ -150,7 +150,7 @@ export function AWSUsageStep({ form }: AWSUsageStepProps) {
               <FormLabel>How long using AWS? *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <SelectTrigger className="text-base">
-                  <Select.Value placeholder="Select duration" />
+                  <SelectValue placeholder="Select duration" />
                 </SelectTrigger>
                 <Select.Content>
                   {usageDurations.map((duration) => (
@@ -173,7 +173,7 @@ export function AWSUsageStep({ form }: AWSUsageStepProps) {
               <FormLabel>Current optimization efforts *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <SelectTrigger className="text-base">
-                  <Select.Value placeholder="Select status" />
+                  <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <Select.Content>
                   {optimizationStatuses.map((status) => (
@@ -273,7 +273,7 @@ export function AWSUsageStep({ form }: AWSUsageStepProps) {
             <FormLabel>Target Cost Savings *</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <SelectTrigger className="text-base">
-                <Select.Value placeholder="Select savings goal" />
+                <SelectValue placeholder="Select savings goal" />
               </SelectTrigger>
               <Select.Content>
                 {savingsGoals.map((goal) => (
