@@ -105,7 +105,7 @@ export function ContactInfoStep({ form }: ContactInfoStepProps) {
               <FormLabel className="text-sm font-normal text-gray-700 leading-relaxed">
                 I agree to receive communications from CloudFix about the assessment results and
                 relevant AWS optimization insights. I understand that my information will be
-                handled according to CloudFix's privacy policy and will never be shared with third parties.
+                handled according to CloudFix’s privacy policy and will never be shared with third parties.
               </FormLabel>
             </FormItem>
           )}
@@ -113,7 +113,7 @@ export function ContactInfoStep({ form }: ContactInfoStepProps) {
 
         <div className="text-xs text-gray-500 mt-4 space-y-1">
           <p>• Your assessment data is encrypted and stored securely</p>
-          <p>• We're SOC 2 Type II certified and GDPR compliant</p>
+          <p>• We’re SOC 2 Type II certified and GDPR compliant</p>
           <p>• You can unsubscribe from communications at any time</p>
           <p>• No access to your AWS account is required</p>
         </div>

@@ -85,7 +85,7 @@ export default function Home() {
       {/* Testimonial Section */}
       <ContentBlock className="bg-white">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="text-6xl mb-6">"</div>
+          <div className="text-6xl mb-6">&ldquo;</div>
           <blockquote className="text-2xl md:text-3xl font-medium text-gray-900 mb-8">
             CloudFix reduced our AWS bill by 40% in the first month. The ROI was immediate and the setup was incredibly simple.
           </blockquote>

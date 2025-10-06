@@ -81,12 +81,12 @@ export default function AssessmentPage() {
         </div>
       </section>
 
-      {/* What You'll Get */}
+      {/* What You’ll Get */}
       <section className="py-16 lg:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              What You'll Receive
+              What You’ll Receive
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Our comprehensive assessment provides actionable insights across all areas of your AWS infrastructure.
@@ -222,7 +222,7 @@ export default function AssessmentPage() {
                 How long does it take to get results?
               </h3>
               <p className="text-gray-600">
-                You'll receive your detailed assessment report within 24 hours of completing the form. The report includes actionable insights prioritized by impact.
+                You’ll receive your detailed assessment report within 24 hours of completing the form. The report includes actionable insights prioritized by impact.
               </p>
             </div>
 
@@ -231,7 +231,7 @@ export default function AssessmentPage() {
                 Is my data secure and confidential?
               </h3>
               <p className="text-gray-600">
-                Absolutely. We're SOC 2 Type II certified and GDPR compliant. Your data is encrypted and never shared with third parties. We sign NDAs upon request.
+                Absolutely. We’re SOC 2 Type II certified and GDPR compliant. Your data is encrypted and never shared with third parties. We sign NDAs upon request.
               </p>
             </div>
 
@@ -240,7 +240,7 @@ export default function AssessmentPage() {
                 What information do you need access to?
               </h3>
               <p className="text-gray-600">
-                We only need the information you provide in the assessment form. We don't require access to your AWS account. The analysis is based on industry benchmarks and best practices.
+                We only need the information you provide in the assessment form. We don’t require access to your AWS account. The analysis is based on industry benchmarks and best practices.
               </p>
             </div>
           </div>

@@ -126,7 +126,7 @@ export function AssessmentForm() {
           Thank You! Assessment Received.
         </h2>
         <p className="text-xl text-gray-600 mb-8">
-          We're analyzing your AWS infrastructure and will send your comprehensive assessment report within 24 hours.
+          We’re analyzing your AWS infrastructure and will send your comprehensive assessment report within 24 hours.
         </p>
         <div className="bg-gray-50 rounded-xl p-6 mb-8 text-left max-w-2xl mx-auto">
           <h3 className="font-semibold text-gray-900 mb-4">What happens next:</h3>
@@ -137,7 +137,7 @@ export function AssessmentForm() {
             </li>
             <li className="flex items-start gap-3">
               <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-              <span>You'll receive a detailed report with cost-saving opportunities</span>
+              <span>You’ll receive a detailed report with cost-saving opportunities</span>
             </li>
             <li className="flex items-start gap-3">
               <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
@@ -269,7 +269,7 @@ export function AssessmentForm() {
         <div className="mt-8 p-4 bg-gray-50 rounded-xl">
           <p className="text-sm text-gray-600 text-center">
             <span className="font-medium">Privacy Notice:</span> Your information is secure and will never be shared.
-            We're SOC 2 Type II certified and GDPR compliant.
+            We’re SOC 2 Type II certified and GDPR compliant.
           </p>
         </div>
       </form>

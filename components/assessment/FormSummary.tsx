@@ -88,8 +88,8 @@ export function FormSummary({ data }: FormSummaryProps) {
 
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
         <p className="text-sm text-blue-800">
-          <strong>Next Step:</strong> Click "Complete Assessment" to submit your information.
-          You'll receive your comprehensive report within 24 hours.
+          <strong>Next Step:</strong> Click “Complete Assessment” to submit your information.
+          You’ll receive your comprehensive report within 24 hours.
         </p>
       </div>
     </div>

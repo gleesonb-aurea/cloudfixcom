@@ -163,7 +163,7 @@ export default function Pricing() {
       <ContentBlock className="bg-white">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center">
-            What's Included
+            What’s Included
           </h2>
 
           <div className="grid md:grid-cols-2 gap-8">

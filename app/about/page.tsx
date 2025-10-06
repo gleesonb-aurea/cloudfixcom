@@ -55,25 +55,25 @@ export default function About() {
 
           <div className="prose prose-lg max-w-none">
             <p className="text-xl text-gray-700 mb-6">
-              CloudFix was born from necessity. As one of AWS's earliest enterprise adopters,
+              CloudFix was born from necessity. As one of AWS’s earliest enterprise adopters,
               we faced the challenge of managing massive cloud infrastructure efficiently.
             </p>
 
             <p className="text-gray-700 mb-6">
-              Founded by Aurea, which began using AWS in 2007, we've been on the cutting edge
+              Founded by Aurea, which began using AWS in 2007, we’ve been on the cutting edge
               of cloud adoption for over 15 years. By 2010, AWS became our sole cloud provider,
               and we quickly scaled to managing over 45,000 AWS instances.
             </p>
 
             <p className="text-gray-700 mb-6">
-              That's when Rahul Subramaniam, our Chief Evangelist, developed CloudFix as an
+              That’s when Rahul Subramaniam, our Chief Evangelist, developed CloudFix as an
               in-house tool to control our ever-growing AWS costs. The results were so impressive
               that we knew other companies could benefit from our learnings.
             </p>
 
             <p className="text-gray-700">
               In 2021, we officially launched CloudFix to the public at AWS re:Invent, bringing
-              enterprise-grade AWS optimization to companies of all sizes. Today, we're proud to
+              enterprise-grade AWS optimization to companies of all sizes. Today, we’re proud to
               help optimize thousands of AWS accounts across more than 200 companies worldwide.
             </p>
           </div>
@@ -156,7 +156,7 @@ export default function About() {
               <div className="text-5xl mb-4">💡</div>
               <h3 className="text-xl font-bold mb-3">Innovation First</h3>
               <p className="text-gray-600">
-                We believe cost optimization shouldn't limit innovation—it should
+                We believe cost optimization shouldn’t limit innovation—it should
                 enable more of it.
               </p>
             </div>
@@ -165,7 +165,7 @@ export default function About() {
               <div className="text-5xl mb-4">🤝</div>
               <h3 className="text-xl font-bold mb-3">Customer Success</h3>
               <p className="text-gray-600">
-                Your success is our success. We're here to help you maximize AWS value
+                Your success is our success. We’re here to help you maximize AWS value
                 at every step.
               </p>
             </div>
