@@ -15,7 +15,16 @@ export async function GET() {
     <guid isPermaLink="true">${site}/podcast/${e.id}</guid>
     <pubDate>${new Date(e.publishDate).toUTCString()}</pubDate>
     <description><![CDATA[${e.description}]]></description>
-    ${e.audio ? `<enclosure url="${site}${e.audio}" type="audio/mpeg" />` : ''}
+    ${
+      e.audio
+        ? `<enclosure url="${
+            e.audio.startsWith('http') ? e.audio : `${site}${e.audio}`
+          }" type="audio/mpeg"${
+            // Optional: include length if available in metadata
+            (e as any).audioLength ? ` length="${(e as any).audioLength}"` : ''
+          } />`
+        : ''
+    }
   </item>`
     )
     .join('\n');
