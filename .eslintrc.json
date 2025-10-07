@@ -1,7 +1,18 @@
 {
-  "extends": ["next/core-web-vitals"],
+  "extends": ["next/core-web-vitals", "plugin:jsx-a11y/recommended"],
+  "plugins": ["jsx-a11y"],
   "rules": {
     "@next/next/no-html-link-for-pages": "off",
-    "react-hooks/exhaustive-deps": "off"
+    "react-hooks/exhaustive-deps": "off",
+    // Phase 5 introduces jsx-a11y; initially treat violations as warnings to avoid blocking builds
+    "jsx-a11y/click-events-have-key-events": "warn",
+    "jsx-a11y/no-static-element-interactions": "warn",
+    "jsx-a11y/no-noninteractive-element-interactions": "warn",
+    "jsx-a11y/no-noninteractive-tabindex": "warn",
+    "jsx-a11y/interactive-supports-focus": "warn",
+    "jsx-a11y/media-has-caption": "warn",
+    "jsx-a11y/label-has-associated-control": "warn",
+    "jsx-a11y/heading-has-content": "warn",
+    "jsx-a11y/no-redundant-roles": "warn"
   }
 }
