@@ -2,6 +2,7 @@ import Hero from '@/components/Hero';
 import ContentBlock, { FeatureCard } from '@/components/ContentBlock';
 import Section from '@/components/ui/Section';
 import Container from '@/components/ui/Container';
+import RelatedProducts from '@/components/RelatedProducts';
 
 export const metadata = { title: 'RightSpend – Reserved Instance Management' };
 
@@ -39,6 +40,8 @@ export default function RightSpendPage() {
           <a href="/contact" className="inline-block bg-accent text-gray-900 px-8 py-4 rounded-lg font-semibold">Schedule Demo</a>
         </Container>
       </Section>
+
+      <RelatedProducts currentProduct="rightspend" />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import ContentBlock, { FeatureCard } from '@/components/ContentBlock';
 import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
 import { getProductData } from '@/lib/products';
+import RelatedProducts from '@/components/RelatedProducts';
 
 export default function ProductPage({ params }: { params: { product: string } }) {
   const product = getProductData(params.product);
@@ -34,6 +35,8 @@ export default function ProductPage({ params }: { params: { product: string } })
           <a href="/contact" className="inline-block bg-accent text-gray-900 px-6 py-3 rounded-lg font-semibold">Schedule Demo</a>
         </Container>
       </Section>
+
+      <RelatedProducts currentProduct={product.id} />
     </div>
   );
 }

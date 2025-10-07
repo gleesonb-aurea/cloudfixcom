@@ -3,6 +3,7 @@ import ContentBlock, { FeatureCard } from '@/components/ContentBlock';
 import TestimonialCard from '@/components/ui/TestimonialCard';
 import Section from '@/components/ui/Section';
 import Container from '@/components/ui/Container';
+import RelatedProducts from '@/components/RelatedProducts';
 
 export const metadata = { title: 'CloudFix – Automated AWS Cost Optimization' };
 
@@ -51,6 +52,8 @@ export default function CloudFixPage() {
           </div>
         </Container>
       </Section>
+
+      <RelatedProducts currentProduct="cloudfix" />
     </div>
   );
 }
