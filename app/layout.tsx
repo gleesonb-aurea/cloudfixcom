@@ -48,7 +48,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="dns-prefetch" href="//www.googletagmanager.com" />
-        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="" />
+        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
       </head>
       <body className={`${inter.className} antialiased`}>
         {GA_ID && (

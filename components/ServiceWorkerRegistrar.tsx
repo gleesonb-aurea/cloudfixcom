@@ -3,17 +3,14 @@
 
 import { useEffect } from 'react';
 
-export default function ServiceWorkerRegistrar() {
+export default function ServiceWorkerRegistrar(): null {
   useEffect(() => {
-    if (typeof window === 'undefined') return;
     if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
       navigator.serviceWorker
         .register('/sw.js')
         .catch((err) => {
-          if (process.env.NODE_ENV !== 'production') {
-            // eslint-disable-next-line no-console
-            console.warn('Service worker registration failed:', err);
-          }
+          // eslint-disable-next-line no-console
+          console.error('Service worker registration failed:', err);
         });
     }
   }, []);

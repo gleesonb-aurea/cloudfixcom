@@ -1,7 +1,7 @@
 // ABOUTME: Dynamic OG image for podcast page and episodes
 // ABOUTME: Edge runtime route generating 1200x630 OG images with podcast branding
 import { ImageResponse } from 'next/og';
-import { renderOg } from '@/lib/og';
+import { renderOg, BRAND } from '@/lib/og';
 
 export const runtime = 'edge';
 
@@ -11,7 +11,7 @@ export async function GET(req: Request) {
   const title = decodeURIComponent(t);
 
   return new ImageResponse(
-    renderOg({ header: 'Podcast', title, gradient: ['#34d399', '#a7f3d0'] }),
+    renderOg({ header: 'Podcast', title, gradient: BRAND.secondary }),
     { width: 1200, height: 630 }
   );
 }

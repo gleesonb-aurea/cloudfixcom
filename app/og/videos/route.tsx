@@ -1,7 +1,7 @@
 // ABOUTME: Default OG image for videos section
 // ABOUTME: Edge runtime route generating 1200x630 OG images with videos branding
 import { ImageResponse } from 'next/og';
-import { renderOg } from '@/lib/og';
+import { renderOg, BRAND } from '@/lib/og';
 
 export const runtime = 'edge';
 
@@ -11,7 +11,7 @@ export async function GET(req: Request) {
   const title = decodeURIComponent(t);
 
   return new ImageResponse(
-    renderOg({ header: 'Videos', title, gradient: ['#60a5fa', '#bfdbfe'] }),
+    renderOg({ header: 'Videos', title, gradient: BRAND.secondary }),
     { width: 1200, height: 630 }
   );
 }

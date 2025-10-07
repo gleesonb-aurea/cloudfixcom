@@ -9,7 +9,15 @@ export interface OgParams {
   gradient: [string, string];
 }
 
-export function renderOg({ header, title, subtitle, gradient }: OgParams) {
+// Brand color tokens mirrored from tailwind.config.ts
+export const BRAND = {
+  text: '#212121', // gray-900
+  primary: ['#00BCD4', '#4DD0E1'] as [string, string],
+  secondary: ['#0088CC', '#42A5F5'] as [string, string],
+  accent: ['#fecd00', '#FFEB3B'] as [string, string],
+};
+
+export function renderOg({ header, title, subtitle, gradient }: OgParams): React.ReactElement {
   const [from, to] = gradient;
   return (
     <div
@@ -20,7 +28,7 @@ export function renderOg({ header, title, subtitle, gradient }: OgParams) {
         flexDirection: 'column',
         justifyContent: 'space-between',
         padding: 56,
-        color: '#0b0f13',
+        color: BRAND.text,
         background: `linear-gradient(135deg, ${from} 0%, ${to} 100%)`,
       }}
     >
@@ -30,4 +38,3 @@ export function renderOg({ header, title, subtitle, gradient }: OgParams) {
     </div>
   );
 }
-

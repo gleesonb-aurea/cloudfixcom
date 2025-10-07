@@ -14,8 +14,7 @@ interface BlogPostPageProps {
   };
 }
 
-// Note: Do not prebuild all post routes to keep build memory usage low.
-// Posts are generated on-demand with ISR (revalidate above).
+// ABOUTME: Posts are generated on-demand with ISR to reduce build memory usage.
 
 export async function generateMetadata({ params }: BlogPostPageProps) {
   const { slug } = params;
