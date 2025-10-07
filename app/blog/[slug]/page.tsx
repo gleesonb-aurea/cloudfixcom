@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { getPostBySlug, getAllPosts } from '@/lib/blog';
+import type { Metadata } from 'next';
 import { SocialShare } from '@/components/blog/SocialShare';
 
 interface BlogPostPageProps {
@@ -40,4 +41,24 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 export async function generateStaticParams() {
   const posts = await getAllPosts();
   return posts.map((p) => ({ slug: p.slug }));
+}
+
+export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
+  const post = await getPostBySlug(params.slug);
+  if (!post) return {};
+  return {
+    title: post.seo?.title || post.title,
+    description: post.seo?.description || post.description,
+    keywords: post.seo?.keywords,
+    alternates: { canonical: `/blog/${post.slug}` },
+    openGraph: {
+      title: post.title,
+      description: post.description,
+      url: `/blog/${post.slug}`,
+      type: 'article',
+      publishedTime: post.date,
+      authors: [post.author],
+      images: post.image ? [post.image] : undefined,
+    },
+  };
 }

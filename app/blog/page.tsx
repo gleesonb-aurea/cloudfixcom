@@ -17,7 +17,7 @@ export default async function BlogIndexPage({ searchParams }: { searchParams?: {
     <div className="min-h-screen">
       <section className="max-w-6xl mx-auto py-12 px-4">
         <h1 className="text-4xl font-bold mb-6">Blog</h1>
-        <form method="get" className="mb-8 flex flex-col md:flex-row gap-4 md:items-center">
+        <form method="get" className="mb-8 flex flex-col gap-4">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm text-gray-600">Category:</span>
             <Link href={`/blog${q ? `?q=${encodeURIComponent(q)}` : ''}`} className={`px-3 py-1 rounded-full border ${!category ? 'bg-primary text-white border-primary' : 'border-gray-200'}`}>All</Link>
@@ -30,7 +30,19 @@ export default async function BlogIndexPage({ searchParams }: { searchParams?: {
               );
             })}
           </div>
-          <div className="flex-1" />
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm text-gray-600">Tags:</span>
+            <Link href={`/blog${q ? `?q=${encodeURIComponent(q)}` : ''}${category ? `${q? '&' : '?'}category=${encodeURIComponent(category)}` : ''}`} className={`px-3 py-1 rounded-full border ${!tag ? 'bg-primary text-white border-primary' : 'border-gray-200'}`}>All</Link>
+            {tags.map((t) => {
+              const qs = new URLSearchParams();
+              if (q) qs.set('q', q);
+              if (category) qs.set('category', category);
+              qs.set('tag', t);
+              return (
+                <Link key={t} href={`/blog?${qs.toString()}`} className={`px-3 py-1 rounded-full border ${tag===t ? 'bg-primary text-white border-primary' : 'border-gray-200'}`}>{t}</Link>
+              );
+            })}
+          </div>
           <div className="flex gap-2 items-center">
             <input name="q" defaultValue={q} placeholder="Search posts" className="w-64 max-w-full rounded-lg border border-gray-300 px-3 py-2" />
             {category && <input type="hidden" name="category" value={category} />}
