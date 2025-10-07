@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { getPostBySlug, getAllPosts } from '@/lib/blog';
 import TableOfContents from '@/components/blog/TableOfContents';
+import { slugify } from '@/lib/utils';
 import type { Metadata } from 'next';
 import { SocialShare } from '@/components/blog/SocialShare';
 
@@ -12,15 +13,6 @@ interface BlogPostPageProps {
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const post = await getPostBySlug(params.slug);
   if (!post) return notFound();
-
-  // Simple slugify to match TOC ids
-  const slugify = (text: string) =>
-    text
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
 
   // Map headings to include ids in rendered HTML so TOC anchors work
   const components = {
