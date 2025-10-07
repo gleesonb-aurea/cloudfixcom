@@ -1,4 +1,5 @@
 // ABOUTME: Podcast RSS feed route generating RSS 2.0 XML
+// ABOUTME: Serves dynamic podcast feed with cache headers and episode enclosures
 import { NextResponse } from 'next/server';
 import { getAllEpisodes } from '@/lib/podcast';
 
