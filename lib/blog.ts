@@ -33,7 +33,27 @@ function calcReadTime(text: string): number {
 
 export async function getAllPosts(): Promise<BlogPostMeta[]> {
   if (!fs.existsSync(postsDirectory)) return [];
-  const entries = fs.readdirSync(postsDirectory).filter((f) => f.endsWith('.mdx'));
+
+  // Recursively find all MDX files
+  function findMdxFiles(dir: string, basePath: string = ''): string[] {
+    const files: string[] = [];
+    const entries = fs.readdirSync(dir);
+
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry);
+      const stat = fs.statSync(fullPath);
+
+      if (stat.isDirectory()) {
+        files.push(...findMdxFiles(fullPath, basePath ? `${basePath}/${entry}` : entry));
+      } else if (entry.endsWith('.mdx')) {
+        files.push(basePath ? `${basePath}/${entry}` : entry);
+      }
+    }
+
+    return files;
+  }
+
+  const entries = findMdxFiles(postsDirectory);
   const posts: BlogPostMeta[] = entries.map((file) => {
     const slug = file.replace(/\.mdx$/, '');
     const fullPath = path.join(postsDirectory, file);
@@ -57,8 +77,27 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
 }
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
-  const fullPath = path.join(postsDirectory, `${slug}.mdx`);
-  if (!fs.existsSync(fullPath)) return null;
+  // Search recursively for the MDX file with matching slug
+  function findMdxFile(dir: string, targetSlug: string): string | null {
+    const entries = fs.readdirSync(dir);
+
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry);
+      const stat = fs.statSync(fullPath);
+
+      if (stat.isDirectory()) {
+        const found = findMdxFile(fullPath, targetSlug);
+        if (found) return found;
+      } else if (entry === `${targetSlug}.mdx`) {
+        return fullPath;
+      }
+    }
+
+    return null;
+  }
+
+  const fullPath = findMdxFile(postsDirectory, slug);
+  if (!fullPath) return null;
   const raw = fs.readFileSync(fullPath, 'utf8');
   const { data, content } = matter(raw);
   return {
