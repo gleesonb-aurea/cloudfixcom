@@ -35,7 +35,7 @@ Based on WordPress theme analysis (`cloudfix-3-theme`):
 
 ### Target Next.js Content Structure
 
-```
+```plaintext
 content/
 ├── blog/
 │   ├── category-1/
@@ -69,8 +69,7 @@ public/
     ├── 2023/
     ├── 2024/
     └── optimized/
-```
-
+```plaintext
 ## Phase 1: WordPress Backup Analysis & Extraction
 
 ### 1.1 WordPress Backup Requirements
@@ -100,8 +99,7 @@ WHERE post_status = 'publish';
 SELECT *
 FROM wp_postmeta
 WHERE post_id IN (SELECT ID FROM wp_posts WHERE post_status = 'publish');
-```
-
+```plaintext
 #### Option B: WordPress Export Tool
 - Use built-in WordPress export (Tools → Export)
 - Export all content as XML
@@ -115,8 +113,7 @@ wp export --dir=/path/to/exports
 # Export specific content types
 wp export --post_type=post --dir=/path/to/exports
 wp export --post_type=podcast --dir=/path/to/exports
-```
-
+```plaintext
 ### 1.2 Content Analysis Script
 
 Create a content analysis tool to inventory WordPress content:
@@ -163,8 +160,7 @@ async function analyzeWordPressExport(xmlFile) {
 
   return inventory;
 }
-```
-
+```plaintext
 ## Phase 2: Content Transformation
 
 ### 2.1 Blog Post Transformation (WordPress → MDX)
@@ -278,8 +274,7 @@ ${mdxContent}
     );
   }
 }
-```
-
+```plaintext
 ### 2.2 Podcast Episode Transformation
 
 **Podcast Data Structure:**
@@ -314,8 +309,7 @@ export interface PodcastEpisode {
     keywords: string[];
   };
 }
-```
-
+```plaintext
 **Transformation Script:**
 
 ```javascript
@@ -364,8 +358,7 @@ class PodcastTransformer {
     return links;
   }
 }
-```
-
+```plaintext
 ## Phase 3: Media Asset Migration
 
 ### 3.1 Media Asset Analysis
@@ -377,7 +370,7 @@ class PodcastTransformer {
 - **Documents**: PDFs, whitepapers, case studies
 
 **WordPress Media Structure:**
-```
+```plaintext
 wp-content/uploads/
 ├── 2023/
 │   ├── 01/
@@ -388,8 +381,7 @@ wp-content/uploads/
 │   └── 02/
 └── 2025/
     └── 01/
-```
-
+```plaintext
 ### 3.2 Media Migration Strategy
 
 **Migration Approach:**
@@ -514,8 +506,7 @@ class MediaMigrator {
     this.mediaMap.set(sourcePath, `/media/${relativePath}`);
   }
 }
-```
-
+```plaintext
 ### 3.3 Media Optimization Standards
 
 **Image Optimization:**
@@ -539,19 +530,17 @@ class MediaMigrator {
 ### 4.1 URL Structure Preservation
 
 **WordPress URL Structure:**
-```
+```plaintext
 /blog/category/post-title/
 /podcast/episode-title/
 /resources/resource-title/
-```
-
+```plaintext
 **Next.js URL Structure:**
-```
+```plaintext
 /blog/category/post-title/
 /podcast/episode-title/
 /resources/resource-title/
-```
-
+```plaintext
 **URL Mapping Strategy:**
 
 ```javascript
@@ -594,8 +583,7 @@ class URLMapper {
     return mapping[type] || `/${slug}/`;
   }
 }
-```
-
+```plaintext
 ### 4.2 Meta Data Migration
 
 **SEO Meta Data Fields:**
@@ -674,8 +662,7 @@ class SEOTransformer {
     }
   }
 }
-```
-
+```plaintext
 ## Phase 5: Content Validation & QA
 
 ### 5.1 Content Integrity Validation
@@ -793,8 +780,7 @@ class ContentValidator {
     }
   }
 }
-```
-
+```plaintext
 ### 5.2 Automated Testing Suite
 
 **Test Categories:**

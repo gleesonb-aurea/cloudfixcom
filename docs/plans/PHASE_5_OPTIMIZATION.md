@@ -64,7 +64,7 @@ Transform the functional CloudFix Next.js site into a production-ready, high-per
 ## 🏗️ Target Architecture
 
 ### Performance Optimization Stack
-```
+```plaintext
 Performance Tools:
 ├── @next/bundle-analyzer (bundle size analysis)
 ├── next/image (automatic optimization)
@@ -73,10 +73,9 @@ Performance Tools:
 ├── SWR/ISR (caching strategies)
 ├── Service Worker (offline capability)
 └── Error Boundaries (error resilience)
-```
-
+```plaintext
 ### SEO Enhancement Stack
-```
+```plaintext
 SEO Implementation:
 ├── next-sitemap (automatic sitemap generation)
 ├── next-seo (meta tag management)
@@ -85,10 +84,9 @@ SEO Implementation:
 ├── Robots.txt (search engine rules)
 ├── Canonical URLs (duplicate content prevention)
 └── Google Rich Results (testing & validation)
-```
-
+```plaintext
 ### Accessibility Stack
-```
+```plaintext
 Accessibility Tools:
 ├── @axe-core/react (automated testing)
 ├── ESLint-plugin-jsx-a11y (code linting)
@@ -96,8 +94,7 @@ Accessibility Tools:
 ├── ARIA enhancements (screen reader support)
 ├── Color contrast (WCAG compliance)
 └── Form accessibility (validation & errors)
-```
-
+```plaintext
 ---
 
 ## 🔧 Implementation Tasks
@@ -108,8 +105,7 @@ Accessibility Tools:
 
 ```bash
 npm install @next/bundle-analyzer
-```
-
+```plaintext
 **Configure next.config.js:**
 ```javascript
 // next.config.js
@@ -149,8 +145,7 @@ module.exports = withBundleAnalyzer({
     return config;
   },
 });
-```
-
+```plaintext
 **Create bundle analysis script:**
 ```json
 // package.json
@@ -161,8 +156,7 @@ module.exports = withBundleAnalyzer({
     "analyze:browser": "BUNDLE_ANALYZE=browser npm run analyze"
   }
 }
-```
-
+```plaintext
 **Performance targets:**
 - Main bundle: < 100KB gzipped
 - Vendor bundle: < 200KB gzipped
@@ -170,7 +164,7 @@ module.exports = withBundleAnalyzer({
 - First Contentful Paint: < 1.5s
 
 **Commit Message:**
-```
+```plaintext
 perf(optimization): implement bundle analysis and optimization
 
 - Install and configure @next/bundle-analyzer
@@ -178,8 +172,7 @@ perf(optimization): implement bundle analysis and optimization
 - Create bundle analysis scripts
 - Set performance targets for bundle sizes
 - Add package imports optimization
-```
-
+```plaintext
 ---
 
 ### Task 2: Image Optimization Implementation (6 hours)
@@ -230,8 +223,7 @@ export function OptimizedImage({
     </div>
   );
 }
-```
-
+```plaintext
 **Update existing images:**
 
 ```tsx
@@ -271,8 +263,7 @@ export function FeatureCard({ icon, title, description, image }) {
     </div>
   );
 }
-```
-
+```plaintext
 **Configure image domains:**
 ```javascript
 // next.config.js
@@ -285,10 +276,9 @@ module.exports = {
     minimumCacheTTL: 86400, // 24 hours
   },
 };
-```
-
+```plaintext
 **Commit Message:**
-```
+```plaintext
 perf(images): implement comprehensive image optimization
 
 - Create OptimizedImage component with blur placeholders
@@ -296,8 +286,7 @@ perf(images): implement comprehensive image optimization
 - Configure WebP/AVIF formats and responsive sizes
 - Add priority loading for above-the-fold images
 - Implement blur data URLs for smooth loading
-```
-
+```plaintext
 ---
 
 ### Task 3: Lazy Loading Implementation (4 hours)
@@ -326,8 +315,7 @@ export function LazyComponent({ loader, fallback = <div>Loading...</div> }: Lazy
     </Suspense>
   );
 }
-```
-
+```plaintext
 **Lazy load heavy components:**
 
 ```tsx
@@ -358,8 +346,7 @@ export function DemoModal({ isOpen, onClose }) {
     />
   );
 }
-```
-
+```plaintext
 **Implement intersection observer for animations:**
 
 ```tsx
@@ -407,10 +394,9 @@ export function AnimatedSection({ children, className = '' }) {
     </div>
   );
 }
-```
-
+```plaintext
 **Commit Message:**
-```
+```plaintext
 perf(lazy-loading): implement dynamic imports and intersection observer
 
 - Create LazyComponent wrapper for dynamic imports
@@ -418,8 +404,7 @@ perf(lazy-loading): implement dynamic imports and intersection observer
 - Implement intersection observer for scroll animations
 - Add loading fallbacks for better UX
 - Reduce initial bundle size with code splitting
-```
-
+```plaintext
 ---
 
 ### Task 4: Font and Resource Optimization (3 hours)
@@ -456,8 +441,7 @@ export default function RootLayout({
     </html>
   );
 }
-```
-
+```plaintext
 **Update Tailwind config:**
 
 ```javascript
@@ -472,8 +456,7 @@ module.exports = {
     },
   },
 };
-```
-
+```plaintext
 **Implement resource hints:**
 
 ```tsx
@@ -497,10 +480,9 @@ export function SEOHead({ title, description, image, url }) {
     </Head>
   );
 }
-```
-
+```plaintext
 **Commit Message:**
-```
+```plaintext
 perf(fonts): implement next/font optimization and resource hints
 
 - Configure next/font for optimal font loading
@@ -508,8 +490,7 @@ perf(fonts): implement next/font optimization and resource hints
 - Implement DNS prefetch and preconnect hints
 - Add preload for critical font resources
 - Update Tailwind config for font variables
-```
-
+```plaintext
 ---
 
 ### Task 5: Caching Strategy Implementation (3 hours)
@@ -538,8 +519,7 @@ export default async function ResourcesPage() {
     </div>
   );
 }
-```
-
+```plaintext
 **Create SWR hooks for client-side caching:**
 
 ```tsx
@@ -565,8 +545,7 @@ export function useResources() {
     error,
   };
 }
-```
-
+```plaintext
 **Service Worker for offline capability:**
 
 ```tsx
@@ -611,10 +590,9 @@ useEffect(() => {
     navigator.serviceWorker.register('/sw.js');
   }
 }, []);
-```
-
+```plaintext
 **Commit Message:**
-```
+```plaintext
 perf(caching): implement ISR, SWR, and service worker
 
 - Add Incremental Static Regeneration for dynamic content
@@ -622,8 +600,7 @@ perf(caching): implement ISR, SWR, and service worker
 - Create service worker for offline capability
 - Configure cache strategies for different content types
 - Add background sync and cache management
-```
-
+```plaintext
 ---
 
 ### Task 6: Error Boundaries Implementation (2 hours)
@@ -685,8 +662,7 @@ export class ErrorBoundary extends React.Component<
     return this.props.children;
   }
 }
-```
-
+```plaintext
 **Implement error boundaries for different sections:**
 
 ```tsx
@@ -715,10 +691,9 @@ export function SafeComponent({ children, fallback = null }) {
     </ErrorBoundary>
   );
 }
-```
-
+```plaintext
 **Commit Message:**
-```
+```plaintext
 perf(errors): implement error boundaries for resilience
 
 - Create ErrorBoundary component with fallback UI
@@ -726,8 +701,7 @@ perf(errors): implement error boundaries for resilience
 - Implement section-specific error boundaries
 - Provide user-friendly error recovery options
 - Ensure app stability during runtime errors
-```
-
+```plaintext
 ---
 
 ### Task 7: Social Sharing Images (4 hours)
@@ -802,8 +776,7 @@ export async function GET(request: Request) {
     });
   }
 }
-```
-
+```plaintext
 **Update metadata for all pages:**
 
 ```tsx
@@ -836,8 +809,7 @@ export const metadata: Metadata = {
     images: ['/og?title=Page%20Title&description=Page%20description'],
   },
 };
-```
-
+```plaintext
 **Create specific OG images for products:**
 
 ```tsx
@@ -856,10 +828,9 @@ export async function GET() {
     { width: 1200, height: 630 }
   );
 }
-```
-
+```plaintext
 **Commit Message:**
-```
+```plaintext
 feat(social): implement dynamic OG image generation
 
 - Create dynamic OG image API route with Edge Runtime
@@ -867,8 +838,7 @@ feat(social): implement dynamic OG image generation
 - Add Open Graph and Twitter Card metadata
 - Create product-specific social images
 - Ensure consistent brand representation in shares
-```
-
+```plaintext
 ---
 
 ### Task 8: Sitemap and Robots.txt (3 hours)
@@ -877,8 +847,7 @@ feat(social): implement dynamic OG image generation
 
 ```bash
 npm install next-sitemap
-```
-
+```plaintext
 **Create sitemap configuration:**
 
 ```javascript
@@ -915,8 +884,7 @@ module.exports = {
     return results;
   },
 };
-```
-
+```plaintext
 **Update package.json:**
 ```json
 {
@@ -924,8 +892,7 @@ module.exports = {
     "postbuild": "next-sitemap"
   }
 }
-```
-
+```plaintext
 **Custom robots.txt:**
 ```javascript
 // next-sitemap.config.js (continued)
@@ -947,10 +914,9 @@ module.exports = {
     ],
   },
 };
-```
-
+```plaintext
 **Commit Message:**
-```
+```plaintext
 feat(seo): implement sitemap.xml and robots.txt generation
 
 - Install and configure next-sitemap
@@ -958,8 +924,7 @@ feat(seo): implement sitemap.xml and robots.txt generation
 - Generate comprehensive robots.txt with policies
 - Add automated sitemap generation on build
 - Include all pages and dynamic routes in sitemap
-```
-
+```plaintext
 ---
 
 ### Task 9: Structured Data Implementation (5 hours)
@@ -989,8 +954,7 @@ export function StructuredData({ type, data }: StructuredDataProps) {
     />
   );
 }
-```
-
+```plaintext
 **Organization schema:**
 
 ```tsx
@@ -1029,8 +993,7 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
-```
-
+```plaintext
 **Product schema for product pages:**
 
 ```tsx
@@ -1063,8 +1026,7 @@ export default function CloudFixPage() {
     </div>
   );
 }
-```
-
+```plaintext
 **FAQ schema for FAQ sections:**
 
 ```tsx
@@ -1095,8 +1057,7 @@ export function FAQSection({ faqs }) {
     </section>
   );
 }
-```
-
+```plaintext
 **Review schema for testimonials:**
 
 ```tsx
@@ -1130,10 +1091,9 @@ export function TestimonialCard({ review }) {
     </div>
   );
 }
-```
-
+```plaintext
 **Commit Message:**
-```
+```plaintext
 feat(seo): implement comprehensive structured data
 
 - Create StructuredData component for JSON-LD schemas
@@ -1142,8 +1102,7 @@ feat(seo): implement comprehensive structured data
 - Add FAQ schema for FAQ sections
 - Include Review schema for testimonials
 - Enhance search engine understanding with rich data
-```
-
+```plaintext
 ---
 
 ### Task 10: SEO Metadata Enhancement (3 hours)
@@ -1212,8 +1171,7 @@ export function generateSEO(config: SEOConfig): Metadata {
     },
   };
 }
-```
-
+```plaintext
 **Update all pages with enhanced metadata:**
 
 ```tsx
@@ -1238,8 +1196,7 @@ export const metadata = generateSEO({
   publishedTime: blogPost.publishedAt,
   modifiedTime: blogPost.updatedAt,
 });
-```
-
+```plaintext
 **Add breadcrumb navigation:**
 
 ```tsx
@@ -1279,10 +1236,9 @@ export function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
     </nav>
   );
 }
-```
-
+```plaintext
 **Commit Message:**
-```
+```plaintext
 feat(seo): enhance metadata with comprehensive SEO optimization
 
 - Create generateSEO function for consistent metadata
@@ -1291,8 +1247,7 @@ feat(seo): enhance metadata with comprehensive SEO optimization
 - Add canonical URLs and robots meta tags
 - Include keywords and author information
 - Optimize all pages for search engine visibility
-```
-
+```plaintext
 ---
 
 ### Task 11: Accessibility Audit Implementation (6 hours)
@@ -1301,8 +1256,7 @@ feat(seo): enhance metadata with comprehensive SEO optimization
 
 ```bash
 npm install @axe-core/react eslint-plugin-jsx-a11y
-```
-
+```plaintext
 **Configure ESLint for accessibility:**
 
 ```javascript
@@ -1323,8 +1277,7 @@ npm install @axe-core/react eslint-plugin-jsx-a11y
     "jsx-a11y/role-supports-aria-props": "error"
   }
 }
-```
-
+```plaintext
 **Add axe-core for automated testing:**
 
 ```tsx
@@ -1356,8 +1309,7 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
-```
-
+```plaintext
 **Implement skip links:**
 
 ```tsx
@@ -1377,8 +1329,7 @@ export function SkipLinks() {
     </div>
   );
 }
-```
-
+```plaintext
 **Enhance focus management:**
 
 ```tsx
@@ -1437,8 +1388,7 @@ export function Modal({ isOpen, onClose, children }) {
     </div>
   );
 }
-```
-
+```plaintext
 **Improve form accessibility:**
 
 ```tsx
@@ -1502,8 +1452,7 @@ export function AccessibleInput({
     </div>
   );
 }
-```
-
+```plaintext
 **Add live regions for dynamic content:**
 
 ```tsx
@@ -1537,10 +1486,9 @@ export function FormFeedback({ message, type }) {
     </>
   );
 }
-```
-
+```plaintext
 **Commit Message:**
-```
+```plaintext
 feat(a11y): implement comprehensive accessibility enhancements
 
 - Install and configure axe-core for automated testing
@@ -1550,8 +1498,7 @@ feat(a11y): implement comprehensive accessibility enhancements
 - Enhance form accessibility with proper labels and errors
 - Create live regions for dynamic content announcements
 - Ensure WCAG 2.1 AA compliance across all components
-```
-
+```plaintext
 ---
 
 ### Task 12: Lighthouse Performance Testing (4 hours)
@@ -1600,8 +1547,7 @@ const pages = [
 pages.forEach(async (page) => {
   await runLighthouse(`http://localhost:3000${page}`);
 });
-```
-
+```plaintext
 **Create performance monitoring dashboard:**
 
 ```tsx
@@ -1652,8 +1598,7 @@ export function PerformanceDashboard() {
     </div>
   );
 }
-```
-
+```plaintext
 **Set performance targets and monitoring:**
 
 ```javascript
@@ -1687,10 +1632,9 @@ export function checkPerformanceThresholds(metrics) {
 
   return results;
 }
-```
-
+```plaintext
 **Commit Message:**
-```
+```plaintext
 test(performance): implement Lighthouse testing and monitoring
 
 - Create automated Lighthouse testing script
@@ -1699,8 +1643,7 @@ test(performance): implement Lighthouse testing and monitoring
 - Implement performance threshold validation
 - Add real-time performance metrics display
 - Ensure 90+ scores across all Lighthouse categories
-```
-
+```plaintext
 ---
 
 ### Task 13: Cross-Browser Testing (3 hours)
@@ -1738,8 +1681,7 @@ module.exports = {
     },
   ],
 };
-```
-
+```plaintext
 **Create cross-browser tests:**
 
 ```javascript
@@ -1812,8 +1754,7 @@ test.describe('Cross-browser compatibility', () => {
     });
   });
 });
-```
-
+```plaintext
 **Visual regression testing:**
 
 ```javascript
@@ -1848,10 +1789,9 @@ test.describe('Visual regression testing', () => {
     }
   });
 });
-```
-
+```plaintext
 **Commit Message:**
-```
+```plaintext
 test(cross-browser): implement comprehensive cross-browser testing
 
 - Set up Playwright for multi-browser testing
@@ -1860,8 +1800,7 @@ test(cross-browser): implement comprehensive cross-browser testing
 - Implement visual regression testing
 - Test navigation and forms across browsers
 - Ensure consistent experience across all platforms
-```
-
+```plaintext
 ---
 
 ### Task 14: Mobile Device Testing (2 hours)
@@ -1937,8 +1876,7 @@ mobileDevices.forEach(device => {
     });
   });
 });
-```
-
+```plaintext
 **Add mobile-specific optimizations:**
 
 ```tsx
@@ -1973,10 +1911,9 @@ export function ResponsiveComponent({ children }) {
     </div>
   );
 }
-```
-
+```plaintext
 **Commit Message:**
-```
+```plaintext
 test(mobile): implement comprehensive mobile device testing
 
 - Create mobile-specific tests for iOS and Android
@@ -1985,8 +1922,7 @@ test(mobile): implement comprehensive mobile device testing
 - Add mobile performance validation
 - Implement responsive design testing
 - Ensure optimal experience on all mobile devices
-```
-
+```plaintext
 ---
 
 ### Task 15: Form Testing and Validation (2 hours)
@@ -2086,8 +2022,7 @@ test.describe('Form functionality', () => {
     await expect(page.locator('text=Thank you for subscribing')).toBeVisible();
   });
 });
-```
-
+```plaintext
 **Test form accessibility:**
 
 ```javascript
@@ -2128,10 +2063,9 @@ test.describe('Form accessibility', () => {
     await expect(secondInput).toBeFocused();
   });
 });
-```
-
+```plaintext
 **Commit Message:**
-```
+```plaintext
 test(forms): implement comprehensive form testing and validation
 
 - Create end-to-end tests for all form submissions
@@ -2140,8 +2074,7 @@ test(forms): implement comprehensive form testing and validation
 - Test keyboard navigation and focus management
 - Add newsletter signup functionality testing
 - Ensure all forms work correctly across browsers
-```
-
+```plaintext
 ---
 
 ## 🚀 Implementation Order
