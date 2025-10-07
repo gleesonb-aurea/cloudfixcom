@@ -1,0 +1,232 @@
+---
+title: "CloudWatch Log Retention Finder/Fixer"
+description: "Are your AWS CloudWatch logs silently increasing your cloud costs? Like the bulging filing cabinets of offices of a bygone era, CloudWatch logs can grow without..."
+date: 2024-11-20 19:10:20
+modified: 2024-11-20 19:10:20
+category: "AWS"
+tags: ["AWS","cloud","lambda","ec2","rds"]
+published: true
+slug: "cloudwatch-log-retention-finder-fixer"
+---
+
+Are your AWS CloudWatch logs silently increasing your cloud costs? Like the bulging filing cabinets of offices of a bygone era, CloudWatch logs can grow without bound. Many organizations unknowingly accumulate years of log data, paying for storage they don't need in the process. To fix this, we are excited to ship a new CloudFix Finder/Fixer which addresses this issue. This new feature automatically optimizes CloudWatch Log retention periods, helping you reduce storage costs without compromising operational visibility.
+
+## The Hidden Cost of Unlimited Log Retention
+
+When CloudWatch Log Groups are created without a specified retention period, they store data indefinitely. While comprehensive logging is crucial for operations, storing logs forever is rarely necessary and can lead to significant unnecessary costs. Forever is a long time to pay a recurring cost. And, for AWS customers, it's a recurring cost that can be avoided. Many organizations have hundreds or even thousands of log groups across their AWS accounts, making this a significant cost optimization opportunity.
+
+Consider this example for an application generating 10GB of logs monthly:
+
+Month
+
+Log Storage (GB)
+
+Ingestion Cost
+
+Storage Cost
+
+1
+
+10
+
+$5.00
+
+$0.30
+
+2
+
+20
+
+$5.00
+
+$0.60
+
+3
+
+30
+
+$5.00
+
+$0.90
+
+4
+
+40
+
+$5.00
+
+$1.20
+
+5
+
+50
+
+$5.00
+
+$1.50
+
+6
+
+60
+
+$5.00
+
+$1.80
+
+7
+
+70
+
+$5.00
+
+$2.10
+
+8
+
+80
+
+$5.00
+
+$2.40
+
+9
+
+90
+
+$5.00
+
+$2.70
+
+10
+
+100
+
+$5.00
+
+$3.00
+
+11
+
+110
+
+$5.00
+
+$3.30
+
+12
+
+120
+
+$5.00
+
+$3.60
+
+**Total**
+
+**120**
+
+**$60.00**
+
+**$23.40**
+
+**Annual Cost: $83.40**
+
+Note that this is a simplified example. In practice, the ingestion cost is a function of total data ingested, across all accounts and regions. 
+
+This savings may not seem like much, but a mid-sized AWS company may have hundreds of applications generating logs of this size.
+
+> This storage cost adds up month after month, year after year. Any random AWS Lambda function can generate copious log data. And, from personal experience, a simple leftover debug statement can largely inflate the size of the log files. I've made this mistake more times than I care to admit! Paying for this /forever/ is just wasteful.
+
+## Introducing Automated Log Retention Management
+
+CloudFix's new CloudWatch Log Retention Finder/Fixer automatically:
+
+1.  Identifies Log Groups without retention policies
+2.  Implements a 30-day retention period for each log group
+3.  Maintains compliance while reducing costs
+
+Let's have a look at the dashboard for this new Finder/Fixer:
+
+![CloudFix CloudWatch log retention dashboard](/media/uploads/log-retention-dashboard-600x397.jpg)
+
+Looking at the dashboard, we can see several assets where the logging cost is in excess of $200 per month, and potential savings in the $100s.
+
+Let's take a look at one of the details to see the impact of log retention policies.
+
+Click on the details for a particular asset, and you will see a screen like this:
+
+![](/media/uploads/log-details-1-600x359.png)
+
+See that the annual cost is currently $415.15. This is based on a steady state of 57.46 GB of data ingested per month, and approximately 12 times that amount retained and stored at any given point in time. **Important note**: [data ingest rates](https://aws.amazon.com/cloudwatch/pricing/ "https://aws.amazon.com/cloudwatch/pricing/") change depend on how much total data is ingested, but at the highest rate is $0.50 per GB. As more data is ingested, the ingestion cost decreases.
+
+Compare this to the 30-day retention policy, where the annual cost drops to $18.41. This is a savings of $396.74 per year, or 95% of the cost. Adding this up across all assets, the potential savings is significant.
+
+In the Details screen, we compute the potential savings based on the current ingestion rate, and 30-, 60-, 90-, 365-day, and indefinite retention periods.
+
+![Log retention details](/media/uploads/log-retention-details-600x361.png)
+
+Notice that in this case, CloudFix is recommending a 30-day retention policy. We recommend fixed policies which are based on heuristics which have been found to be appropriate for most applications. Again, you can always override the recommendation, but we think that the default settings are a good starting point unless you have an external reason (e.g. regulatory requirements) to keep logs for a longer period of time.
+
+## The benefits of CloudFix's automated approach
+
+It's all too easy to forget to configure retention periods when creating new log groups - especially during rapid development or deployments. But don't worry - CloudFix has your back! Our automated solution ensures that, even if you forgot to configure retention periods, the Finder/Fixer will catch the oversight and fix it for you!
+
+## How It Works
+
+Our Finder/Fixer operates with CloudFix's signature one-click automation, making it an ideal solution for DevOps and/or FinOps teams managing large-scale AWS environments:
+
+1.  **Finder Phase**
+    
+    -   Our Finder scans all log groups in your AWS environment. This includes:
+        -   RDS clusters and their associated log groups
+        -   Amazon VPC Flow Logs
+        -   EC2 Instances ([if you are running the CloudWatch agent](https://docs.aws.amazon.com/prescriptive-guidance/latest/implementing-logging-monitoring-cloudwatch/configure-cloudwatch-ec2-on-premises.html#:~:text=By%20default%2C%20Amazon%20EC2%20doesn,Line%20Interface%20\(AWS%20CLI\) "https://docs.aws.amazon.com/prescriptive-guidance/latest/implementing-logging-monitoring-cloudwatch/configure-cloudwatch-ec2-on-premises.html#:~:text=By%20default%2C%20Amazon%20EC2%20doesn,Line%20Interface%20(AWS%20CLI)"))
+        -   AWS Lambda functions - logging to CloudWatch by default
+        -   Amazon CloudFront distributions - Access Logs, Error Logs, etc
+        -   Amazon API Gateway - Access Logs, Error Logs, etc
+        -   CloudTrail trails
+    -   The Finder identifies Log Groups without retention settings
+    -   Analyzes log group storage patterns and usage
+    -   Calculates potential cost savings and displays in the CloudFix dashboard
+2.  **Fixer Phase**
+    
+    -   Creates a change request to set the retention policy to 30 days
+    -   ### **You review the change request in the CloudFix dashboard and approve!**
+        
+        ![Hit execute to start saving](/media/uploads/steve_execute_gif.gif)
+
+## Important Note
+
+If there are functions where you want to keep the logs indefinitely, you can tag them with {"cloudfix:dontFixIt" : true}  and they will be excluded.
+
+## Key Benefits
+
+-   **Immediate Cost Reduction**: Automatically remove unnecessary log data
+-   **Zero Performance Impact**: Changes affect only log retention, not application performance
+-   **Complete Audit Trail**: All changes tracked through AWS Systems Manager
+-   **Organization-Wide Implementation**: Apply consistent policies across all accounts
+
+## Getting Started with Automatic Log Group Retention
+
+Implementing optimal log retention policies is now as simple as:
+
+1.  Log into your CloudFix dashboard
+2.  Review identified Log Groups without retention periods
+3.  Click to approve the automated fix
+
+## Security and Compliance
+
+Like all CloudFix Finder/Fixers, the CloudWatch Log Retention feature:
+
+-   Operates through AWS Systems Manager Change Manager
+-   Provides complete audit trails for each log group modification
+-   Requires no direct write access to your AWS accounts
+-   Can be rolled back if needed
+
+## Start Saving Today
+
+Don't let unnecessary log storage inflate your AWS bills. Log in to CloudFix now to see how much you could save with automated log retention management.
+
+To get started with this and more than 50 other Finder/Fixers, get started with a free trial. Go to [/assessment](https://cloudfix.com/assessment "/assessment") to get started!
+
+Going to re:Invent 2024? Want to talk about cost optimization? Sign up for a meeting with us at [/reinvent-2024](https://cloudfix.com/reinvent-2024 "/reinvent-2024") - we hope to meet you there!

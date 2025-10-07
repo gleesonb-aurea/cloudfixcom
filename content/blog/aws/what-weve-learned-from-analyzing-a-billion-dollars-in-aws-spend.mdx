@@ -1,0 +1,80 @@
+---
+title: "What we’ve learned from analyzing a billion dollars in AWS spend"
+description: "Overview By analyzing over a billion dollars in AWS spend, we’ve identified proven best practices for AWS cost optimization. Compute services (namely EC2) shoul..."
+date: 2023-09-22 13:19:22
+modified: 2023-12-01 09:32:04
+category: "AWS"
+tags: ["AWS","cloud","ec2","s3","rds"]
+published: true
+slug: "what-weve-learned-from-analyzing-a-billion-dollars-in-aws-spend"
+---
+
+## Overview
+
+-   By analyzing over a billion dollars in AWS spend, we’ve identified proven best practices for AWS cost optimization.
+-   Compute services (namely EC2) should be modernized with the latest AMD processors and right-sized according to current utilization.
+-   Optimize storage costs by turning on S3 Intelligent-Tiering and switching to gp3 for volume storage.
+-   Prevent overpaying for networking by mitigating egress charges and relying on one AWS region versus multi-region or multi-AZ redundancy.
+-   Move to Amazon Aurora for optimal price and performance.
+
+Here at CloudFix, we hit a big milestone a few months ago: we have analyzed over a billion dollars of annual AWS spend. That’s an incredible number that not only shows how much our customers rely on AWS, but enables us to uncover spending patterns across the AWS ecosystem. In my [last post](/blog/7-common-mistakes-that-lead-to-overspending-on-aws/), we used those patterns to determine what NOT to do when you’re trying to optimize AWS costs. Today, we’ll take the opposite approach: based on what we know about how companies are leveraging AWS, what SHOULD you do? Let’s take a look at some best practices across compute, storage, networking, and RDS.
+
+## Compute: Modernize and right-size EC2
+
+If you’ve listened to my podcast, [AWS Insiders](/podcast/), you’ve probably heard these stats before: 
+
+-   Compute (basically your EC2 bill) typically accounts for 40% of your AWS spend 
+-   The average resource utilization for compute across all AWS customers is just 6%
+-   The average enterprise software company uses just 2% of its EC2 instance CPU 
+
+> More than 90% of compute capacity is paid for and unused.
+
+I bring up these numbers often because they simply blow my mind. More than 90% of compute capacity is paid for and unused. That’s both shocking and clearly an opportunity to optimize. So what does that cost optimization look like in practice? 
+
+1.  If you’re starting from scratch with AWS, start with Graviton. There’s no point in starting with Intel machines and migrating later. 
+2.  If you’re already on AWS and running Intel-based machines, switch to the latest generation of AMD processors. They provide a 20-30% price/performance improvement over Intel-based machines, which means you get better performance for less money. The migration is also relatively straightforward and doesn’t require rearchitecting your applications.  
+      
+    Switching to AMD processors is a great example of how AWS has turned conventional wisdom on its head. In the on-premises world, the assumption was that the newest processors were great for cutting-edge applications, but older processors were still “good enough” for the standard use cases – plus, the new ones were presumably more expensive. IT wanted to maximize the ROI on their hardware, so they kept it until there was an extremely compelling reason to switch. These days, switching is simple and new generations of processors often have better performance for the same price. It’s easy to switch, and unlike on-prem, you can always switch back.
+3.  In addition to modernizing your compute resources, it’s important to right-size them. In the on-prem days, the mindset was, “I need to buy a machine now, and I want to keep it for the next five years, so I need all this extra space to accommodate that.” That led to wildly over-provisioning and spending far too much money up front. Then, at the end of the hardware cycle, it meant putting up with slow hardware in order to squeeze that last bit of value out of the investment.  
+      
+    In the cloud, we can provision for what we need right now with the understanding that we can always scale up (or down) in the future. To lower your EC2 spend, reduce the size of your instances to a reasonable size. Look at what you’re actually utilizing, then leave a little headroom above that. Remember, you can always scale up, but you can never get back the money you wasted on over-provisioned machines.
+
+## Storage: Turn on S3 Intelligent-Tiering and switch to gp3
+
+Picture your basement. If it’s anything like mine, it includes boxes and shelves full of things that we never use but can’t bring ourselves to part with. Being human, we tend to treat AWS the same way. In fact, of the tens of trillions of objects currently stored on S3, over 90% of them are accessed exactly once. Storage is important, especially in more highly regulated industries, but almost all businesses are also paying too much for data they don’t need to be able to access at sub-millisecond latencies.
+
+> Of the tens of trillions of objects currently stored on S3, over 90% of them are accessed exactly once.
+
+Fortunately, AWS has a solution to this challenge called S3 Intelligent-Tiering. With S3 Intelligent-Tiering, AWS analyzes how often you do or don’t access objects and automatically moves them to the appropriate storage tier. This can make a huge impact on storage costs: less frequently accessed tiers can be up to 95% less expensive than standard storage costs. 
+
+AWS doesn’t stop there, either. S3 Intelligent-Tiering can also move objects back into the more frequently accessed tiers, so your data isn’t always stuck in Deep Glacier, for instance. The only thing AWS doesn’t do is turn on Intelligent-Tiering for you. You can make the change manually, bucket by bucket, or let an automated tool like CloudFix do it for you (more on how to execute both approaches [here](/blog/aws-s3-intelligent-tiering-default-storage-class/).)
+
+S3, of course, isn’t the only AWS storage service. Volume storage also makes up a very large chunk of AWS spend because of workloads migrated from a traditional on-premises data center. It goes back to that on-prem mindset: people still treat their files like a file system instead of like objects, so they end up attaching big disks to big compute instances and costs go up. 
+
+The solution to this: gp3. Gp3 is the latest generation of AWS volumes. It’s 20% cheaper than its predecessor, gp2, and more performant in every scenario. Again, we’re trained to think that newer and better equals more expensive, but it’s just not the case any more. Only 15% of EBS volumes are currently on gp3. That means 85% of those volumes cost 20% more than they should. 
+
+## Networking: Pay attention to egress charges and stick with one AWS region
+
+AWS infrastructure is split up into 20+ AWS regions all around the world. Each region is then broken up into anywhere from three to six or seven availability zones. Each availability zone, in turn, comprises at least three data centers. When you deploy an application, it’s in some particular data center in a particular availability zone in a particular region. 
+
+Why does this matter? Because costs add up when large amounts of data are crossing service, AZ, or region boundaries. AWS doesn’t charge us when data comes into the platform – they want you to add to your data – but they do levy a hefty fee when data leaves AWS. For instance, some of the biggest egress misconfigurations we come across are related to compute instances accessing S3 and DynamoDB over the internet instead of using a VPC endpoint. 
+
+Charges like these accumulate quickly if you’re not intentional about your architecture. Check out the AWS blog post [Overview of Data Transfer Costs for Common Architectures](https://aws.amazon.com/blogs/architecture/overview-of-data-transfer-costs-for-common-architectures/) to see how different service configurations can vary in their data charges.
+
+Redundancy gets expensive, too. It’s easy to set up multi-region or multi-AZ redundancy as a default and pay accordingly. But ask yourself, “What’s the worst thing that could happen to my business if one availability zone goes down for 10 minutes?” There is almost zero chance of that happening – an entire region has never gone down for any meaningful length of time in AWS history – but it’s important to consider the risk/reward tradeoff. There are significant costs associated with mitigating risk, not just in terms of money but also complexity, and in my opinion, it’s not always worth it. Stick with one region if you can and watch your spend go down dramatically.
+
+## RDS: Move to Aurora for the best price and performance
+
+Years ago, Amazon was a huge Oracle customer. They were spending at least hundreds of millions of dollars and still not getting the performance that they required. So, in typical Amazon fashion, they didn’t go out and buy an alternative, they built one: Amazon Aurora.
+
+> Aurora has 10X the performance of any other relational database at 1/10th the cost of a standard commercial database.
+
+Aurora is a part of Amazon RDS, its managed database service. AWS built it from scratch, rearchitecting an entire database to function in a distributed manner under the hood. Aurora reimagines what relational databases can do and it shows: Aurora has 10X the performance of any other relational database at 1/10th the cost of a standard commercial database. It’s truly amazing. 
+
+Most AWS customers, however, aren’t taking advantage of Aurora’s fantastic price, performance, and scale. In fact, 80% of RDS instances are running non-Aurora databases. This is partly a matter of inertia – it feels easier to stick with what you have – and partly an unfair price comparison. At first glance, Aurora’s list price seems 15-20% more expensive than managing the infrastructure yourself. That number, though, doesn’t take into account all the resources involved in keeping that infrastructure up and maintained. Plus, Aurora is constantly getting new features and capabilities that you could never replicate on your own. 
+
+The takeaway: overcome the inertia and move to Aurora. You’ll get exceptional performance and maximum cost efficiency. 
+
+**Start here, then keep optimizing**
+
+AWS cost optimization (like FinOps in general) is a nonstop practice, not a once-and-done activity. Making the adjustments above, however, is a great starting point. When we shift from an on-premises mindset to embracing the flexibility and adaptability of the cloud, we can reduce costs, improve performance, and take full advantage of all the innovation that AWS has to offer.

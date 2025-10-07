@@ -1,0 +1,341 @@
+---
+title: "ElasticSearch/​OpenSearch to Graviton"
+description: "Introduction I have climbed highest mountains I have run through the fields. . . I have run I have crawled I have scaled these city walls. . . . But I still hav..."
+date: 2023-04-03 13:12:36
+modified: 2023-06-23 11:25:06
+category: "AWS"
+tags: ["AWS","cloud","ec2","rds","cost optimization"]
+published: true
+slug: "elasticsearch-opensearch-to-graviton"
+---
+
+## Introduction
+
+> _I have climbed highest mountains_  
+> _I have run through the fields. . ._
+> 
+> _I have run_  
+> _I have crawled_  
+> _I have scaled these city walls. . . ._
+> 
+> _But I still haven’t found what I’m looking for._
+> 
+> _– U2_
+
+U2’s Bono wrote these lyrics in 1987, long before he had 22 GRAMMYs under his belt. He wasn’t yet worth $700 million. Other things yet to come: the weirdness of [Zooropa](https://www.youtube.com/watch?v=KEcx9F_FW2U), the misguided decision to [invade our iphones](https://www.vox.com/xpress/2014/9/9/6127773/U2-new-album-free-itunes-jokes), and his enormously successful philanthropic efforts with Project RED to fight to end AIDS. We hope, by now, Bono has found what he’s looking for.  
+  
+But these lines could just have easily been written about engineers combing through heaps of data in the cloud, until very recently. The lyrics change a bit, but the idea is the same: 
+
+_I have searched through all the cloud,_  
+_Sifted through each byte and sound,_  
+_Only to be let down_  
+_Only to be let down_
+
+_‘Cause I still haven’t found what I’m looking for_
+
+Fast forward to 2023, and this problem is largely solved by [Amazon OpenSearch Service](https://aws.amazon.com/opensearch-service/). It’s a high performance data searching and visualization platform used for monitoring log files, searching documents, and creating dashboards. Bonus: It’s incredibly fast, highly performant, and best in class for its use case. Today’s engineers CAN find what they’re looking for.  
+  
+So what’s the catch? As with many Amazon services, it’s not so much a catch as a must-do configuration. OpenSearch isn’t configured to its optimal price vs. performance out of the gate — and there are some steps you should take (like running it on Graviton) that can result in big savings. (Or as U2 themselves said it on 1988’s Desire: “Money money money money money money, money money.”)
+
+But enough about U2. In this fixer blog, we talk about the increased price-performance which can be achieved with Graviton instances, how to find and update your instances, and of course how to use CloudFix to automate this process.
+
+## Table of contents
+
+-   [OpenSearch vs ElasticSearch: A fork in the road](#opensearch-elasticsearch)
+-   [Why Graviton?](#why-graviton)
+-   [Price and performance comparison](#price-performance-comparison)
+-   [How to prepare OpenSearch for a Graviton migration](#prepare-opensearch)
+-   [How to identify OpenSearch clusters and migrate them to Graviton](#identify-opensearch-clusters)
+-   [CloudFix to the rescue!](#automate-with-cloudfix)
+
+## OpenSearch and ElasticSearch, a fork in the road
+
+First, let’s clear up some common confusion. This article refers to AWS' OpenSearch Service. The OpenSearch Service can run either ElasticSearch, or AWS' fork called OpenSearch. Most of you are familiar with this “fork in the road” story, but in case you aren’t, here’s the short version:  
+  
+[ElasticSearch](https://www.elastic.co/?ultron=B-Stack-Trials-AMER-US-W-Exact&gambit=Stack-Core&blade=adwords-s&hulk=paid&Device=c&thor=elasticsearch) (founded by Elastic.co, not AWS) began in 2010 as a free and open platform for searching and visualizing documents. The core software today is comprised of 3 pieces: **E**lasticSearch, **L**ogstash, and **K**ibana, and this trio is often referred to as the **ELK** stack. 
+
+AWS launched a (paid) managed ElasticSearch service in 2015, called Amazon ElasticSearch Service. 
+
+That’s where the drama heats up: In response, Elastic.co began offering their own paid managed service. This caused a bit of a rift, so Amazon forked the ElasticSearch code, creating [OpenSearch](https://opensearch.org/).
+
+The article _[Once frenemies, Elastic and AWS are now besties](https://venturebeat.com/business/once-frenemies-elastic-and-aws-are-now-besties/)_ gives a good history. The summary: the AWS OpenSearch Service can run OpenSearch or ElasticSearch up to version 7.10 (the final open source version of ElasticSearch), and AWS and Elastic are now getting along like Bono and the Edge.  
+  
+Most importantly: the Graviton cost savings fixer we talk about in this article applies to both OpenSearch and ElasticSearch. Read on for supported versions. 
+
+## Why Graviton for OpenSearch?
+
+At Aurea CloudFix, we are big fans of the [Graviton family of CPUs](https://aws.amazon.com/pm/ec2-graviton/?trk=3478554f-e06b-44d5-8171-41d0ea80c8c9&sc_channel=ps&ef_id=%7Bgclid%7D:G:s&s_kwcid=AL!4422!3!544066093413!e!!g!!amazon%20graviton!13344186629!127251221455). These processors were custom designed by AWS to support server workloads in a cost-effective manner. They were [first introduced at re:Invent 2018](https://aws.amazon.com/blogs/aws/new-ec2-instances-a1-powered-by-arm-based-aws-graviton-processors/) and are now in their third generation. There are many [new Graviton instance types](https://aws.amazon.com/blogs/aws/new-graviton3-based-general-purpose-m7g-and-memory-optimized-r7g-amazon-ec2-instances/) available for network-intensive and high performance computing. Rather than x86, Graviton processors use the [ARM architecture](https://en.wikipedia.org/wiki/ARM_architecture_family), which allows for simpler and less expensive microchips.  
+
+In fact, the venerable Apple [M1](https://en.wikipedia.org/wiki/Apple_M1) and [M2](https://en.wikipedia.org/wiki/Apple_M2) processors are also using ARM. On a price-performance scale, the Graviton has shown an [average of 40% improvement](https://pages.awscloud.com/rs/112-TZM-766/images/2020_0501-CMP_Slide-Deck.pdf) vs comparable x86 instances. And, the great part about ARM/Graviton is that most code which runs on an x86 will run on ARM with little effort.
+
+In AWS parlance, the OpenSearch Service is an AWS Managed Service. Instead of simply giving you access to a blank computational slate, AWS manages the entire software stack for you. They take care of patching, monitoring, hardware updates, etc. In short, they are doing all of the administrative work, and providing you with a functioning OpenSearch / ElasticSearch server, ready for your use. 
+
+If Amazon is managing the service, the question then becomes, does the underlying architecture matter? The answer is a firm no. You are paying Amazon to make running OpenSearch their problem, not yours. However, they still give you choice in terms of the underlying instance type and size running your OpenSearch cluster. 
+
+Logically, if you are paying for a managed service, you should be striving to get the most for your money, and this means switching OpenSearch to run on the AWS Graviton processor. In the next section, we’ll show you why, comparing price and performance of Amazon’s CPU choices for OpenSearch. 
+
+## Price and performance Comparison
+
+Let’s start with the money.  
+  
+Per usual with AWS, comparing all the instance prices is a daunting task since there are so many different combinations of instances to look at. In the following table, we look at large instance sizes, each 2 vCPU’s. The m-series have 8 GiB of memory, and the c-series has 4. Looking at the m series instance, we see that the Intel based m5.large is the most expensive, followed by the AMD-based m6a.large, and finally the Graviton-based m6g.large is cheapest. This pattern also follows with the c-series instances. 
+
+**Instance name**
+
+**CPU**
+
+**Price**
+
+**vCPU**
+
+**Memory**
+
+**Storage**
+
+**Network performance**
+
+m5.large
+
+Intel Xeon 8000
+
+$0.096
+
+2
+
+8 GiB
+
+EBS Only
+
+Up to 10 Gigabit
+
+m6a.large
+
+AMD EPYC Gen 3
+
+$0.086
+
+2
+
+8 GiB
+
+EBS Only
+
+Up to 12.5 Gigabit
+
+m6g.large
+
+AWS Graviton 2
+
+$0.077
+
+2
+
+8 GiB
+
+EBS Only
+
+Up to 10 Gigabit
+
+c5.large
+
+Intel Xeon Cascade Lake
+
+$0.085
+
+2
+
+4 GiB
+
+EBS Only
+
+Up to 10 Gigabit
+
+c6a.large
+
+AMD EPYC Gen 3
+
+$0.077
+
+2
+
+4 GiB
+
+EBS Only
+
+Up to 12.5 Gigabit
+
+c6g.large
+
+AWS Graviton 2
+
+$0.068
+
+2
+
+4 GiB
+
+EBS Only
+
+Up to 10 Gigabit
+
+_**Selection of Instance Prices**, March 2023_  
+_Source: [https://aws.amazon.com/ec2/pricing/on-demand/](https://aws.amazon.com/ec2/pricing/on-demand/)_ 
+
+From a performance perspective, comparing CPUs is not quite an apples to apples comparison, but in this case the Graviton is the [Honeycrisp](https://www.vox.com/culture/2016/10/6/13078268/honeycrisp-apple-explainer-club-apples#:~:text=The%20texture%20of%20a%20Honeycrisp,clarified%20sweetness%20that's%20almost%20frosty.) of the bunch (TLDR: it’s the perfect apple). In more technical, less fruit-flavored terms, Graviton vCPUs have some distinct advantages compared to Intel or AMD vCPUs. Quoting from AWS’ [Optimizing for performance](https://docs.aws.amazon.com/whitepapers/latest/aws-graviton2-for-isv/optimizing-for-performance.html) document:
+
+_One of the major differences between AWS Graviton2 instance types and other instance types is their vCPU to physical processor core mapping. Every vCPU on a Graviton2 processor is a physical core. This means there is no Simultaneous Multi-Threading (SMT) and more isolation between vCPUs. By contrast, every vCPU on a 5th generation instance type with Intel processor (such as M5, C5, and R5) is a hyper-thread. This means vCPUs share resources and there is less isolation than in the case of Graviton2._
+
+Chalk one up for the Graviton2. Since each vCPU is an actual CPU core, this is an advantage for compute intensive server workloads like OpenSearch.
+
+Narrowing the lens to OpenSearch pricing, you’ll see that the same price difference applies.
+
+**Instance name**
+
+**CPU**
+
+**vCPU**
+
+**Memory**
+
+**Storage**
+
+**Price**
+
+m5.large.search
+
+Intel Xeon 8000
+
+2
+
+8
+
+EBS Only
+
+$0.142
+
+m6g.large.search
+
+AWS Graviton 2
+
+2
+
+8
+
+EBS Only
+
+$0.128
+
+c5.large.search
+
+Intel Xeon Cascade Lake
+
+2
+
+4
+
+EBS Only
+
+$0.125
+
+c6g.large.search
+
+AWS Graviton 2
+
+2
+
+4
+
+EBS Only
+
+$0.113
+
+_**Selection of OpenSearch Prices**, March 2023_  
+_Source: [https://aws.amazon.com/opensearch-service/pricing/](https://aws.amazon.com/opensearch-service/pricing/)_ 
+
+In case you still haven’t found it, here’s what you’re looking for: **The Graviton-based instances are 10 percent cheaper than their x86 counterparts**. And, as we discussed above, with Graviton processors you get more physical cores, which means better performance for compute-intensive workloads.
+
+## How to prepare OpenSearch for a Graviton migration
+
+Before you jump into the savings head first, you need to make sure a particular OpenSearch / ElasticSearch domain can be migrated to Graviton. A key term in this discussion is an OpenSearch “domain”, which is a logical container for an OpenSearch or ElasticSearch cluster. A cluster contains a collection of nodes, which are individual instances. These nodes hold the search index, and power the search and visualization functionality.
+
+OpenSearch domains are defined by the version of OpenSearch or ElasticSearch that they are running, the storage type and, of course, the instance type powering the cluster. Quoting the OpenSearch Service documentation, here are the supported versions:
+
+_OpenSearch Service currently supports the following OpenSearch versions:_
+
+-   _2.5, 2.3, 1.3, 1.2, 1.1, 1.0_
+
+_OpenSearch Service also supports the following legacy Elasticsearch OSS versions:_
+
+-   _7.10, 7.9, 7.8, 7.7, 7.4, 7.1_
+-   _6.8, 6.7, 6.5, 6.4, 6.3, 6.2, 6.0_
+-   _5.6, 5.5, 5.3, 5.1_
+-   _2.3_
+-   _1.5_
+
+Of all the possible software versions, the AWS Graviton is supported on any version of OpenSearch and versions 7.9 and 7.10 of legacy ElasticSearch. For more details on CPU types and OpenSearch, see the [_Supported Instance Types_](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/supported-instance-types.html) document.
+
+All of this talk about versions can be summarized by saying: before we can use the OpenSearch Service with Graviton, we must first make sure the versions are compatible. To migrate an ElasticSearch 6.8 instance to a 7.9 or 7.10 instance, the suggested approach is to:
+
+1.  Take a manual snapshot of the 6.x domain
+2.  Restore the snapshot to a 7.x **test** domain
+3.  Thoroughly test to make sure there are no issues
+4.  Restore the snapshot to a 7.x **production** domain
+
+See [Upgrading Amazon OpenSearch Service domains for details.](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/rename.html) Note that the 6.x to 7.x upgrade should not be automated as there are breaking changes. 
+
+For ElasticSearch versions 7.1, 7.4, 7.7, and 7.8, these can be upgraded to 7.9 or 7.10 using the AWS Management console. The steps are listed in the [Starting an upgrade (console)](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/version-migration.html#starting-upgrades) section of the Amazon OpenSearch Service documentation. As with any upgrade, the most important part is to take a snapshot first as a precautionary measure.
+
+_**Summary:**_ Any version of OpenSearch and versions 7.9 and 7.10 of ElasticSearch can be run on either Intel or AWS’ Graviton processor. Since Graviton is the more cost effective processor and AWS is managing all of the behind-the-scenes complexity, it makes sense to migrate your OpenSearch instances to Graviton.
+
+## How to identify OpenSearch clusters and migrate them to Graviton
+
+The first step in migrating OpenSearch clusters is to find them! We want to find OpenSearch domains for ElasticSearch 7.9 or 7.10, or any OpenSearch domain. To do what, we can use the `list-domain-names` command.
+
+![Using the aws CLI to list OpenSearch domain names](/media/uploads/opensearch-list-domain-names.png)
+
+For each domain name returned by the result, we want to use the `describe-domain` command to get the `DomainName`, `EngineVersion`, and `InstanceType`.
+
+![Using the aws CLI to describe a particular OpenSearch domain](/media/uploads/opensearch-describe-domain.png)
+
+Using [jq](https://stedolan.github.io/jq/), one of the best command line JSON filters, we can combine these commands into a quick bash script.
+
+![Use bash, jq, and the aws cli to list the domain name, engine version, and instance type for all domains](/media/uploads/script-domain-versions.png)
+
+This script will identify all OpenSearch Service clusters which are compatible with the Graviton. Note that this script will return all clusters, even ones which are _already_ running the Graviton. To identify those which can be converted, you need to filter on the `instance_type`.
+
+Once you have identified the cluster, you can perform the migration. This is done with the `update-domain-config` command.
+
+![Use the aws CLI to update the domain configuration.](/media/uploads/opensearch-update-domain-config.png)
+
+Once you have issued this command, you can repeatedly check the status until the `InstanceType` matches the one which was specified, in this case the `m6g.large.search` instance.
+
+We recommend that you start by swapping like-for-like instance types, where `$SIZE` describes the different instance sizes, such as `large`, `xlarge`, `2xlarge`, etc.  
+  
+
+-   `**Compute Optimized**`  
+    `c5.$SIZE.search ⇒ c6g.$SIZE.search`  
+    `c4.$SIZE.search ⇒ c6g.$SIZE.search`  
+      
+    
+-   `**General Purpose**`  
+    `m5.$SIZE.search ⇒ m6g.$SIZE.search`  
+    `m4.$SIZE.search ⇒ m6g.$SIZE.search`  
+    `m4.$SIZE.search ⇒ m6g.$SIZE.search`  
+      
+    
+-   `**Memory Optimized**`  
+    `r5.$SIZE.search ⇒ r6g.$SIZE.search`  
+    `r4.$SIZE.search ⇒ r6g.$SIZE.search`  
+    `r3.$SIZE.search ⇒ r6g.$SIZE.search`
+
+If you are running a t-series OpenSearch Service cluster, these are very low resource instance  types which do not have an immediate equivalent in the Graviton family. For these cluster types, it is not prudent to change the instance type to Graviton.
+
+## CloudFix to the rescue!
+
+By now, you’re probably familiar with CloudFix, but it’s always worth a reminder: CloudFix can automate this entire process for you in a few clicks.  
+
+For all eligible versions of ElasticSearch and all OpenSearch domains, CloudFix will automatically identify and propose the change of instance type to Graviton. As part of the process, it automatically picks a corresponding instance type from the c-, m-, or r-series of instances, matches instance and cluster sizes, and creates a proposed change. All you need to do: approve the changes.
+
+Any OpenSearch version is eligible, but ElasticSearch below version 7.9 must be upgraded to 7.9 or 7.10 before they can use AWS Graviton. This process of upgrading ElasticSearch versions is the one part of this process that CloudFix can’t (and shouldn’t) automate for you: there can be breaking changes between versions. Be sure to follow the [Upgrading Amazon OpenSearch Service domains](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/version-migration.html) closely and you’ll be just fine.  
+
+Once you have domains which are eligible, CloudFix can transition these to the AWS Graviton. You’ll enjoy at least a 10% price reduction for each cluster which gets migrated to the Graviton, plus [improved performance](https://aws.amazon.com/blogs/big-data/improved-performance-with-aws-graviton2-instances-on-amazon-opensearch-service/). As always, AWS Cost optimization is often about tradeoffs (Bono lyric: It moves in mysterious ways), but in this case it is a win-win: with a migration to AWS Graviton, [it’s a beautiful day](https://www.youtube.com/watch?v=co6WMzDOh1o).

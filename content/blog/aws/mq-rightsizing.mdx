@@ -1,0 +1,248 @@
+---
+title: "Cut Your Amazon MQ Costs by 30%: Introducing CloudFix MQ Rightsizing"
+description: "Many organizations overprovision Amazon MQ brokers based on peak expectations. CloudFix now automatically identifies underutilized MQ instances. Average savings: 28-30% on Amazon MQ costs."
+date: 2025-08-03 15:59:59
+modified: 2025-08-04 15:47:18
+category: "AWS"
+tags: ["AWS","cloud","ec2","rds","storage"]
+published: true
+slug: "mq-rightsizing"
+---
+
+[Amazon MQ](https://www.google.com/aclk?sa=l&ai=DChsSEwi65vnLge-OAxUWLa0GHYHOKK4YACICCAEQABoCcHY&ae=2&aspm=1&co=1&ase=2&gclid=CjwKCAjwkbzEBhAVEiwA4V-yqkvEk1SpxGRWmRacTo-CyaMBwSpieNZbVEKa9jtD_FFdIHZ_Sdn-axoC82oQAvD_BwE&category=acrcp_v1_51&sig=AOD64_04RzaowC-7_SIGiq9fFZ4MINFWUQ&q&nis=4&adurl&ved=2ahUKEwiNyPXLge-OAxW-LTQIHUzxMyEQ0Qx6BAgbEAE) is a managed message broker service. [Launched at reInvent 2017](https://aws.amazon.com/blogs/aws/amazon-mq-managed-message-broker-service-for-activemq/) Amazon MQ supports Apache Active MQ and Rabbit MQ. The purpose of Amazon MQ is deliver messages to different parts of a distributed application. In this blog post, we will talk about MQ pricing, how we quanitify the utilization of MQ brokers, and the approach for resizing them.
+
+# Pricing of MQ
+
+Amazon MQ, similar to RDS, has special instances with a prefix. These are instances which differ from their non-specialized instances in the preinstalled software. Below is a table comparing the pricing of the MQ instances compared to their non-MQ counterparts.
+
+Model
+
+vCPU
+
+Memory
+
+Amazon MQ  
+($/hr)
+
+EC2 On-Demand  
+($/hr)
+
+Price Ratio
+
+mq.t3.micro
+
+2
+
+1 GiB
+
+$0.02704
+
+$0.01040
+
+2.6
+
+mq.m5.large
+
+2
+
+8 GiB
+
+$0.28800
+
+$0.09600
+
+3.0
+
+mq.m5.xlarge
+
+4
+
+16 GiB
+
+$0.57600
+
+$0.19200
+
+3.0
+
+mq.m5.2xlarge
+
+8
+
+32 GiB
+
+$1.15200
+
+$0.38400
+
+3.0
+
+mq.m5.4xlarge
+
+16
+
+64 GiB
+
+$2.30400
+
+$0.76800
+
+3.0
+
+mq.t2.micro
+
+1
+
+1 GiB
+
+$0.03000
+
+$0.01160
+
+2.59
+
+mq.m4.large
+
+2
+
+8 GiB
+
+$0.30000
+
+$0.10000
+
+3.0
+
+_Amazon MQ pricing is typically 2.6–3x higher than running the same instance type as a standard EC2 VM. This premium covers managed service features, but also means that right-sizing unused capacity has a major cost impact._
+
+As we see in the table, MQ instances have a 2.5-3x markup. As enthusiastic as we are to right-size standard EC2 instance, it is therefore 2.5-3x more impactful to resize these oversized MC instances. CloudFix MQ Right Size Finder/Fixer Points:
+
+-   Similar to RDS, Amazon MQ charges hourly regardless of actual usage
+-   Similar to RDS, Amazon MQ instances are 2-3x more expensive than their non-MQ counterparts
+-   There are costs related to data transfer and storage. These can also be optimized, but the most impactful place to start is the instance sizes.
+-   MQ message broker instances are often found running at <20% CPU and <40% memory utilization
+-   Real cost impact: Thousands in unnecessary annual spend per broker
+
+**A Concrete Example:** A `mq.m5.4xlarge` instance costs $4.608/hr, or $39.8K/year at on-demand rates. Stepping down **one instance size** would mean a `mq.m5.2xlarge` at $19.9K/year, for nearly $20K/year of annualikzed savings. This is for a single step size for a single instance.
+
+Now that we have made the case for this, lets have a look at CloudFix' Finder/Fixer. Let's first look at how define oversized MQ instances, then find them, and finally resize them. Of course, CloudFix can do this all for you! But, you should be able to see and understand exactly how this works.
+
+# How CloudFix's MQ Rightsizing Finder Works
+
+## Finding MQ Instances
+
+The first step we do is to find all of the MQ instances across our organizations. The easiest way to do this is to use the [Cost and Usage Report](/blog/aws-foundational-skills-cost-and-usage-report-cur/). By using the CUR, you can get an organizaiton-level view of all of the MQ instances. The essentials of the CUR query is:
+
+```sql
+SELECT
+      line_item_usage_account_id AS account_id,
+      product_region AS region,
+      line_item_resource_id AS resource_id,
+      ROUND(SUM(pricing_public_on_demand_cost) / 7.0 * 365.0, 2) AS annualized_public_cost,
+      ROUND(SUM(line_item_unblended_cost) / 7.0 * 365.0, 2) AS annualized_amortized_cost
+  FROM cloudfixdb.cloudfix_cur
+  WHERE
+      line_item_product_code = 'AmazonMQ'
+      AND line_item_usage_type LIKE '%Usage:%'
+      AND line_item_usage_start_date >= current_date - interval '8' day
+      AND line_item_usage_end_date < current_date - interval '1' day
+      AND (resource_tags_user_cloudfix_dont_fix_it IS NULL OR resource_tags_user_cloudfix_dont_fix_it = '')
+  GROUP BY
+      line_item_usage_account_id,
+      product_region,
+      line_item_resource_id
+  HAVING
+      ROUND(SUM(line_item_unblended_cost) / 7.0 * 365.0, 2) > {cost_threshold}
+```
+
+Summary - how to find AmazonMQ instances:
+
+-   Line item product code; Amazon MQ
+-   Usage type: '%Usage:%'
+-   Used within the past week
+-   Not tagged with a 'don't fix it tag'
+-   Filter for cost over a certain amount (deal with meaningful usage first)
+
+## How to Quantify MQ utilization?
+
+As we talked about above, MQ Broker Instances are just EC2 instances preinstalled software and earmarked for the MQ service. To quantify their utilization, we can look at CloudWatch metrics. We are interesed in CPU utilization and Memory utilization. By default, we look at 30 days of data (configurable to 60 days) and calculate the required vCPU and Memory based on the historyical usage. The exact formula that we use is:
+
+```typescript
+// Required capacity calculation
+const requiredVcpu = Math.ceil(
+  currentSpecs.vcpu * (cpuPercent / 100) * (1 + cpuSafetyMarginPercent / 100)
+);
+
+const requiredMemoryGiB =
+  memoryPercent * approxUsedMemory * (1 + memorySafetyMarginPercent / 100);
+```
+
+Lets talk this through in words. Say we have 8 cpus and we are using them at 20 percent. There is a certain amount of work being done here, and that same amount of work could be done by 4 of the same CPUs working at 40 percent, or 2 of the CPUs working at 80 percent. If our safety margin is 15 percent, then we would be at 95%, and the 2 CPUs could handle the load safely. We get the "20 percent" in this example from CloudWatch. We use P95-level metrics at 5 minute intervals, meaning that we are looking at the utilization at the 95th percentile. This is because all CPUs run at 100% for short periods of time. P95 at 5 minute intervals represents a reasonable metric for how hard the CPU is actually working. We do the same calculation for memory. Once we have the vCPU and memory requirements for a particular MQ instance, we can pick the cheapest instance which meets those requirements. For example, if we calculate that we need 3 vCPUs and 13 GiB of RAM, the closest instance that meets or exceeds these requirements is the mq.m5.xlarge, which has 4 vCPUs and 16 GiB of RAM.
+
+## The Right-Sizing Process
+
+Often times, the actual application of the fix is the easiest. You can modify your Amazon MQ broker instance type using the [AWS CLI](https://docs.aws.amazon.com/cli/latest/reference/mq/):
+
+```sh
+aws mq modify-broker --broker-id <your-broker-id> --host-instance-type <new-instance-type>
+```
+
+By default, the modification will happen during the next maintainence window. If you want to trigger an immediate resize:
+
+```sh
+aws mq reboot-broker --broker-id <your-broker-id>
+```
+
+When the specified broker restarts, it will be at the appropriate size...and price!
+
+## What about Multi-AZ?
+
+The good news, you can apply the same algorithm to all MQ deployment modes:
+
+-   `SINGLE_INSTANCE`
+-   `ACTIVE_STANDBY_MULTI_AZ`
+-   `CLUSTER_MULTI_AZ`
+
+A bit of care needs to be taken to make sure to switch to instances which support the deployment mode.
+
+# CloudFix Finder/Fixer
+
+_Advanced Finder/Fixer_
+
+This optimization is implemented in CloudFix as the 'Rightsize Amazon MQ Instances' Finder/Fixer. This is an 'Advanced' Finder/Fixer, because if you have individual MQ broker instances which are points of failure, you will want to do this in a maintainence window.
+
+_Advanced may be a bit of a misnomer here. The algorithm and implementation are aquite straightforward. It is only because of the maintainence window that this is classified as Advanced._
+
+![Advanced Finder Fixer](/media/uploads/mq-scr-0.png)
+
+_Click on the Advanced Finder/Fixer_
+
+![Right Size Amazon MQ Instances](/media/uploads/mq-scr-1.png)
+
+_Right Size Amazon MQ Instances_
+
+![](/media/uploads/mq-scr-2-scaled.png)
+
+_Select a MQ Right-Sizing Recommendation_
+
+## Facts about CloudFix MQ Rightsizing Finder/Fixer
+
+-   **Comprehensive Engine Support**
+    -   [ActiveMQ](https://aws.amazon.com/amazon-mq/): Analyzes CPUUtilization and MemoryUsage
+    -   [RabbitMQ](https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/working-with-rabbitmq.html): Tracks SystemCpuUtilization and memory ratios
+-   **Risk-Free Optimization**
+    -   Preserves peak performance with safety buffers
+    -   Clear visibility into downtime requirements (5-10 minutes)
+    -   Maintains all broker configurations and messages
+-   **Actionable Insights**
+    -   Recommendations that can be immediately implemented without a performance impact
+    -   Side-by-side comparison: current vs recommended
+    -   Projected annual savings calculations
+
+## Getting Started
+
+Available now for all CloudFix customers, in the 'Advanced' section. See the screenshots above for details.
+
+# Wrapping up and Call to Action
+
+If you are a CloudFix customer, login to CloudFix and go check out this new Finder/Fixer. If not, you can still utilize this technique to find and resize Amazon MQ brokers. Most importantly, it is consistent and reliable automation that delivers savings over the long run.

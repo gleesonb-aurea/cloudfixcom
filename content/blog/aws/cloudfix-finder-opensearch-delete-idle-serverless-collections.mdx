@@ -1,0 +1,91 @@
+---
+title: "CloudFix Finder: OpenSearch Delete Idle Serverless Collections"
+description: "Amazon OpenSearch Serverless collections that remain idle continue to consume OpenSearch Capacity Units (OCUs) and incur costs. This CloudFix Finder helps you i..."
+date: 2025-04-09 18:02:22
+modified: 2025-04-09 18:02:22
+category: "AWS"
+tags: ["AWS","cloud","serverless","monitoring","backup"]
+published: true
+slug: "cloudfix-finder-opensearch-delete-idle-serverless-collections"
+---
+
+Amazon OpenSearch Serverless collections that remain idle continue to consume OpenSearch Capacity Units (OCUs) and incur costs. This CloudFix Finder helps you identify and remove unused serverless collections, enabling you to optimize your OpenSearch costs without impacting active workloads.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Implementation Guide](#implementation-guide)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+Amazon OpenSearch Serverless automatically provisions and scales compute resources using OpenSearch Capacity Units (OCUs). While this eliminates the need to manage infrastructure, idle collections still consume OCUs and generate costs. This Finder analyzes collection usage patterns to identify completely inactive collections that can be safely removed to reduce unnecessary expenses.
+
+## AWS Services Affected
+
+![Amazon OpenSearch Service](/media/uploads/OpenSearch-Service.svg)  
+
+[Amazon OpenSearch Serverless](https://aws.amazon.com/opensearch-service/serverless/)
+
+## How It Works
+
+### Finder Component
+
+The Finder analyzes your OpenSearch Serverless collections by:
+
+-   Monitoring collection activity metrics at 5-minute intervals over 30 days:
+    -   Ingestion data rate
+    -   Search request rate
+-   Identifying collections with zero activity across all metrics
+-   Calculating potential cost savings using AWS Cost and Usage Report data
+-   Excluding collections tagged with ‘dont\_fix\_it’
+-   Generating detailed removal recommendations
+
+### Implementation Guide
+
+To implement the collection removal recommendations:
+
+1.  Review the Finder’s recommendations and cost analysis
+2.  Verify the collections are truly unused:
+    -   Check for any planned future use
+    -   Confirm with application teams
+    -   Review any dependencies
+3.  If needed, create backups of collection data
+4.  Delete the identified collections through:
+    -   AWS Management Console
+    -   AWS CLI
+    -   Infrastructure as Code updates
+5.  Update any relevant documentation
+6.  Monitor for any unexpected impacts
+
+## FAQ
+
+### What are the potential savings?
+
+The savings equal the annualized cost of maintaining the idle collections, based on their OCU consumption. The exact amount is calculated using the AWS Cost and Usage Report data from the past 30 days.
+
+### Is this change automatic?
+
+No. This is a Finder-only feature that provides recommendations for collection removal. You must manually implement the changes through the AWS console or other management tools.
+
+### How do you determine if a collection is idle?
+
+A collection is considered idle if it shows no ingestion data rate or search request rate activity over the past 30 days, measured at 5-minute intervals. This comprehensive monitoring ensures we only recommend removing truly unused collections.
+
+### Can changes be rolled back?
+
+While collection deletion can be reversed by recreating the collection, the data will be lost unless backed up beforehand. We recommend creating backups of collections before deletion if there’s any possibility the data might be needed in the future.
+
+### Does this change require downtime?
+
+No. Since we only recommend removing completely idle collections, there should be no impact on active workloads or system availability.
+
+## Related Resources
+
+-   [Amazon OpenSearch Serverless Documentation](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless.html)
+-   [Amazon OpenSearch Serverless Pricing](https://aws.amazon.com/opensearch-service/pricing/serverless/)
+-   [Support Article: OpenSearch Idle Serverless Collections](https://support.cloudfix.com/article/17031-opensearch-idle-serverless-collections)

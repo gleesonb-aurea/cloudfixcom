@@ -1,0 +1,95 @@
+---
+title: "The Shift from IO1/IO2 to GP3 RDS DB Instance Volumes, with CloudFix"
+description: "AWS's Relational Database Service (RDS) is an essential part of many cloud infrastructures, providing robust, scalable, and reliable database services. But did..."
+date: 2024-01-29 17:49:31
+modified: 2024-01-29 17:49:31
+category: "AWS"
+tags: ["AWS","cloud","s3","rds","cost optimization"]
+published: true
+slug: "the-shift-from-io1-io2-to-gp3-rds-db-instance-volumes"
+---
+
+AWS's Relational Database Service (RDS) is an essential part of many cloud infrastructures, providing robust, scalable, and reliable database services. But did you know that the underpinning storage type can significantly impact your costs? At CloudFix, we specialize in automated AWS cost optimization, and our latest innovation—the RDS IO1/IO2 to GP3 Finder/Fixer—identifies underutilized (and extremely expensive) IO1/IO2 volumes and helps you replace them with much cheaper GP3 instances. You may not want to do this for _all_ RDS database instances (especially production ones), but in many cases, this is absolutely the right choice and there are massive savings to be found.
+
+Let's dive into the details about performance and cost differences between IO1/IO2 and GP3, and the CloudFix Finder/Fixer, allowing you to transition these volumes and save!
+
+## 1\. The Role of EBS Volumes in RDS
+
+Amazon RDS Database Instances leverage Elastic Block Store (EBS) volumes for data storage, offering persistence and high availability. Using EBS volumes allows for simple backup to S3, point-in-time recovery, and scalability, which are crucial for maintaining an efficient and agile database environment.
+
+When you create an RDS database instance, Amazon automatically sets up an EBS volume for that instance. All your database's data files, logs, and backups are stored here. At the time you create the EBS instance, whether in the console or on the command line, you will be presented with the opportunity to choose your EBS volume type. It is quite easy to select Provisioned IOPS (io1) volumes, and the RDS Console does not alert you that you are about to spend a whole lot more! This is the dreaded “default setting” which is not the right choice!
+
+![Change default storage setting for RDS](/media/uploads/Change-default-storage-setting-for-RDS.gif)
+
+The storage size and range of provisioned IOPS that can be used for an RDS instance depends on the database engine. See the [Amazon RDS DB instance storage documentation](https://docs.aws.amazon.com//AmazonRDS/latest/UserGuide/CHAP_Storage.html#USER_PIOPS) for more information. Using EBS instances in the context of RDS comes with some special caveats. For example, quoting the above documentation:
+
+_For every RDS DB engine except RDS for SQL Server, when the storage size for gp3 volumes reaches a certain threshold, the baseline storage performance increases to 12,000 IOPS and 500 MiB/s. This is because of volume striping, where the storage uses four volumes instead of one. RDS for SQL Server doesn't support volume striping, and therefore doesn't have a threshold value._
+
+Understanding the performance bounds and tradeoffs associated with the different DB instance storage is quite involved. Luckily, if you are using this Finder/Fixer, the analysis has already been programmed and thoroughly tested. We are only going to recommend changes that will reduce costs while maintaining essentially the same performance \*.
+
+_\* with the exception of latency, which we address below._
+
+## 2\. Comparing IO1/IO2 and GP2/GP3 Performance and Pricing
+
+The best way to understand RDS pricing is to explore the [AWS Pricing Calculator](https://calculator.aws/#/createCalculator).
+
+For example, a 200GiB io1 volume, provisioned to 14000 IOPS, would cost **$2850 per month**. Of this cost, $50 is storage and the remaining is the Provisioned IOPS cost. For a comparable gp3 volume, 12000 IOPS is the base rate for a 200 GiB volume size, leaving 2000 billable gp3 IOPS. This would cost $80/month in IOPS. adding in the storage at a cost of $0.23/GiB/Month leads to a total cost of $126.00 per month.
+
+![Adjusting IOPS cost](/media/uploads/Adjusting-IOPS-cost.gif)
+
+This calculation still leaves a gap in terms of throughput. [A 200 GiB io1 volume can perform at a maximum of 4,000 MiB/s.](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html) This still leaves a performance gap, as the above gp3 volume was only provisioned to 500 MiB/s. If we need a comparable throughput, the max that gp3 can support at this time is 3200 MiB/s. This is 2700 MiB/s above the baseline rate, charged at $0.16/MiB for a $432 monthly rate.
+
+![Calculation results](/media/uploads/Calculation-results.gif)
+
+As we see, at a comparable size and IOPS, the gp3 volume will be $126/month, which is less than 5% of the $2850/month for the io1 volume of the same size. When maximizing the throughput of the gp3 volume to get as close to the io1 performance as possible, **the gp3 volume is 15% of the cost for 80% of the performance. This tradeoff is almost always a "no-brainer!"**
+
+The one dimension which cannot be matched between gp3 and io1/io2 is latency. gp3 offers "single digit millisecond" latency, while io1/io2 offer "sub-millisecond" latency. This is a large difference. If your applications is extremely sensitive to latency, then the price of io1/io2 may very well be worth paying.
+
+## 3\. When to use which?
+
+As we mentioned in the previous section, if your application is extremely sensitive to latency, the premium for io1/io2 must be paid. However, in our experience in running our cost-saving finder/fixers across thousands of accounts, we have found that many io1-backed RDS instances were running in dev/test environments. This happens for a couple of reasons:
+
+-   An effort to have identical dev/test an prod environments
+-   Copy/pasting IaC files without closely examining the details
+-   Not being aware of the large cost differences between the volume types
+
+For the vast majority of dev/test work, a high-performance database is complete overkill!
+
+## 4\. Introducing the CloudFix Finder/Fixer
+
+Our Finder/Fixer automates the transition process by identifying RDS volumes currently on the pricier IO1 or IO2 instances. To make sure that the gp3 instances are up for the job, we monitor CloudWatch metrics around IOPS and throughput. Details on which metrics are used to monitor EBS volumes [are available here](https://repost.aws/knowledge-center/ebs-cloudwatch-metrics-throughput-iops). Once we have found io1/io2 volumes with gp3 compatible usage rates, we calculate the potential savings and populate it in the CloudFix dashboard.
+
+**To see your potential savings** with this fixer, as well as a group of related RDS storage Finder/Fixers, go to the "RDS Optimize Instances" recommendations, located in the "Advanced Section."
+
+![](/media/uploads/CloudFix-screenshot-potential-savings-with-RDS-Optimize-Instances-fixer.png)
+
+Clicking on the Options button, and then "Show details" will bring up all of the details you need to execute the change and realize the "Potential Savings." In this example, we are seeing a highly over-provisioned oracle database. However, in this case the IOPS being used by the database (`Current Storage iops` in the screenshot) is within the capability of `gp3`, and will yield $12K+ in annualized savings! We won't complain about that.
+
+![CloudFix screenshot: Fix Parameters](/media/uploads/CloudFix-screenshot-Fix-Parameters.png)
+
+The command you will want to use is the `modify-db-instance` command. See [documentation](https://docs.aws.amazon.com/cli/latest/reference/rds/modify-db-instance.html).
+
+The basic usage is:
+
+```bash
+aws rds modify-db-instance \
+    --db-instance-identifier DB-INSTANCE-NAME \
+    --storage-type gp3 \
+    --apply-immediately
+```
+
+Note that the database will enter a `storage-optimization` state that may take several hours to complete. Normal database operations can happen during this state, but you cannot change the volume type again for another 6 hours. See [this AWS re:Post question for details](https://repost.aws/knowledge-center/rds-stuck-in-storage-optimization). The reference documentation for [working with RDS DB instances is located here](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PIOPS.StorageTypes.html). Note - this is currently a _Manual Fixer,_ in that the familiar "Execute" button is not yet enabled. This will be updated in the future to a fully executable Finder/Fixer.
+
+## 5\. Save Money with Automation - Make the Smart Move with CloudFix
+
+The savings that can be realized through this Finder/Fixer are substantial. There is no reason to pay for over-provisioned EBS volumes, especially in a dev/test environment, where most of these EBS-backed RDS instances are located.
+
+### For existing customers...
+
+Please have a look at the RDS Optimize Instances screen, located in the "Advanced" section of the CloudFix dashboard. This screen incorporates several RDS-related Finder/Fixers, and more are being added constantly!
+
+### For new customers...
+
+Using the relatively new gp3 EBS volume type has been a huge win for customers! Our blog post and accompanying Finder/Fixer, [Migrate from gp2 to gp3 for better performance and lower costs](/blog/migrate-gp2-to-gp3-better-performance-lower-costs/), is one of our most popular. This Finder/Fixer builds on the success of the general EBS Finder/Fixer and specializes the approach for RDS instances. The great thing about EBS volume migrations is that they can be done safely and without downtime. Now is a great time to start your [Free Savings Assessment](/assessment/) and find out exactly how much savings can be realized almost immediately.
+
+Stay tuned for next week's Finder/Fixer! Hint: it is also in the _RDS Optimize Instance_ family!

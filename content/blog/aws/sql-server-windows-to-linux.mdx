@@ -1,0 +1,124 @@
+---
+title: "EC2 SQL Server Windows to Linux Migration"
+description: "Running SQL Server on AWS MS SQL, short for Microsoft SQL Server, is widely used, and a worthy contender to MySQL, PostgreSQL, and Oracle. You may think, as I d..."
+date: 2025-03-09 23:43:38
+modified: 2025-03-09 23:44:22
+category: "AWS"
+tags: ["AWS","cloud","ec2","rds","security"]
+published: true
+slug: "sql-server-windows-to-linux"
+---
+
+# Running SQL Server on AWS
+
+MS SQL, short for Microsoft SQL Server, is widely used, and a worthy contender to MySQL, PostgreSQL, and Oracle. You may think, as I did, that MS SQL would be a Windows only product. I had no idea that MS SQL could run on Linux. Apparently, this has been the [case since mid 2017](https://www.channele2e.com/news/sql-server-for-linux-released)! Clearly Microsoft has evolved from the Steve Ballmer days. 
+
+You can run MS-SQL on AWS infrastructure in two main ways, on a self-managed [EC2 instance](https://docs.aws.amazon.com/sql-server-ec2/latest/userguide/sql-server-on-ec2-options.html#sql-server-on-ec2-options-ec2) or on [RDS for Microsoft SQL Server](https://docs.aws.amazon.com/sql-server-ec2/latest/userguide/sql-server-on-ec2-options.html). Since RDS is a managed service, you have no exposure to the underlying operating system. In this blog post we are going to focus on the first case - MS SQL on EC2 instances. Many of these instances are running Microsoft Windows. And, while the is well supported on AWS, it comes with an extra cost that you may not need to pay.
+
+This Finder/Fixer will help you identify EC2 instances running Windows and MS-SQL, and propose and calculate potential savings for moving these instances to Linux. I’ll state right up front, this is a Finder only. Since these are self-managed EC2 instances, we cannot automate moving the SQL instances. But we can calculate the potential savings, which will let you know if the effort of making the change is worthwhile.
+
+# CloudFix Finder Demo
+
+![Demo of Finder/Fixer for MSSQL Migration](/media/uploads/CloudFix-screen-recording-sql.gif)
+
+You will find this in the **Medium** category, under "SQL Server Migration Windows to Linux."
+
+# A Look at the Numbers
+
+     
+
+Instance Type
+
+vCPUs
+
+Memory (GiB)
+
+Linux Price ($/hour)
+
+Windows Price ($/hour)
+
+Windows Premium
+
+c6i.16xlarge
+
+64
+
+128
+
+$2.72
+
+$4.45
+
+63.6%
+
+r7i.16xlarge
+
+64
+
+512
+
+$4.23
+
+$5.96
+
+40.9%
+
+m6i.16xlarge
+
+64
+
+256
+
+$3.07
+
+$4.80
+
+56.4%
+
+## Why the Extra Cost?
+
+-   **Premium:** Windows instances cost 30-100% more than Linux equivalents
+-   **Cost Driver:** Premium primarily reflects Windows Server licensing fees
+-   **Scaling Impact:** Absolute price difference increases with instance size, though percentage difference typically decreases (100%+ for small instances vs. 30-50% for larger ones) with instance size
+-   **Instance Type Variations:**
+    -   General Purpose: 20-40% Windows premium
+    -   Compute Optimized: 50-100% Windows premium
+    -   Memory Optimized: 30-50% Windows premium
+-   **Consistency:** Premium percentages remain largely consistent across AWS regions
+
+## A Pricing Experiment
+
+Considering a mid-sized production cluster of 5 instances, lets do a pricing experiment.
+
+**Linux:** 5 instances × 3.072 $/hr × 720 hours / month = 11,059 $/month.
+
+**Windows:** 5 instances × 4.80 $/hr × 720 hours / month = 17,280 $/month.
+
+**Potential Savings:** $17,280.00 − $11,059.20 = 6,221 $/month in cost savings for one 5-node cluster.
+
+## **But wait, there’s more**
+
+If there was only one database instance, the savings would still be substantial. Most organizations that we work with have many databases scattered across the accounts within the AWS organization. The calculation above is for a single cluster. If you are running a centralized FinOps team, it will be worth building the institutional knowledge for how to transition these databases from Windows to Linux. 
+
+For a centralized FinOps team, the first step is to quantify the number of SQL Server Windows EC2 instances that are running within the organization: visit the CloudFix console and count the number of recommendations for this category. Survey the database owners and understand why they are running SQL Server, and if there are Windows-specific features that they need. Once you know which databases _can_ be migrated, then you can build a migration strategy. If possible, implement a chargeback strategy, with internal pricing that incentivizes RDS for SQL Server rather than self-managed EC2 instances. Develop org-specific guidance for how to do this migration.
+
+# **Migration Process**
+
+It would be great to be able to make this one a one-click change. However, in order to switch from Windows MS-SQL there are a few things to check. Here is a non-exhaustive list of things to check:
+
+-   Check for unsupported features using sys.dm\_db\_persisted\_sku\_features
+-   Verify database file paths and update from Windows (C:\\SQLData\\) to Linux (/var/opt/mssql/data/)
+-   Ensure FileStream is not used by checking sys.database\_filestream\_options
+-   Identify Windows-only OLE DB providers in linked servers using sys.servers
+-   Replace COM objects or Windows-dependent integrations with Linux-compatible alternatives
+-   Confirm Mixed Mode authentication is enabled with SERVERPROPERTY('IsIntegratedSecurityOnly')
+-   Configure Active Directory integration if using Windows Authentication
+-   Review SQL Server Agent Jobs in msdb.dbo.sysjobs and replace Windows-dependent scripts
+-   Verify Full-Text Search compatibility using sys.fulltext\_indexes
+-   Ensure database compatibility level is at least SQL Server 2017 (140) using sys.databases
+
+Checking all of these things will involve a non-trivial amount of engineering effort. You need to figure out if this engineering effort is worth it. That is where we come in. By helping you understand the potential cost savings, you can decide if the switch is worth it.
+
+# **Wrapping Up**
+
+Databases are one of the most expensive parts of your cloud spend. Running MSSQL on Windows on EC2 is **one of the most expensive ways to run a database on AWS**. You are paying more for licensing,  your administrative costs are higher, your data storage costs more, and you lose all of the flexibility of the managed services. Unless you absolutely need this particular software stack, you should consider switching.

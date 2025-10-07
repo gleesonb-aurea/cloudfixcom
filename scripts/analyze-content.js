@@ -28,18 +28,20 @@ function analyzeWordPressContent() {
         post_type,
         post_status
       FROM wp_posts
-      WHERE post_type IN ('post', 'resource')
+      WHERE post_type IN ('post', 'resources')
       ORDER BY post_date DESC
     `);
 
     const posts = postsQuery.all();
 
+    console.log(`Found ${posts.length} total posts/resources before filtering`);
+
     // Analyze content statistics
     const stats = {
-      totalPosts: posts.filter(p => p.post_type === 'post').length,
-      totalResources: posts.filter(p => p.post_type === 'resource').length,
-      recentPosts2024: posts.filter(p => p.post_type === 'post' && p.post_date.startsWith('2024')).length,
-      recentPosts2025: posts.filter(p => p.post_type === 'post' && p.post_date.startsWith('2025')).length,
+      totalPosts: 0,
+      totalResources: 0,
+      recentPosts2024: 0,
+      recentPosts2025: 0,
       totalWordCount: 0,
       postsWithExcerpt: 0,
       postsWithCategories: 0,
@@ -64,6 +66,15 @@ function analyzeWordPressContent() {
 
       stats.totalWordCount += wordCount;
       if (post.post_excerpt) stats.postsWithExcerpt++;
+
+      // Update statistics
+      if (post.post_type === 'post') {
+        stats.totalPosts++;
+        if (post.post_date.startsWith('2024')) stats.recentPosts2024++;
+        if (post.post_date.startsWith('2025')) stats.recentPosts2025++;
+      } else if (post.post_type === 'resources') {
+        stats.totalResources++;
+      }
 
       // For SQLite version without term relationships, we'll extract categories from content
       // in a more sophisticated migration script

@@ -1,0 +1,180 @@
+---
+title: "Migrate from gp2 to gp3 for better performance and lower costs"
+description: "\"In the tech world, cost savings and improved performance often go hand in hand.\" - Larry Page “You'd be crazy to NOT use gp3.” - Team CloudFix The quote by Lar..."
+date: 2023-02-23 16:15:38
+modified: 2023-09-25 15:00:00
+category: "AWS"
+tags: ["AWS","cloud","ec2","rds","migration"]
+published: true
+slug: "migrate-gp2-to-gp3-better-performance-lower-costs"
+---
+
+> "In the tech world, cost savings and improved performance often go hand in hand."
+> 
+> _\- Larry Page_
+
+> “You'd be crazy to NOT use gp3.”
+> 
+> _\- Team CloudFix_
+
+The quote by Larry Page, co-founder of Google, is a great truism of technology. Unlike many consumer products, where [superior performance typically comes with a higher price tag](https://www.lucidmotors.com/air), innovative technology often lets us do things both better and cheaper.
+
+Case in point: transitioning your EBS volumes from gp2 to gp3. gp3 is not only the latest and greatest model of general purpose EBS storage, it reduces costs regardless of your volume size. That’s a win for both performance and price, and it’s easier and faster to accomplish than you might think. Let’s dive in.
+
+## Why you’re probably paying too much for gp2
+
+gp3 was designed as the successor to gp2, an EBS volume type built for general purpose block storage. It is so versatile and practical that in our [io1/io2 to gp3 blog post](/blog/optimize-aws-elastic-block-storage-by-migrating-io1-and-io2-volumes-to-gp3/), we refer to gp3 as the “minivan” of the block storage world (and that’s a compliment – [minivans get the job done](https://i.redd.it/6mv1a492tht71.jpg). Go Team Odyssey!)
+
+How does gp3 compare to gp2 though? The [side-by-side comparison table from AWS](https://aws.amazon.com/ebs/general-purpose/) shows that gp3 offers the same durability, supported volume size, max IOPS per volume, and max IOPS per instance. gp3 also offers increased performance in terms of Max Throughput/Volume (1,000 MB/s vs 250 MB/s) and Max Throughput/Instance (10,000 MB/s).
+
+The main difference between gp2 and gp3, however, is gp3’s decoupling of IOPS, throughput, and volume size. This flexibility – the ability to configure each piece independently – is where the savings come in.
+
+On the opposite end of the spectrum, gp2 is quite inflexible. Sizing a gp2 volume involves considering both the storage and throughput requirements simultaneously, [as volume performance has a baseline of 3 IOPS / GB, at a minimum of 100 IOPS](https://aws.amazon.com/ebs/volume-types/). In other words, gp2 volume performance scales in proportion to volume size, until the 16,000 limit. As a result, gp2 volumes greater than 1TB are often oversized relative to the amount of data to be stored in order to increase the throughput.
+
+That’s why you’re probably paying too much for gp2. The extra TBs of storage capacity – and the money spent to enable it – are essentially wasted, as they were only necessary to increase the IOPS limit. Fortunately, there’s a better way: paying for only what you need with gp3.
+
+## gp2 vs. gp3: Price and performance compared
+
+When you look at the pricing page, gp3 pricing initially looks more complicated. Using Feb. 2023 prices in us-east-1 as a reference price, [AWS gives the pricing for gp2 and gp3](https://aws.amazon.com/ebs/general-purpose/) as follows:
+
+ 
+
+**gp3**
+
+**gp2**
+
+**Price**
+
+$0.08/GB-month  
+3,000 IOPS free and  
+$0.005/provisioned IOPS-month over 3,000;  
+125 MB/s free and  
+​$0.04/provisioned MB/s-month over 125
+
+$0.10/GB-month
+
+At first glance, the case for gp3 isn’t very compelling (another way gp3 is like a minivan). The cost savings of only $0.02/GB-month doesn’t seem like much, especially when there are additional costs associated with IOPS and throughput. gp3 also seems more complex (which usually means more expensive), as there are three variables rather than one.
+
+But those variables are actually a really good thing. In reality, different workloads vary along these three dimensions, and gp2’s one-size-fits-all pricing doesn’t take them into account. With gp3, on the other hand, you can precisely dial in your storage (and costs) based on your specific requirements. It’s like the minivan’s ability to configure seating and cargo depending on what you need, from hauling seven kids to soccer practice to going on a family road trip. SUVs and crossovers can’t do that – and neither can gp2.
+
+**The key takeaway here: gp3 is less expensive than gp2 because IOPS are provisioned independent of volume size**, preventing overprovisioning. This means that using gp3 can lead to significantly greater savings than it may initially appear.
+
+## How much can you save with gp3?
+
+Consider a 2 TB volume which requires 9000 IOPS. To provision these volumes:
+
+-   gp2: 3000GB \* $0.10/GB-month = $300 per month.
+-   gp3:  
+    
+    Storage
+    
+    2000GB \* $0.08/GB-month
+    
+    $160
+    
+    IOPS
+    
+    _3000 IOPS free. We require 9000 IOPS. Thus, we provision 6000 IOPS:_  
+    6000 IOPS \* $0.005/provisioned IOPS-month
+    
+    $30
+    
+    Throughput
+    
+    _125 MB/s free._  
+    _Provision another 125 MB/s to match gp2 performance._  
+    125 MB/s \* $0.04/provisioned MB/s-month
+    
+    $5
+    
+    **or**
+    
+    _Provision up to max throughput, 1000 - 125 = 875._  
+    875 MB/s \* $0.04
+    
+     $35
+    
+    **Total**
+    
+     
+    
+    **$195** for equivalent throughput  
+    ​**$230** for 4x throughput
+    
+
+To provision 2TB of storage with 9000 IOPS with gp2, you need to overprovision by 1000GB to reach that IOPS level, at the cost of $300/month. To provision an equivalent performance volume in gp3, you provision the storage at 2TB, an additional 6000 provisioned IOPS, and an additional 125 MB/s in throughput. This would cost $195/month for equivalent performance. If you wanted to maximize throughput up to the 1000 MB/s supported by gp3, it would cost $230/month – still substantially less than gp2.
+
+All in all, with equivalent storage requirements and IOPS, you would save 35% with gp3. Want to utilize the additional throughput of gp3? You would still save 24% compared to gp2.
+
+Which leads to another important question: Is gp3 _always_ less expensive than gp2?
+
+This pricing exercise shows one particular case where gp3 reduces costs relative to gp2. To definitively make the case for gp3, let’s perform an experiment.
+
+To explore the full range of prices for gp2 vs gp3, we wrote a [simple simulation in Python](https://gist.github.com/stephenVertex/4f02350032f7bc2ae64fbf20e71ae8f3). The simulation performs the following steps.
+
+Consider a volume ranging in size from 1GiB to 16 TiB.
+
+For each volume size:
+
+-   Calculate the per-month cost of a gp2 volume
+-   Given the volume size the gp2 volume, calculate the provided IOPS and throughput
+-   Calculate the per-month cost of a gp3 volume with equivalent IOPS and throughput
+-   Calculate the price of the gp3 volume as defined above
+
+This gives us the following result:
+
+![](/media/uploads/gp2-gp2-volume-price-chart.png)
+
+The lines on the chart represent **gp2 volume price**, equivalent **gp3 volume price**, and the **ratio of the prices**. Notice that the gp3 volume price is always a fraction of the gp2 volume price, for any possible volume size.
+
+So what does this all actually mean? It means you'd be crazy to NOT use gp3. Our tests prove it: **it is always cheaper to use gp3, and it is always possible to provision a gp3 volume with equal or better performance than gp2**. If that isn't a case for making the switch across your instances, we don't know what is.
+
+## Ignore the haters: gp3 performance is equal to or better than gp2
+
+So what are the naysayers saying? A few talk about gp3 latency, to which we reply: cover your ears and ignore them. gp3 had a few performance issues when it first shipped, but those are far behind us. Any gp3 volume today should have equal or better performance than gp2.
+
+The one legitimate challenge we see associated with gp3 volumes is that the IOPS and throughput need to be provisioned separately so that the gp3 volume will perform at the baseline settings. If you are accustomed to gp2, it is easy to forget this step.
+
+When migrating a gp2 volume to gp3, AWS previously reverted to baseline settings (3000 IOPS, 125 MiB/s throughput). People who performed these migrations without explicitly provisioning IOPS and throughput then experienced degraded performance. In recent months, AWS has changed the default behavior when changing volume types, so that if you transition gp2 to gp3, it will automatically provision the correct amount of IOPS and throughput.
+
+## Ready to get started? Hot tip: Don’t forget to right size your GP2 volumes before you switch to GP3
+
+Case closed on price: gp3 is less expensive and equally as performant as gp2. Migrating volumes is officially a no-brainer (see instructions below).
+
+But in order to migrate and save the most possible money, there’s one more thing you need to do: check your gp2 volume sizes.
+
+Why? Remember that in gp2, in order to get more IOPS, you have to add more volume size. In gp2, volume size, throughput, and IOPS are all bundled just like old-school cable TV channels. You can’t pick one or two, you need all of them. As a result, many gp2 volumes ended up over-sized.
+
+If you convert this over-sized volume over to gp3, you will still save money. However, you didn’t actually need that much space (it was over-sized only because of gp2’s cable TV-style bundling). To save even more, don’t forget to right-size the gp2 volume to your actual requirements before making the switch to gp3.
+
+## How to migrate from gp2 to gp3 with the AWS CLI or the Management Console
+
+When your volumes are right-sized and you’re ready to go, migrating gp2 to gp3 volumes is very straightforward. It can be done with either the AWS CLI or the Management Console. Within the Management Console, navigate to the EC2 console, and then click on “Elastic Block Store.”
+
+![](/media/uploads/ec2-console-select-volume.png)
+
+Click on the Volume check box, and then select “Modify volume” from the actions menu.
+
+![](/media/uploads/ec2-console-modify-volume.png)
+
+Select “General Purpose SSD (gp3)”, and select the required IOPS and throughput.
+
+![](/media/uploads/select-ssd-sp3.png)
+
+Then click the “Modify” button. It may take a couple of hours for the modification to complete, but this happens behind the scenes and does not impact the performance of the volume until the migration is complete.
+
+Within the AWS CLI, you execute the command:
+
+aws ec2 modify-volume --volume-id \[volume id\] --volume-type gp3
+
+Note that this command will provision the IOPS and throughput to match the performance of the source gp2 volume.
+
+## Migrate to from gp2 to gp3 easily and automatically with CloudFix
+
+Like all the fixes we cover, you _could_ go the manual route. But if you’re managing a large number of instances (and you’re strapped for costly engineering resources like nearly every org we talk to), why would you? We’ll keep the plug short, but remember: CloudFix automates all of this. It scans your AWS account and finds any existing (and new) gp2 instances, and can switch them to gp3 for you easily and instantly. You just look for the “Update EBS volume from gp2 to gp3” recommendation, check the box, and enjoy your cost savings.
+
+![](/media/uploads/cloudfix-gp3-recommendation.png)
+
+Curious how much you can save by switching from gp2 to gp3? [Try our free savings assessment](/assessment/). It's simple, secure, and will reveal how much CloudFix can save you in just 24 hours.
+
+{ "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": { "@type": "Question", "name": "Which is cheaper gp2 or gp3?", "acceptedAnswer": { "@type": "Answer", "text": "gp3 is less expensive than gp2 because IOPS are provisioned independent of volume size, preventing overprovisioning. This means that using gp3 can lead to significantly greater savings than it may initially appear." } } }

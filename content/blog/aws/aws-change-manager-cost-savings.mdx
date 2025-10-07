@@ -1,0 +1,80 @@
+---
+title: "AWS Change Manager: Cost Savings with CloudFix"
+description: "For years, the CloudFix team has managed and maintained 120+ AWS hosted SaaS products across hundreds of AWS accounts. Although this model follows established A..."
+date: 2022-02-03 17:56:17
+modified: 2025-01-23 12:23:24
+category: "AWS"
+tags: ["AWS","cloud","ec2","s3","cost optimization"]
+published: true
+slug: "aws-change-manager-cost-savings"
+---
+
+For years, the [CloudFix](https://cloudfix.com) team has managed and maintained 120+ AWS hosted SaaS products across hundreds of AWS accounts. Although this model follows established AWS [best practices](https://aws.amazon.com/organizations/getting-started/best-practices/), the team’s scope introduced operational challenges. Their team needed a way to identify cost-saving opportunities across their applications without making architectural compromises or introducing service disruption.
+
+# Revolutionizing Cost Optimization with CloudFix
+
+The team responded to the challenge by developing [CloudFix](https://cloudfix.com). CloudFix proved that it could meet their architectural requirements while cutting costs by 10-20%. For example, CloudFix helped with:
+
+-   Identifying [General Purpose SSD (gp2)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html#EBSVolumeTypes_gp2) [Amazon EBS](https://aws.amazon.com/ebs/) volumes and migrate to EBS [gp3](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html#gp3-ebs-volume-type) volumes with additional IOPS provisioning if necessary.
+-   Identifying under utilized convertible [Amazon EC2](https://aws.amazon.com/ec2/) [Convertible Reserved Instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/reserved-instances-types.html) and exchange them for a different instance family.
+-   Identifying [Amazon Simple Storage Service (S3)](https://aws.amazon.com/s3/) Buckets without lifecycle policies and enable [S3 Intelligent-Tiering](https://aws.amazon.com/s3/storage-classes/intelligent-tiering/).
+
+Here is the story of how CloudFix was built using [AWS Systems Manager](https://aws.amazon.com/systems-manager/) components and specifically how the [Change Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/change-manager.html) capability unlocked key functionality that other tools could not.
+
+## Automated Opportunity Finding
+
+As the CloudFix team explored possible solutions, their first realization was that identifying cost saving opportunities needed to be automated. Although converting all gp2 volumes to gp3 could save up to 20% in costs they had thousands of these volumes spread across their accounts. Each volume needed analysis of past performance to determine if this was the right path or if [provisioned IOPS](https://aws.amazon.com/ebs/provisioned-iops/) would be necessary to optimize the workload. The data gathering and opportunity identification had to be automated to be feasible due to the scope.
+
+[AWS Config](https://aws.amazon.com/config/) turned out to be a great tool to gather inventory of all of the AWS resources across hundreds of accounts. They enabled Config recording and created [configuration snapshots](https://docs.aws.amazon.com/config/latest/developerguide/deliver-snapshot-cli.html) in response to configuration updates generated when resources were added, removed, or reconfigured. The snapshots included resource IDs and configuration metadata.
+
+In addition to resource configuration metadata and IDs, usage metrics were necessary to generate quality analysis and recommendations. The team leveraged cross-account functionality in [Amazon CloudWatch metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Cross-Account-Cross-Region.html#enable-cross-account-cross-Region) to collect this data.
+
+Once resource configs and metrics were all gathered and stored in a centralized data store, CloudFix ran _finders_ against the data to create a list of recommended optimization actions.
+
+### Automated Opportunity Fixing
+
+The natural next step after identifying cost-saving opportunities was to execute on the recommendations. It was also important to the operations team to automate this process, because even a simple change needs operational guardrails to make sure that it is implemented in a safe, secure, and repeatable manner.
+
+For example, there are multiple considerations required when converting a gp2 volume to gp3. With each conversion, the team would create an EBS snapshot, create a [snapshot lifecycle policy](https://aws.amazon.com/blogs/aws/new-lifecycle-management-for-amazon-ebs-snapshots/) to make sure that the backup does not accrue unnecessary costs, initiate the volume conversion, and monitor the state of the change. Doing this manually for thousands of recommendations would be both error-prone and tedious.
+
+This realization led the team to develop _fixers_ using custom [AWS Systems Manager Automation runbooks](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-automation.html). CloudFix published an example of their runbook for converting gp2 to gp3 [here](https://www.devgraph.com/wp-content/uploads/2021/08/EBS-GP2-GP3.yaml).
+
+## Recommendation Workflows
+
+Even with automated _finders_ and _fixers_, rolling out changes at scale turned out to be a significant operations workflow challenge. The following requirements had to be considered:
+
+-   Account and resource owners needed to be informed of all changes.
+-   Account and resource owners needed to be able to easily review the AWS Systems Manager document corresponding to the change.
+-   For _fixers_ identified as low-risk, such as converting an EBS volume from gp2 to gp3, operations staff should be able to deploy the change without waiting for approval.
+-   For _fixers_ identified that are higher-risk and require review, the _fixer_ should only be executed if explicitly approved. Any rejected changes must also be recorded for analysis.
+-   For all identified _fixers_, the operations team needed to keep track of changes performed and monitor their impact.
+-   Account and resource owners needed to be able to pull up all governance related changes made to their resources.
+
+All of these requirements needed to be met and had to work with tens of thousands of resource changes spread across hundreds of AWS accounts, each with different owners.
+
+### AWS Systems Manager Change Manager to the Rescue
+
+The Change Manager capability was added to AWS Systems Manager in December 2020. The feature set of Change Manager instantly transformed CloudFix into a scalable cost-savings tool by making the change process streamlined and more secure with the following flow:
+
+![](/media/uploads/fig1pd-600x265.jpg)
+
+-   CloudFix creates [change templates](https://docs.aws.amazon.com/systems-manager/latest/userguide/change-templates-create.html) describing each new type of _finder_/_fixer_. Account owners have the opportunity to review and approve the templates before any new [change request](https://docs.aws.amazon.com/systems-manager/latest/userguide/change-requests-create.html) can be made in Change Manager.
+-   For each new set of resources to be fixed, a change request is created. CloudFix itself only has permission to create a change request based on an _approved_ change template.
+-   A change request is automatically executed after the account owner or designated approver approves the change. Designated approvers can be [AWS Identity and Access Managemet (IAM)](https://aws.amazon.com/iam/) users, roles, or [AWS Single Sign On (SSO)](https://aws.amazon.com/single-sign-on/) users or groups. The delegates only need permission to approve change requestchange requests and not all of the operations executed during the request.
+-   Changes that have no performance impact or risk can be auto-approved. The approver still receives notifications when changes are executed.
+-   CloudFix lets changes be either auto-approved or rejected after a timeout.
+-   Complex workflows with multiple stages of approval, multiple approvers, or a group of approvers are supported.
+-   Approved changes can be set to execute at specific times.
+-   A change request can be tracked and aggregated centrally for analytics and reporting.
+
+## Conclusion
+
+AWS Systems Manager Change Manager provided the features to transform the CloudFix product into a scalable, multi-account, cost-savings tool. It completed their infrastructure-as-code transition by delivering operational changes as pull requests. All of this was achievable by integrating native AWS services.
+
+You can learn more about Change Manager and its available feature set by reviewing the [AWS Systems Manager Change Manager User Guide](https://docs.aws.amazon.com/systems-manager/latest/userguide/change-manager.html).
+
+[CloudFix is available in the AWS Marketplace](https://aws.amazon.com/marketplace/pp/prodview-5wc4rjxznjmwq). With one selection, you can install the AWS CloudFormation templates needed to start getting change requests with cost-reducing recommendations.
+
+This post was written in collaboration with Badri Varadarajan – Executive VP, Technical Product Management (DevFactory) and Ravi Duddukuru – Chief Product Officer (DevGraph)
+
+[Read the original review here](https://aws.amazon.com/blogs/mt/how-cloudfix-uses-aws-systems-manager-change-manager-to-deliver-cost-savings/)

@@ -1,0 +1,386 @@
+---
+title: "Save big on Amazon Kendra by deleting idle indices"
+description: "Information is a source of learning. But unless it is organized, processed, and available to the right people in a format for decision making, it is a burden, n..."
+date: 2023-10-12 16:22:56
+modified: 2023-10-12 16:22:56
+category: "AWS"
+tags: ["AWS","cloud","s3","rds","security"]
+published: true
+slug: "save-big-on-amazon-kendra-by-deleting-idle-indices"
+---
+
+> Information is a source of learning. But unless it is organized, processed, and available to the right people in a format for decision making, it is a burden, not a benefit.
+> 
+> _– [William Pollard](https://en.wikipedia.org/wiki/William_Pollard_\(Quaker\)), English writer  
+> _
+
+Humans have always sought out knowledge, but in the last 30-some years, the search for information has become exponentially easier. Lycos, Alta Vista, Ask Jeeves, Yahoo, Google, Bing, Duck Duck Go!... search engines have transformed our lives and put virtually endless learnings at our fingertips. 
+
+\[caption id="attachment\_14775" align="alignnone" width="379"\]![Librarian to search engine cartoon](/media/uploads/Librarian-to-search-engine-cartoon.jpg) [Source](http://centeredlibrarian.blogspot.com/2011/08/librarian-to-search-engine-cartoon.html)\[/caption\]
+
+Just because search engines are easy to use, however, doesn’t mean they’re easy to run. As the internet, data, and networks have grown, so has the amount of data that’s not public. This includes data held by corporations in the form of knowledge bases, internal [wikis](https://en.wikipedia.org/wiki/Wiki) and documentation, etc. Being able to quickly and efficiently search this data is important to businesses, which makes it fertile ground for innovation.
+
+Which brings us to Amazon Kendra. Kendra is an extremely powerful enterprise search tool that solves the challenge of internal search beautifully. The only issue: its costs can add up fast. In this fixer blog, we’ll take a look at how Kendra costs impact your AWS bill, what to do about it, and of course, how to reduce Kendra costs easily and automatically with CloudFix.
+
+## Table of Contents
+
+1.  [How idle Kendra indices add up – and how much they’re costing you](#how-idle-kendra-indices-add-up-and-how-much-they-re-costing-you)
+2.  [How to find idle Kendra indices](#how-to-find-idle-kendra-indices)
+    1.  [Define what it means for a Kendra index to be idle](#define-what-it-means-for-a-kendra-index-to-be-idle)
+    2.  [Find Kendra indices using a CUR query](#find-kendra-indices-using-a-cur-query)
+    3.  [Determine if the Kendra index is idle](#determine-if-the-kendra-index-is-idle)
+3.  [Delete the idle Kendra index](#delete-the-idle-kendra-index)
+4.  [Stop paying for idle Kendra indices automatically with CloudFix](#stop-paying-for-idle-kendra-indices-automatically-with-cloudfix)
+
+## 1\. How idle Kendra indices add up – and how much they’re costing you
+
+Amazon has tackled the challenge of enterprise search in a number of ways over the years. The first was with AWS CloudSearch, a managed service that can make it easy to search a website. CloudSearch is powered by Apache Lucene and is a very mature service that’s been on the market for [over ten years](https://aws.amazon.com/blogs/aws/amazon-cloudsearch-start-searching-in-one-hour/). Next came Amazon OpenSearch. Launched as the ElasticSearch Service, Amazon OpenSearch forked from the open source ElasticSearch project after a licensing change. OpenSearch is the first layer in the famous [ELK Stack](https://aws.amazon.com/what-is/elk-stack/#:~:text=Often%20referred%20to%20as%20Elasticsearch,%2C%20security%20analytics%2C%20and%20more.), which combines ElasticSearch, Logstash, and Kibana into a log ingestion and visualization solution. (If you’re an OpenSearch user, check out [this fixer blog](/blog/right-size-amazon-opensearch-instances-cut-costs/) on how to right-size Amazon OpenSearch instances to cut costs by 50% or more.)
+
+Finally, there is Amazon Kendra. Launched in December 2019 and powered by machine learning, [Kendra is the relatively new kid on the block](https://aws.amazon.com/about-aws/whats-new/2019/12/announcing-amazon-kendra-reinventing-enterprise-search-with-machine-learning/) that’s built for enterprise search. The key feature of Kendra is its flexibility. It can easily search SharePoint, S3, DropBox, structured and unstructured databases, and more. Even a collection of PDFs can be effectively indexed and searched with Kendra. We’re not gonna lie: it’s an impressive piece of technology.
+
+Kendra's hefty capabilities, of course, also come with a hefty price tag. Kendra is charged per index (a logical collection of searchable documents), with surcharges for additional documents indexed or queries per day. The developer edition of Kendra starts at $810 per index per month and is not meant for production use. The Enterprise Edition, which is suitable for production use, costs $1,008 per index per month, or $1.40 per hour. The pricing examples on the [Kendra pricing page](https://aws.amazon.com/kendra/pricing/) show various scenarios for pricing.
+
+Clearly, these numbers aren’t small, and even a few rogue indices can significantly impact your budget. This is particularly true if you have multiple teams of developers who are encouraged to explore new AWS services. This is a good thing, and has led to many innovations across countless organizations, but can also lead to the age-old problem of playing around with a shiny new object and then forgetting about it. And that, my friends, is how we end up paying for resources that we’re not actually using. 
+
+We’ve been down this road before in fixer blog land: Let’s find idle Kendra indices and (thoughtfully, securely) get rid of them so we can stop overspending on AWS.
+
+_**Quick aside:**  
+_Removing idle Kendra indices does not remove the underlying data, called a "[datasource](https://docs.aws.amazon.com/kendra/latest/dg/hiw-data-source.html)" in Kendra parlance. If that is stored in AWS, there will be costs associated with that too. For example, many users of Kendra use it to search data located in S3 or in RDS. This article is only focused on the Kendra indices themselves. Whether or not the underlying data is worth storing is a different question altogether.
+
+## 2\. How to find idle Kendra indices
+
+As always, our first step is to identify any idle indices based on a comfortable, cautious definition of idle. This involves three steps:
+
+-   Define what it means for a Kendra index to be idle
+-   Find Kendra indices using a CUR query
+-   Determine if the Kendra index is idle
+
+Let’s take a closer look.
+
+### 2.1. Define what it means for a Kendra index to be idle
+
+Before we start flagging Kendra indices as idle, we have to decide what that means to us. We want to make sure that we know what we’re looking for before we start digging into the Cost and Usage Report and calling APIs. We like using the following three criteria to effectively characterize an idle Kendra index:
+
+-   The index was created more than 31 days ago, AND
+-   The index was updated more than 31 days ago, AND
+-   No queries have been processed within the past 31 days.
+
+We’ve found that, taken together, these three constructs differentiate an _idle_ index from an _infrequently used_ index. With that definition in place, let’s find our Kendra indices.
+
+### 2.2. Find Kendra indices using a CUR query
+
+Next up: finding Kendra indices. The easiest way to do this is with the Cost and Usage Report. If you’re not familiar with the Cost and Usage Report, go make yourself a coffee and head on over to our [AWS Foundational Skills: Cost and Usage Report](/blog/aws-foundational-skills-cost-and-usage-report-cur/) primer. We promise it’s worth your while.
+
+In this case, we need a CUR query to identify Kendra-related resources. The key filter in the CUR we use is `line_item_product_code like 'AmazonKendra'`. The full query we can use is this:
+
+SELECT product_region,
+        line_item_usage_account_id,
+        line_item_resource_id,
+        line_item_line_item_type,
+        line_item_usage_start_date, 
+        line_item_usage_end_date, 
+        line_item_usage_type,
+        sum(line_item_unblended_cost) as cost
+ FROM <YOUR_DATABASE>.<YOUR_CUR_TABLE>
+ WHERE line_item_product_code = 'AmazonKendra' 
+ AND line_item_line_item_type like '%Usage%' 
+ AND regexp_like(line_item_resource_id, 'index/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[8|9|a|A|b|B][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$')
+ AND line_item_usage_start_date >= date_trunc('day', current_date - interval '31' DAY) 
+ AND line_item_usage_start_date < date_trunc('day', current_date - interval '1' DAY) 
+GROUP BY 1,2,3,4,5,6,7;
+
+This will give you output which looks like the following:
+
+product\_region
+
+line\_item\_usage\_account\_id
+
+line\_item\_resource\_id
+
+line\_item\_line\_item\_type
+
+line\_item\_usage\_start\_date
+
+line\_item\_usage\_end\_date
+
+line\_item\_usage\_type
+
+cost
+
+us-east-1
+
+123123123
+
+arn:aws:kendra:us-east-1:123123123:index/37852c9c-00f5-4d23-89fd-099f85c4802e
+
+Usage
+
+2023-10-10 0:00:00
+
+2023-10-11 0:00:00
+
+USE1-KendraDeveloperEdition
+
+27.00
+
+us-east-1
+
+123123123
+
+arn:aws:kendra:us-east-1:123123123:index/18672d98-b9d8-42e8-9d84-1d07d8cd8469
+
+Usage
+
+2023-10-10 0:00:00
+
+2023-10-11 0:00:00
+
+USE1-Kendra-Enterprise-Edition
+
+33.60
+
+us-west-2
+
+456456456
+
+arn:aws:kendra:us-west-2:456456456:index/5d866b15-447c-4181-8752-b49c4cfda0fd
+
+Usage
+
+2023-10-10 0:00:00
+
+2023-10-11 0:00:00
+
+USW2-KendraDeveloperEdition
+
+30.20
+
+ap-southeast-2
+
+789798789
+
+arn:aws:kendra:ap-southeast-2:789798789:index/76127e6e-9550-47a3-b7e7-71651537fff9
+
+Usage
+
+2023-10-10 0:00:00
+
+2023-10-11 0:00:00
+
+APSW2-KendraDeveloperEdition
+
+27.00
+
+ap-southeast-2
+
+798789798
+
+arn:aws:kendra:ap-southeast-2:798789798:index/f9e27746-412b-4ebe-882c-238277c05111
+
+Usage
+
+2023-10-11 0:00:00
+
+2023-10-12 0:00:00
+
+APSW2-Kendra-Enterprise-Edition
+
+50.30
+
+us-east-1
+
+111111111
+
+arn:aws:kendra:us-east-1:111111111:index/9486a10e-8823-4735-ba46-1db87c8717bd
+
+Usage
+
+2023-10-12 0:00:00
+
+2023-10-13 0:00:00
+
+USE1-KendraDeveloperEdition
+
+27.40
+
+us-east-1
+
+111111111
+
+arn:aws:kendra:us-east-1:111111111:index/dd775a9d-225a-42a2-92b9-af63d7ddf6a3
+
+Usage
+
+2023-10-13 0:00:00
+
+2023-10-14 0:00:00
+
+USE1-KendraDeveloperEdition
+
+28.30
+
+us-east-1
+
+111111111
+
+arn:aws:kendra:us-east-1:111111111:index/6244a4b9-0dcf-4d32-89a6-81f53eae6988
+
+Usage
+
+2023-10-14 0:00:00
+
+2023-10-15 0:00:00
+
+USE1-KendraDeveloperEdition
+
+27.00
+
+As you can see from the table output, we have a collection of indexes, all racking up charges. From here, we could post-process this query to find the distinct Kendra Index ARNs. Or, you could use the distinct keyword in SQL:
+
+SELECT distinct line_item_resource_id
+ FROM <YOUR_DATABASE>.<YOUR_CUR_TABLE>
+ WHERE line_item_product_code = 'AmazonKendra' 
+ AND line_item_line_item_type like '%Usage%' 
+ AND regexp_like(line_item_resource_id, 'index/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[8|9|a|A|b|B][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$')
+ AND line_item_usage_start_date >= date_trunc('day', current_date - interval '31' DAY) 
+ AND line_item_usage_start_date < date_trunc('day', current_date - interval '1' DAY);
+
+Either way, the important thing is that you have a list of Kendra indices that have appeared in the CUR within the past 31 days. These serve as our candidates to check for idleness. 
+
+Quick aside: Careful readers will note that we are using a [regular expression to match UUIDs](https://stackoverflow.com/questions/11384589/what-is-the-correct-regex-for-matching-values-generated-by-uuid-uuid4-hex), using the `regexp_like` command. This is something that we haven’t used before. The format of Kendra ARNs is:
+
+`arn:aws:kendra:{$REGION}:{$ACCOUNT}:index/{$UUID}`
+
+The regexp\_like part of the SQL query matches ARNs of this form. Note that data sources also appear in the Cost and Usage Report, and they have the form:
+
+`arn:aws:kendra:{$REGION}:{$ACCOUNT}:index/{$UUID}/data-source/{$OTHER_UUID}`
+
+By using the regexp\_like command, we are able to match Kendra Index ARNs and exclude Kendra data-source ARNs.
+
+### 2.3. Determine if the Kendra index is idle
+
+If the index appears in the result set of the CUR query above, we know it is accruing charges. According to Kendra's pricing model, up to 8,000 queries per day in the Enterprise edition and up to 4,000 in the Developer edition are supported without incurring additional charges. This is why we see a lot of Kendra indices at the same cost, either 27.0 (for Developer Edition) or 33.6 (for Enterprise Edition) – these are the Kendra indices that are used for less than the specified queries-per-day threshold. From the CUR data alone, however, we can’t tell if a particular Kendra instance has served 3,999 queries per day or zero in a month! To make this determination, we need to use other sources of data.
+
+#### Using Kendra APIs to see if the index is being modified 
+
+We describe AWS objects using a `Describe*` command. In this case, unsurprisingly, the command we’re interested in is called `[DescribeIndex](https://docs.aws.amazon.com/kendra/latest/APIReference/API_DescribeIndex.html)`. This command takes an identifier of a Kendra Index as input and emits an [IndexConfigurationSummary](https://docs.aws.amazon.com/kendra/latest/APIReference/API_IndexConfigurationSummary.html) object. This object contains a field called `Status`, which can be one of:
+
+**Status**
+
+**Can be deleted?**
+
+CREATING
+
+❌
+
+ACTIVE
+
+✅
+
+DELETING
+
+❌
+
+FAILED
+
+✅
+
+UPDATING
+
+❌
+
+SYSTEM\_UPDATING
+
+❌
+
+From the table above, we only want to delete indices which are in the `ACTIVE` or `FAILED` states. All other states indicate that the index is in transition and is therefore not idle.
+
+To check the status of a particular index, the AWS CLI command is:
+
+```bash
+aws kendra describe-index --id 123e4567-e89b-12d3-a456-426614174000
+```
+
+where `123e4567-e89b-12d3-a456-426614174000` is the ID portion of the Kendra index ARN.
+
+This will respond with a JSON object as described by an [IndexConfigurationSummary](https://docs.aws.amazon.com/kendra/latest/APIReference/API_IndexConfigurationSummary.html) object.
+
+#### Using CloudWatch to check if there have been any queries 
+
+Up to this point, we have identified indices and made sure that they are not in a transition state. Now, we need to make sure that the indices are indeed idle. To do this, we need to use CloudWatch.
+
+If you’re not familiar with CloudWatch, go make yourself another coffee and read our [AWS Foundational Skills: How to get started with CloudWatch](/blog/aws-foundational-skills-cloudwatch/) guide. To summarize, CloudWatch is AWS's monitoring system. It allows for most AWS services to report on key metrics on a frequent basis. CloudWatch makes it easy to query these metrics to understand exactly how we are using each of the various AWS services.
+
+The metric that we’re looking for in this case is called `IndexQueryCount`. According to the [CloudWatch for Kendra documentation](https://docs.aws.amazon.com/kendra/latest/dg/cloudwatch-metrics.html), `IndexQueryCount` is defined as "the number of index queries per minute." If there are zero queries in 31 days, then we can intuit that there are zero queries per minute for the past 31 days worth of minutes. To query `IndexQueryCount` for the past 31 days, use this command:
+
+```bash
+aws cloudwatch get-metric-statistics \
+--namespace "AWS/Kendra" \
+--metric-name "IndexQueryCount" \
+--dimensions "Name=IndexName,Value=YOUR_KENDRA_INDEX" \
+--start-time $(date -u -d '31 days ago' '+%Y-%m-%dT%H:%M:%SZ') \
+--end-time $(date -u '+%Y-%m-%dT%H:%M:%SZ') \
+--period 86400 \
+--statistics Sum
+```
+
+The output will look like the following:
+
+{
+    "Label": "IndexQueryCount",
+    "Datapoints": [
+        {
+            "Timestamp": "2023-09-12T00:00:00Z",
+            "Sum": 0.0,
+            "Unit": "Count"
+        },
+        {
+            "Timestamp": "2023-09-13T00:00:00Z",
+            "Sum": 0.0,
+            "Unit": "Count"
+        },
+        ...
+        {
+            "Timestamp": "2022-10-11T00:00:00Z",
+            "Sum": 0.0,
+            "Unit": "Count"
+        }
+    ],
+    "ResponseMetadata": {
+        "RequestId": "abcdefghijklmnopqrstuvwx-1234-5678-9101-abcdefghijklmnop",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+            "x-amzn-requestid": "abcdefghijklmnopqrstuvwx-1234-5678-9101-abcdefghijklmnop",
+            "content-type": "text/xml",
+            "content-length": "1234",
+            "date": "Thu, 03 Mar 2022 23:59:59 GMT"
+        },
+        "RetryAttempts": 0
+    }
+}
+
+The key thing to observe is the array of `[Datapoints](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/cloudwatch/get-metric-statistics.html)`. If they are all zero, we can infer that the cluster is not being utilized, and can be deleted.
+
+## 3\. Delete the idle Kendra index
+
+Through the steps in the previous section, we have verified that, for a given index:
+
+1.  The index exists in the CUR and is accumulating charges, AND
+2.  The index is not in a transition state, AND,
+3.  The index has had no queries for the past 31 days.
+
+If all of these conditions hold, we can conclude that the index is idle and can be deleted. #Winning.
+
+We typically advise snapshotting before deleting any entity that holds data, such as an [EFS file system](/blog/optimize-amazon-efs-storage-costs-intelligent-tiering/) or [EBS volume](/blog/reduce-aws-costs-deleting-unnecessary-ebs-volumes/). However, Kendra is not _holding_ data, but _indexing_ it. Therefore, what we should save are the data sources associated with an index. By doing this, we can reconstruct the index down the road if we find it necessary. To do this, you want to use `[ListDataSources](https://docs.aws.amazon.com/kendra/latest/APIReference/API_ListDataSources.html)`, which takes as input an Index ID and returns a list of `[DataSourceSummary](https://docs.aws.amazon.com/kendra/latest/APIReference/API_DataSourceSummary.html)` objects. Save this as a JSON object.
+
+Once this is saved, we can delete the index. Use the `[DeleteIndex](https://docs.aws.amazon.com/kendra/latest/APIReference/API_DeleteIndex.html)` command to do this. As always, this step feels a bit anticlimactic, but just think of all the savings you’ve uncovered by removing those pesky idle indices. 
+
+## 4\. Stop paying for idle Kendra indices automatically with CloudFix
+
+When it comes to Amazon Kendra, idle resources aren’t costing you pennies – they’re adding up to a real drain on your budget. Yet while the process above isn’t the most cumbersome of our fixes, it’s also not top priority. With so many opportunities to innovate and add business value through AWS, your engineers probably aren’t going to spend their time hunting down some unused Kendra indices. 
+
+That’s where CloudFix comes in. Finding and deleting idle resources is one of our specialties. We automate the process of identifying idle indices (using the appropriately cautious criteria explained above) and, with just a couple clicks, make it easy to get rid of them. It’s one less thing on your team’s to-do list and one more way that CloudFix helps you spend less on AWS.
+
+Humans will never stop searching for knowledge, but with CloudFix, you can stop searching for idle Kendra indices – and stop paying for resources you don’t need.
+
+Curious how much you can save with CloudFix? Take our fast, [free savings assessment](/assessment/) to discover exactly which fixers apply to your organization and precisely how much your company can save.

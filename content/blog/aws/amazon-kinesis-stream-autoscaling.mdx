@@ -1,0 +1,51 @@
+---
+title: "Autoscale Amazon Kinesis Streams for AWS Cost Savings"
+description: "Amazon Kinesis Data Streams is a fully managed, serverless data streaming service. Follow this guide to autoscale your Amazon Kinesis stream data for AWS cost savings."
+date: 2022-06-16 20:09:34
+modified: 2025-01-27 07:57:56
+category: "AWS"
+tags: ["AWS","cloud","lambda","rds"]
+published: true
+slug: "amazon-kinesis-stream-autoscaling"
+---
+
+If you use AWS Kinesis, you know that provisioned mode is dramatically cheaper than the on-demand mode. However, provisioned mode requires you to provision the number of shards necessary to satisfy your app’s write and request rate. Provisioned data streams are ideal for predictable application traffic.
+
+## Finding savings: What is optimize mode?
+
+In provisioned mode, you are only charged for:
+
+-   Volume of data written to a shard
+-   Per-hour charge for each shard
+
+So for one shard running on maximum utilization processing 30 TB of data per year would cost **$149.40**.
+
+Processing 30 TB of data per year using max utilization in on-Demand mode would cost **$4,036.80**.
+
+### Optimizing shards
+
+Selecting the right number of shards is critical as over-provisioning would lead to unnecessary costs, while under-provisioning would result in throttled data processing. In reality, there is rarely a constant stream of data, thus the ability to dynamically adjust the number of shards is essential.
+
+Unfortunately, AWS does not provide a way to automatically set the optimal number of shards.
+
+## Realizing savings: How optimized mode lowers your costs
+
+For most applications, we recommend a combination of provisioned and on-demand modes.
+
+For example, if your data streams have predictable demand during working hours, you can use a simple Lambda function to a certain capacity in provisioned mode. Then, when there is reduced and less predictable demand at night, switch to on-demand mode.
+
+To create our own autoscaling for optimized Kinesis pricing, CloudFix creates a formula that measures demand and responds dynamically to data stream capacity needs. You can read [more detailed information here](https://awsmadeeasy.com/blog/kinesis-stream/), including instructions on how to implement this optimization model to optimize shards in your Kinesis data streams today.
+
+## Optimizing savings: Optimize Kinesis Data Streams with CloudFix
+
+With our guide above, someone on your engineering team can write a function to optimize Kinesis modes, starting today.
+
+But what about next week? And the week after? Will this function continue to be the most optimal for your future data streaming requirements?
+
+CloudFix can help manage your ongoing Amazon Kinesis costs by providing a simple and elegant solution for automatically and dynamically setting the optimal number shards now and in the future.
+
+### More CloudFix Fixers
+
+Check out our other blog posts on cost savings or see how CloudFix integrates with AWS Systems Manager Change Manager to execute its Fixer optimizations.
+
+[How CloudFix uses AWS Systems Manager Change Manager to deliver cost savings](/blog/aws-change-manager-cost-savings/)

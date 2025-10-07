@@ -1,0 +1,128 @@
+---
+title: "CloudFix Finder/Fixer: EKS Optimize EOL Version"
+description: "Amazon EKS clusters running end-of-life (EOL) Kubernetes versions face increased security risks and incur substantial extended support charges. This Finder iden..."
+date: 2025-04-09 18:05:48
+modified: 2025-04-09 18:05:48
+category: "AWS"
+tags: ["AWS","cloud","vpc","security","migration"]
+published: true
+slug: "feature-eks-optimize-eol-version"
+---
+
+Amazon EKS clusters running end-of-life (EOL) Kubernetes versions face increased security risks and incur substantial extended support charges. This Finder identifies EKS clusters approaching or already in the extended support phase, allowing organizations to proactively plan version upgrades and avoid paying 6x higher hourly rates for outdated Kubernetes versions. By upgrading these clusters to current, supported versions, you can significantly reduce costs while improving your security posture.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Upgrade Process](#upgrade-process)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+Amazon EKS follows the Kubernetes release cycle, with each version receiving standard support for 14 months after release, followed by an optional 12-month extended support period. Clusters running in extended support incur significantly higher costs—$0.60 per hour versus the standard $0.10 per hour rate, a 6x increase. Additionally, these outdated clusters no longer receive upstream security patches, potentially leaving your workloads vulnerable to known exploits.
+
+Organizations often delay Kubernetes upgrades due to operational concerns, compatibility issues, or simply lacking awareness of version EOL timelines. Without proper planning, this leads to unexpected cost increases and security risks across their container ecosystem.
+
+### Solution
+
+The EKS Optimize EOL Version Finder identifies EKS clusters running Kubernetes versions that will reach end-of-life within the next year, highlighting those that have already entered or will soon enter the extended support phase. This advance warning provides organizations sufficient time to plan and execute upgrades to avoid the 6x price increase and security vulnerabilities associated with outdated versions.
+
+Unlike most CloudFix Fixers, this optimization requires manual upgrades due to the complex nature of Kubernetes version migrations. However, the Finder provides all the information needed to prioritize and plan these upgrades effectively.
+
+### Benefits
+
+By implementing this Finder's recommendations, you can:
+
+-   Avoid the 6x cost increase ($0.60/hour vs. $0.10/hour) for extended support
+-   Improve security by running Kubernetes versions that receive regular security patches
+-   Gain access to newer Kubernetes features and improvements
+-   Proactively plan version upgrades before entering extended support
+-   Maintain compliance with security policies requiring up-to-date software
+
+## AWS Services Affected
+
+![Amazon EKS](/media/uploads/Elastic-Kubernetes-Service.svg)
+
+[Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html)
+
+## How It Works
+
+### Finder Component
+
+The Finder component identifies EKS clusters running Kubernetes versions that are approaching or have already entered extended support through the following process:
+
+1.  Analyzes AWS billing data by filtering for the 'AmazonEKS' product code and 'CreateOperation' operation
+2.  Identifies the Kubernetes version running on each EKS cluster using the DescribeCluster API
+3.  Compares each cluster's version against AWS's Kubernetes version lifecycle calendar
+4.  Calculates the remaining time in standard support or time already spent in extended support
+5.  Estimates the potential cost impact based on the cluster's annualized public cost over the past 31 days
+6.  Prioritizes clusters with annualized costs exceeding the threshold (default $100) for upgrade recommendations
+
+The findings include detailed information to help administrators prioritize which clusters to upgrade first, including current version, target version, days until/since EOL, and potential cost savings.
+
+### Upgrade Process
+
+While CloudFix does not automatically implement EKS version upgrades due to their complexity, organizations should follow these best practices when upgrading identified clusters:
+
+1.  **Preparation Phase**
+    -   Audit applications for deprecated API usage using tools like Kube No Trouble (kubent)
+    -   Update application manifests to use current API versions
+    -   Check compatibility of all cluster add-ons with the target Kubernetes version
+    -   Test the upgrade process in a non-production environment
+2.  **Control Plane Upgrade**
+    -   Initiate the control plane upgrade through the AWS Console or CLI
+    -   Monitor the upgrade progress through the EKS console or AWS CLI
+    -   Verify API server functionality after the upgrade completes
+3.  **Data Plane Upgrade**
+    -   Update managed node groups to match the new Kubernetes version
+    -   For self-managed nodes, create new node groups with the updated AMI version
+    -   Cordon and drain old nodes to migrate workloads to the new nodes
+    -   Verify application functionality on the upgraded node groups
+4.  **Add-on Updates**
+    -   Update all EKS add-ons (e.g., CoreDNS, kube-proxy, VPC CNI) to versions compatible with the new Kubernetes version
+    -   Update any self-managed add-ons following vendor recommendations
+
+Remember that Kubernetes upgrades should be performed one minor version at a time (e.g., 1.23 → 1.24 → 1.25) for clusters that are multiple versions behind.
+
+## FAQ
+
+**What is the Kubernetes version lifecycle in Amazon EKS?**
+
+Amazon EKS provides a 14-month standard support period for each Kubernetes version, during which the hourly cluster cost is $0.10. After that, clusters enter a 12-month extended support period at $0.60 per hour (a 6x increase). Once a version reaches 26 months since release, it is no longer supported, and AWS may forcibly upgrade the control plane to a supported version.
+
+**Can CloudFix automatically upgrade my EKS clusters?**
+
+No, this is a Finder-only feature. EKS cluster upgrades require careful planning, testing, and execution to avoid application disruptions. CloudFix identifies clusters that need attention, but you must perform the upgrades manually following AWS best practices.
+
+**What costs are associated with running EKS clusters in extended support?**
+
+Clusters in extended support are charged $0.60 per hour instead of the standard $0.10 per hour rate. For a cluster running 24/7 over a full year, this represents an increase from $876 to $5,256 annually—a difference of $4,380 per cluster.
+
+**Will upgrading my EKS cluster cause downtime?**
+
+The control plane upgrade may cause brief API server interruptions, but normally doesn't impact running workloads. The node upgrade process, however, requires careful planning to minimize disruption. AWS recommends using managed node groups and blue/green deployment strategies to reduce potential downtime.
+
+**What should I do if my applications use deprecated Kubernetes APIs?**
+
+Before upgrading, scan your cluster using tools like Kube No Trouble (kubent) to identify resources using deprecated APIs. Update these resources to use supported API versions for the target Kubernetes version. The Kubernetes documentation provides migration guides for each deprecated API.
+
+**How far ahead should I plan EKS version upgrades?**
+
+AWS recommends planning upgrades at least 2-3 months before a version enters extended support. This provides adequate time for testing, addressing compatibility issues, and implementing a phased upgrade approach. The EKS Optimize EOL Version Finder helps by identifying clusters that will reach EOL within the next year.
+
+**Do I need to upgrade my node groups after upgrading the EKS control plane?**
+
+Yes. While the control plane and nodes can temporarily run different versions, AWS recommends keeping them aligned. Kubernetes supports nodes running up to two minor versions older than the control plane, but not newer versions. For optimal performance and security, update your node groups to match the control plane version.
+
+## Related Resources
+
+-   [Optimize EKS Clusters Running End-of-Life Kubernetes Versions](https://support.cloudfix.com/article/16971-optimize-eks-clusters-running-end-of-life-kubernetes-versions)
+-   [Amazon EKS Kubernetes versions](https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html)
+-   [Updating an Amazon EKS cluster Kubernetes version](https://docs.aws.amazon.com/eks/latest/userguide/update-cluster.html)
+-   [Amazon EKS Extended Support for Kubernetes Versions Pricing](https://aws.amazon.com/blogs/containers/amazon-eks-extended-support-for-kubernetes-versions-pricing/)

@@ -1,0 +1,128 @@
+---
+title: "CloudFix Finder/Fixer: EC2 Install SSM Agent on Linux/Mac via SSH"
+description: "For comprehensive management and monitoring of your EC2 instances, the AWS Systems Manager (SSM) agent is essential. However, many legacy or custom instances ma..."
+date: 2025-04-08 18:28:50
+modified: 2025-04-08 18:28:50
+category: "AWS"
+tags: ["AWS","cloud","lambda","ec2","vpc"]
+published: true
+slug: "cloudfix-finder-fixer-ec2-install-ssm-agent-on-linux-mac-via-ssh"
+---
+
+For comprehensive management and monitoring of your EC2 instances, the AWS Systems Manager (SSM) agent is essential. However, many legacy or custom instances may not have this agent installed or properly configured. This CloudFix Finder/Fixer automatically identifies Linux and macOS instances without functioning SSM agents and securely installs or activates them using EC2 Instance Connect, enabling advanced cost optimization opportunities.
+
+## Contents
+
+-   [Overview](#overview)
+    -   [Problem Statement](#problem-statement)
+    -   [Solution & Benefits](#solution-benefits)
+    -   [Expected Cost Savings](#expected-cost-savings)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+Accurately optimizing EC2 instances requires comprehensive usage data, including memory and disk utilization metrics that aren't available by default. To collect this data, the CloudWatch agent must be installed and configured properly, which in turn depends on having a functional SSM agent. Many EC2 instances, especially custom or older AMIs, don't have the SSM agent installed or may have it installed but not running. Without this critical component, cost optimization efforts are limited to basic CPU metrics, potentially leaving significant savings opportunities undiscovered.
+
+### Solution & Benefits
+
+CloudFix systematically identifies Linux and macOS EC2 instances without functioning SSM agents and uses an innovative, secure approach to install or activate them without downtime. By leveraging EC2 Instance Connect to create temporary, secured SSH access, CloudFix can remotely install the appropriate SSM agent version for your specific operating system, enabling advanced management capabilities and unlocking additional cost optimization opportunities.
+
+-   Enables comprehensive instance monitoring and management
+-   Unlocks additional cost optimization opportunities
+-   Operates without downtime or service interruption
+-   Creates a backup snapshot for added safety
+-   Uses secure, temporary access that automatically expires
+-   Supports a wide range of Linux distributions and macOS versions
+
+### Expected Cost Savings
+
+While this Finder/Fixer doesn't directly generate cost savings, it's a critical enabler for other CloudFix optimizations. Once the SSM agent is installed, CloudFix can deploy the CloudWatch agent to collect memory and disk utilization metrics, providing the complete data needed for accurate instance rightsizing and optimization recommendations. These downstream optimizations typically result in 20-40% cost savings on the affected resources.
+
+## AWS Services Affected
+
+This CloudFix feature interacts with the following AWS services:
+
+![Amazon EC2](/media/uploads/EC2.svg)
+
+![AWS Systems Manager](/media/uploads/Systems-Manager.svg)
+
+![AWS Lambda](/media/uploads/Lambda.svg)
+
+[Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html)
+
+[AWS Systems Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html)
+
+[AWS Lambda](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html)
+
+## How It Works
+
+### Finder Component
+
+The CloudFix Finder analyzes your AWS infrastructure to identify instances that need the SSM agent installed or activated:
+
+-   Scans your environment for online EC2 instances running Linux or macOS
+-   Filters out instances that are part of Auto Scaling Groups (which should be managed via launch templates)
+-   Checks each instance for SSM agent presence and status using the AWS Systems Manager API
+-   Identifies instances where the agent is either:
+    -   Not installed at all (no response from SSM API)
+    -   Installed but not running ("Inactive" ping status from SSM API)
+-   Verifies instance connectivity prerequisites, including:
+    -   Internet connectivity or appropriate VPC endpoints
+    -   Support for EC2 Instance Connect
+    -   Administrative access via standard user accounts (ec2-user, ubuntu, etc.)
+-   Generates detailed recommendation reports showing instances that require agent installation or activation
+
+### Fixer Component
+
+Once approved, the CloudFix Fixer implements the necessary changes using a secure, non-disruptive approach:
+
+-   Creates a backup snapshot of the instance for safety
+-   Deploys a temporary Lambda function in the same VPC as the target instance
+-   Generates a temporary SSH keypair with a 60-second expiration
+-   Uses EC2 Instance Connect to securely push the temporary public key to the instance
+-   The Lambda function connects to the instance using this temporary access and:
+    -   Determines the specific operating system and distribution
+    -   If SSM agent is installed but not running: executes appropriate commands to start and enable the service
+    -   If SSM agent is not installed: downloads and installs the appropriate version for the OS distribution
+    -   Verifies successful installation and agent activation
+-   The Lambda function is automatically terminated once complete
+-   CloudFix verifies the instance now appears in Systems Manager inventory
+
+All operations are performed without requiring instance downtime, and the temporary access is automatically invalidated after use for maximum security.
+
+## FAQ
+
+**Q: Will implementing this fix require downtime for my EC2 instances?**
+
+No, this fix is implemented without any downtime or service interruption. The SSM agent installation happens in the background while your instance continues to operate normally.
+
+**Q: Is this process secure?**
+
+Yes, CloudFix uses EC2 Instance Connect's secure, temporary access mechanism. The SSH keypair generated expires automatically after 60 seconds and is never stored. Additionally, the Lambda function that performs the installation is deployed in your VPC and deleted immediately after the operation is complete.
+
+**Q: What if something goes wrong during the installation?**
+
+CloudFix creates a snapshot of your instance before making any changes. In the unlikely event of a problem, this snapshot can be used to restore the instance to its previous state. The snapshot is automatically deleted 7 days after a successful fix.
+
+**Q: Which operating systems are supported?**
+
+This Finder/Fixer supports most common Linux distributions (Amazon Linux, Amazon Linux 2, Ubuntu, CentOS, RHEL, etc.) and macOS instances. Windows instances are not supported by this particular Finder/Fixer but are covered by a separate CloudFix feature.
+
+**Q: Why doesn't CloudFix use AWS-native mechanisms to install the SSM agent?**
+
+AWS provides several ways to install the SSM agent, but most require either the agent to already be installed (State Manager) or instance downtime (userdata). CloudFix's approach works on running instances without disruption, making it ideal for production environments.
+
+## Related Resources
+
+-   [AWS Foundational Skills: Your guide to AWS Systems Manager](/blog/aws-foundational-skills-aws-systems-manager/)
+-   [Install SSM Agent on Linux and Mac (Support Article)](https://support.cloudfix.com/article/16923-install-ssm-agent-on-linux-and-mac)
+-   [AWS Systems Manager SSM Agent](https://docs.aws.amazon.com/systems-manager/latest/userguide/ssm-agent.html)
+-   [Connect to your Linux instance using EC2 Instance Connect](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Connect-using-EC2-Instance-Connect.html)
+-   [AWS Systems Manager State Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-state.html)

@@ -1,0 +1,85 @@
+---
+title: "CloudFix Finder/Fixer: Neptune Delete Idle Clusters"
+description: "Amazon Neptune clusters, like other database resources, can become idle over time if they are no longer actively serving queries or workloads. These idle cluste..."
+date: 2025-04-09 18:04:26
+modified: 2025-04-09 18:04:26
+category: "AWS"
+tags: ["AWS","cloud","s3","monitoring","backup"]
+published: true
+slug: "cloudfix-finder-fixer-neptune-delete-idle-clusters"
+---
+
+Amazon Neptune clusters, like other database resources, can become idle over time if they are no longer actively serving queries or workloads. These idle clusters continue to incur costs for instance hours and storage. CloudFix identifies Neptune clusters that have been idle for an extended period (typically 31 days with zero requests), creates a final snapshot for potential restoration, and then deletes the cluster to eliminate unnecessary costs.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+Neptune clusters provisioned for development, testing, or past projects can often be forgotten, leading to persistent charges for resources that are no longer providing value. Identifying these idle clusters manually across an AWS environment can be time-consuming and prone to oversight. Leaving idle Neptune clusters running results in unnecessary expenditure on compute instances and storage.
+
+### Solution Impact
+
+CloudFix's "Clean up idle Neptune clusters" feature automates the detection and removal of these unused resources. By monitoring the \`TotalRequestsPerSec\` CloudWatch metric, CloudFix accurately identifies idle clusters. Upon approval, it securely backs up the cluster data by creating a final snapshot and then deletes the cluster. This process typically saves approximately 99% of the idle cluster's costs, with the minimal remaining cost attributed to storing the snapshot.
+
+## AWS Services Affected
+
+![Amazon Neptune](/media/uploads/Neptune.svg)
+
+[Amazon Neptune](https://aws.amazon.com/neptune/)
+
+## How It Works
+
+### Finder Component
+
+The Finder identifies idle Neptune clusters using the following logic:
+
+-   **Monitoring Period**: Analyzes Neptune cluster activity over the last 31 days.
+-   **Idle Metric**: Checks the \`TotalRequestsPerSec\` CloudWatch metric for the cluster.
+-   **Idle Condition**: A cluster is considered idle if the \`TotalRequestsPerSec\` metric has consistently been 0 for the entire 31-day monitoring period.
+
+### Fixer Component
+
+Upon approval of the recommendation, the Fixer executes the following steps:
+
+1.  **Initiate Deletion with Snapshot**: Calls the AWS \`DeleteDBCluster\` API for the identified idle cluster.
+2.  **Ensure Final Snapshot**: Sets the \`SkipFinalSnapshot\` parameter to \`false\`. This instructs AWS to automatically create a final snapshot of the cluster's data before proceeding with the deletion.
+3.  **Tag Snapshot**: AWS automatically tags the final snapshot with necessary information, including parameters required to potentially recreate the cluster later.
+4.  **Cluster Deletion**: After the snapshot is successfully created, AWS deletes the Neptune cluster and its associated instances.
+
+## FAQ
+
+**What are the potential savings?**
+
+You can expect to save approximately 99% of the costs associated with the idle Neptune cluster. The remaining ~1% cost is for storing the final snapshot on S3 (priced at standard S3 rates, e.g., $0.10 per GB-month).
+
+**Is it possible to roll back this fix?**
+
+Yes, although rollback is not fully automated. A final snapshot is created before deletion. You can manually restore this snapshot to a new Neptune cluster using the AWS Management Console or CLI, or by executing the provided CloudFix SSM document \`Cloudfix-Runbook-NeptuneCleanupIdleClusters-Rollback-manual\`.
+
+**Can CloudFix implement the fix automatically?**
+
+Yes, upon your approval of the recommendation, CloudFix can automatically execute the fixer process.
+
+**Does this fix require downtime?**
+
+No downtime is required in the sense that the cluster being deleted is already identified as idle (zero requests for 31 days). The deletion process itself makes the cluster permanently unavailable, but this should not impact active workloads.
+
+**What happens to the data in the idle cluster?**
+
+Before the cluster is deleted, a final snapshot is created and stored in Amazon S3. This snapshot contains all the data from the cluster at the time of deletion and can be used to restore the data to a new cluster if needed.
+
+## Related Resources
+
+-   [Deleting a DB Instance in Amazon Neptune (AWS Documentation)](https://docs.aws.amazon.com/neptune/latest/userguide/manage-console-instances-delete.html)
+-   [Creating a DB Cluster Snapshot in Neptune (AWS Documentation)](https://docs.aws.amazon.com/neptune/latest/userguide/backup-restore-create-snapshot.html)
+-   [Clean up idle Neptune clusters (CloudFix Support Article)](https://support.cloudfix.com/article/17023-clean-up-idle-neptune-clusters)

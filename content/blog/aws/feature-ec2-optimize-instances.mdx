@@ -1,0 +1,98 @@
+---
+title: "CloudFix Finder/Fixer: EC2 Optimize Instances"
+description: "Leverage CloudFix to optimize EC2 instance types based on actual workload patterns, reducing costs without compromising performance. This Finder identifies inst..."
+date: 2025-04-07 00:22:02
+modified: 2025-04-07 00:22:02
+category: "AWS"
+tags: ["AWS","cloud","ec2","compute"]
+published: true
+slug: "feature-ec2-optimize-instances"
+---
+
+Leverage CloudFix to optimize EC2 instance types based on actual workload patterns, reducing costs without compromising performance. This Finder identifies instances that would benefit from transitioning to more cost-effective instance families or generations based on their real-world resource utilization.
+
+## Contents
+
+-   [What It Does](#what-it-does)
+-   [How It Works](#how-it-works)
+-   [AWS Services Affected](#aws-services-affected)
+-   [Benefits](#benefits)
+-   [Implementation Details](#implementation-details)
+-   [Frequently Asked Questions](#faq)
+-   [Related Resources](#related-resources)
+
+## What It Does
+
+The EC2 Instance Type Optimization Finder identifies EC2 instances that can be retyped to more cost-effective instance families based on their actual workload characteristics. By analyzing CPU and memory utilization patterns over time, it recommends switches to better-suited instances—such as compute-optimized, memory-optimized, or newer generation types—without compromising performance.
+
+For example, this Finder might recommend transitioning from older-generation m5 instances to more efficient m6g or m7g Graviton-based instances, which can provide up to 40% cost-performance improvements.
+
+## How It Works
+
+CloudFix analyzes your EC2 instances by:
+
+-   Collecting and analyzing CPU and memory utilization metrics from CloudWatch
+-   Identifying consistent utilization patterns that suggest an instance would be better served by a different instance family or generation
+-   Validating recommendations against AWS Compute Optimizer insights when available
+-   Excluding instances that are poor candidates for retyping (spot instances, burstable T-series instances, and nano/micro instances)
+-   Avoiding recommendations that would result in higher hourly costs unless performance justification is significant
+
+The Finder provides detailed recommendations, including the current instance type, suggested new instance type, and potential cost savings, allowing you to make informed decisions about which instances to optimize.
+
+## AWS Services Affected
+
+![Amazon EC2](/media/uploads/EC2.svg)
+
+![AWS Compute Optimizer](/media/uploads/Compute-Optimizer.svg)
+
+[Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html)
+
+[AWS Compute Optimizer](https://aws.amazon.com/compute-optimizer/getting-started/)
+
+## Benefits
+
+-   **Cost Reduction:** Save on EC2 costs by moving to more appropriately sized and generation instances
+-   **Performance Optimization:** Match instance types to actual workload patterns for better efficiency
+-   **Modernization:** Transition to newer generation instances with improved price-performance ratios
+-   **Graviton Advantages:** Take advantage of cost-effective Arm-based instances when appropriate
+-   **Data-Driven Decisions:** Base instance type changes on actual utilization metrics rather than guesswork
+
+## Implementation Details
+
+This Finder does not have an automatic Fixer. Instance type retyping must be performed manually through the following process:
+
+1.  Stop the instance that requires retyping
+2.  Change the instance type via the EC2 console or AWS CLI
+3.  Restart the instance
+
+CloudFix provides the recommended instance type and justification, allowing your team or CloudFix Professional Services to handle the change according to your maintenance windows and operational procedures.
+
+Since instance retyping requires a stop/start cycle, it's important to plan these changes during scheduled maintenance windows to minimize service disruption. All changes can be easily reverted by repeating the retyping process to return to the original instance type if needed.
+
+## Frequently Asked Questions
+
+**Can CloudFix implement the fix automatically once I accept the recommendation?**
+
+No. This is a manually executed fix that requires stopping and starting the instance, which involves potential downtime. CloudFix provides the recommendations, but your team must implement the changes.
+
+**Does this fix require downtime?**
+
+Yes. Instance retyping requires a stop/start cycle, which results in downtime. It's recommended to plan these changes during maintenance windows to minimize impact.
+
+**Is it possible to roll back once the instance type is changed?**
+
+Yes. You can revert to the original instance type by repeating the retyping process manually.
+
+**How are the instance recommendations determined?**
+
+Recommendations are based on CPU and memory utilization metrics from CloudWatch, validated against AWS Compute Optimizer insights when available. The analysis considers consistent utilization patterns over time to identify the most cost-effective instance type for your workload.
+
+**Are all instance types considered for optimization?**
+
+No. Spot instances, burstable T-series instances, and nano/micro instances are excluded from recommendations due to their volatility or unsuitability for long-term cost modeling.
+
+## Related Resources
+
+-   [Changing the Instance Type](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-resize.html) in AWS Documentation
+-   [EC2 Instance Recommendations from Compute Optimizer](https://docs.aws.amazon.com/compute-optimizer/latest/ug/view-ec2-recommendations.html)
+-   [Amazon EC2 Cost and Capacity Optimization](https://aws.amazon.com/ec2/cost-and-capacity/)

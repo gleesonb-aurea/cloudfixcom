@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getAllEpisodes } from '@/lib/podcast';
 import PodcastPlayer from '@/components/podcast/PodcastPlayer';
+import PlatformBadges from '@/components/podcast/PlatformBadges';
 
 export const metadata = { title: 'Podcast | CloudFix', description: 'Tune into AWS cost optimization conversations with CloudFix and guests.' };
 
@@ -19,6 +20,7 @@ export default async function PodcastPage({ searchParams }: { searchParams?: { e
         {current && (
           <div className="mb-10">
             <PodcastPlayer episode={current} />
+            <PlatformBadges episode={current} className="mt-3" />
           </div>
         )}
 

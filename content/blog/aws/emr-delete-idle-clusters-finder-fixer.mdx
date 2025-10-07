@@ -1,0 +1,131 @@
+---
+title: "NEW! EMR Delete Idle Clusters Finder/Fixer"
+description: "We are pleased to announce the new Delete Idle Clusters Finder/Fixer for Amazon Elastic Map Reduce (EMR). With this Finder/Fixer, we take a simple concept, “tur..."
+date: 2024-03-15 18:05:49
+modified: 2024-07-11 17:00:40
+category: "AWS"
+tags: ["AWS","cloud","ec2","s3","monitoring"]
+published: true
+slug: "emr-delete-idle-clusters-finder-fixer"
+---
+
+We are pleased to announce the new Delete Idle Clusters Finder/Fixer for Amazon Elastic Map Reduce (EMR). With this Finder/Fixer, we take a simple concept, “turning the lights off when you leave the room”, and apply that at scale to idle Amazon EMR clusters. This is a relatively simple finder/fixer, but since EMR clusters are effectively EC2 instances with a 25% markup, we want to make sure you aren’t paying for them unless you are using them.
+
+## EMR Costs
+
+If you are reading this blog post, you are probably already familiar with EMR. For a quick refresher, EMR is one of the older AWS services. In my view, it is the first that wasn’t a “building block” in the way that EC2 or S3 are, but a complete service. It was initially built to run the MapReduce algorithm. I give a more detailed history of EMR in my blog post, [Introducing CloudFix's Newest Addition: The EMR Instance Optimizer](/blog/introducing-emr-instance-optimizer/). Be sure to read that one too.
+
+At its core, EMR leverages Amazon EC2 instances to provide the computational power needed for large-scale compute jobs. When comparing the cost structure of EMR to running standard EC2 instances, EMR comes in at an approximately 25% premium. This premium covers the management, configuration, and scaling capabilities that EMR provides, which are above and beyond what you get with a bare EC2 instance.
+
+For instance, consider a scenario where you're using m5.xlarge EC2 instances for your data processing needs. If the on-demand price for an m5.xlarge instance in the US East (N. Virginia) region is approximately $0.192 per hour, running the same instance type under EMR would cost an additional $0.048 per hour for the EMR capacity, bringing the total to around $0.240 per hour. This premium, roughly 25%, accounts for the convenience and advanced features EMR offers, such as easy cluster management, pre-configured applications, and automatic scaling. The awesome AMD-powered M7a instance, at its largest size, would cost $11.12832 per hour for EC2 on demand, and an additional $2.78208 per hour for EMR. That’s nearly $14 per hour per node! 
+
+All this to say that EMR clusters are, from a cost perspective, expensive EC2 instances. We want to make sure that you aren’t paying for an idling cluster.
+
+## Determining if a cluster is idle
+
+EMR (certain versions and in certain regions) supports a feature called “auto-termination.” With an auto-termination policy in place, AWS can monitor your EMR cluster and terminate it when it is idle. A precise definition of _idle_ is given in [Using an auto-termination policy - Amazon EMR](https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-auto-termination-policy.html). To summarize, an EMR cluster is considered idle if there are no active YARN applications, HDFS is below 10% utilization, no active EMR notebook or studio connections, no on-cluster application user interfaces in use, and no pending steps. Additionally, programs can write to the special file `/emr/metricscollector/isbusy` If this file has not been updated in a given amount of time, the cluster is considered idle and can be automatically terminated. 
+
+CloudWatch for EMR has a metric `IsIdle`, a boolean metric which is `true` if the cluster is idle, and `false` if it is being utilized. By looking at the metrics of this variable over time, you can determine if the cluster is truly idle. Documentation of this and other EMR CloudWatch metrics is available on the page [Monitoring Amazon EMR metrics with CloudWatch](https://docs.aws.amazon.com/emr/latest/ManagementGuide/UsingEMR_ViewingMetrics.html). The recommendation for the usage of the `IsIdle` metric is to raise an alarm if the metric has been `true` for 30 minutes or longer.
+
+In our view, turning off an idle cluster is almost always the right thing to do. The whole point of the cloud is that you can start and stop your usage of compute resources on demand.
+
+## Finding EMR Clusters
+
+To find AWS EMR clusters, you can either utilize the Cost and Usage Report, the AWS Management Console, the Management Console, or the AWS CLI. If you are new to the Cost and Usage Report, visit our extensive guide: [AWS Foundational Skills: Optimizing AWS costs with the Cost and Usage Report (CUR)](/blog/aws-foundational-skills-cost-and-usage-report-cur/). The CLI and Management Console are both great options, but note that the EMR Console and the EMR CLI commands only operate on one region at a time.
+
+If you were to use the CLI, you would use the following command:
+
+```bash
+aws emr list-clusters --active
+```
+
+This would produce output which looks like the following:
+
+{
+    "Clusters": [
+        {
+            "Id": "j-1A2B3C4D5E6F7G1",
+            "Name": "EMR Cluster One",
+            "Status": {
+                "State": "RUNNING",
+                "StateChangeReason": {
+                    "Message": "Cluster is running."
+                },
+                "Timeline": {
+                    "CreationDateTime": "2024-03-14T05:00:00Z",
+                    "ReadyDateTime": "2024-03-14T05:20:00Z"
+                }
+            },
+            "NormalizedInstanceHours": 240
+        },
+        {
+            "Id": "j-2H3I4J5K6L7M8N2",
+            "Name": "Data Processing Cluster",
+            "Status": {
+                "State": "RUNNING",
+                "StateChangeReason": {
+                    "Message": "Cluster is running."
+                },
+                "Timeline": {
+                    "CreationDateTime": "2024-03-13T22:00:00Z",
+                    "ReadyDateTime": "2024-03-13T22:15:00Z"
+                }
+            },
+            "NormalizedInstanceHours": 120
+        }
+    ]
+}
+
+This shows 2 running clusters with ID’s `j-1A2B3C4D5E6F7G1` and `j-2H3I4J5K6L7M8N2`. 
+
+## Enabling Auto-Termination
+
+To enable auto-termination, you will need an IAM policy which applies to the manager of the EMR clusters. The following IAM policy gives control over all auto termination policies in an account:
+
+{
+  "Version": "2012-10-17",
+  "Statement": {
+    "Sid": "AllowAutoTerminationPolicyActions",
+    "Effect": "Allow",
+    "Action": [
+      "elasticmapreduce:PutAutoTerminationPolicy",
+      "elasticmapreduce:GetAutoTerminationPolicy",
+      "elasticmapreduce:RemoveAutoTerminationPolicy"
+    ],
+    "Resource": "arn:aws:elasticmapreduce:region:account-id:cluster/*"
+  }
+}
+
+Save this file as policy.json, and then runt he following command to create this policy:
+
+```bash
+aws iam create-policy --policy-name YourPolicyName --policy-document file://policy.json
+```
+
+This will return a policy ARN that you can attach to your IAM user:
+
+```bash
+aws iam attach-user-policy --user-name YourUserName --policy-arn "arn:aws:iam::account-id:policy/YourPolicyName"
+```
+
+In the above commands, be sure to name the policy and then reference that policy name, ARN, and your IAM user name appropriately. Once this is done, then for each cluster id, you can use the `put-auto-termination-policy` command. 
+
+The following command will put the termination policy in place:
+
+```bash
+aws emr put-auto-termination-policy \
+    --cluster-id  \
+    --auto-termination-policy IdleTimeout=3600 
+```
+
+This enables auto-termination after 1 hour of cluster idleness according to the `IsIdle` metric.
+
+## Reducing your AWS EMR Bill with CloudFix
+
+If you are a CloudFix Customer, this new Finder/Fixer is available in the Advanced section of the CloudFix Console, under the “EMR Delete Idle Instances” window. This will alert you to EMR clusters without auto termination enabled, and make it “one-click” simple for you to enable this setting.
+
+![EMR Delete Idle Clusters screenshot](/media/uploads/EMR-Delete-Idle-Clusters-screenshot.png)
+
+Although it is simple, the effects are enormous. As mentioned above, an idle EMR cluster is effectively a collection of expensive EC2 instances. Paying for them to sit and do nothing is painful! We are big believers in limiting the “blast radius” of potential cost overruns, and enabling auto-termination of EMR clusters is a perfect example of this. A simple bug in a script can be responsible for failing to turn off a cluster, and that is not something you want to discover a few weeks after the fact, in your billing console.
+
+**[Sign up here for a free savings assessment!](/assessment/)**

@@ -1,0 +1,94 @@
+---
+title: "CloudFix Finder/Fixer: ElastiCache Migrate To Valkey"
+description: "Migrate your Amazon ElastiCache Redis OSS clusters to Valkey 7.2, a fully compatible, open-source alternative offering enhanced performance and cost savings. Va..."
+date: 2025-04-09 18:06:29
+modified: 2025-04-09 18:06:29
+category: "AWS"
+tags: ["AWS","cloud","migration"]
+published: true
+slug: "feature-elasticache-migrate-to-valkey"
+---
+
+Migrate your Amazon ElastiCache Redis OSS clusters to Valkey 7.2, a fully compatible, open-source alternative offering enhanced performance and cost savings. Valkey provides up to 20% lower pricing, better multi-core utilization, and reduced memory overhead compared to Redis OSS, without requiring application code changes. This CloudFix feature automates the migration process for eligible clusters.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+Organizations using ElastiCache with the Redis OSS engine may be missing out on potential cost savings and performance improvements offered by newer, compatible engines like Valkey. Valkey 7.2 is designed as a high-performance, cost-effective alternative to Redis OSS, but manually migrating clusters can be complex and time-consuming.
+
+### Solution
+
+CloudFix identifies active ElastiCache Redis OSS clusters eligible for migration to Valkey 7.2. The automated Fixer utilizes the AWS API to seamlessly change the cluster engine to Valkey, applying necessary configurations and performing validation checks. This allows customers to benefit from Valkey's improved efficiency and lower costs with minimal effort and near-zero downtime during the in-place engine switch.
+
+## AWS Services Affected
+
+Service
+
+Icon
+
+[Amazon ElastiCache](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/WhatIs.html)
+
+![Amazon ElastiCache](/media/uploads/ElastiCache.svg)
+
+## How It Works
+
+### Finder Component
+
+The Finder component identifies ElastiCache clusters that meet the following criteria for migration to Valkey:
+
+-   The cluster engine is Redis OSS.
+-   The cluster is active and not tagged with `cloudfix_dont_fix_it`.
+-   The estimated annualized cost of the cluster exceeds a minimum threshold (e.g., $100).
+-   The cluster configuration is compatible with the Valkey engine based on AWS guidelines.
+-   Potential cost savings from migrating to Valkey (estimated at ~20% of node costs) are identified.
+
+### Fixer Component
+
+Upon approval, the automated Fixer executes the following steps:
+
+1.  Performs pre-migration validation checks.
+2.  Uses the `modify-cache-cluster` AWS API call to change the engine from Redis OSS to Valkey for the specified cluster ID.
+3.  Applies CloudFix tracking tags to the modified cluster.
+4.  Executes post-migration verification steps to ensure a successful transition.
+
+```
+aws elasticache modify-cache-cluster \
+  --cache-cluster-id <cluster_id> \
+  --engine valkey
+```
+
+## FAQ
+
+**Q: What are the potential savings?**  
+A: Migrating to Valkey can result in approximately 20% savings on ElastiCache node costs. Average customer savings are estimated around $6,000 annually, with potential for over $100,000 per year for large enterprise accounts.
+
+**Q: Is rollback possible?**  
+A: There is no automated rollback feature currently. Reverting to Redis OSS would require manual steps like cluster recreation or restoring from a snapshot. Thorough testing in pre-production environments is recommended before migrating production clusters.
+
+**Q: Can CloudFix implement the fix automatically?**  
+A: Yes, CloudFix provides an automated Fixer that executes the migration runbook using AWS SDK and CLI commands once you approve the recommendation.
+
+**Q: Does this fix require downtime?**  
+A: The migration process aims for minimal or near-zero downtime, especially when utilizing AWS's in-place engine upgrade capabilities. However, it is crucial to test the migration in non-production environments first to validate the impact.
+
+**Q: Are application code changes needed?**  
+A: No, Valkey is fully compatible with Redis OSS, so application code changes are not required for the migration.
+
+## Related Resources
+
+-   [Overview of Amazon ElastiCache (AWS Documentation)](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/WhatIs.html)
+-   [Online Migration for Valkey or Redis OSS (AWS Documentation)](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/OnlineMigration.html)
+-   [Migrating to Valkey (AWS Blog) - Note: May refer broadly to ElastiCache for Redis page](https://aws.amazon.com/elasticache/redis/)
+-   [AWS CLI modify-cache-cluster Documentation](https://docs.aws.amazon.com/cli/latest/reference/elasticache/modify-cache-cluster.html)
+-   [ElastiCache Migration to Valkey (CloudFix Support)](https://support.cloudfix.com/article/123394-elasticache-migration-to-valkey)

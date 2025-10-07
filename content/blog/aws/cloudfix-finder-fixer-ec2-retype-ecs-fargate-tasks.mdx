@@ -1,0 +1,83 @@
+---
+title: "CloudFix Finder/Fixer: EC2 Retype ECS Fargate Tasks"
+description: "CloudFix's ECS Fargate Service-Level Optimization feature enhances cost optimization in ECS Fargate environments by analyzing and optimizing at the service leve..."
+date: 2025-04-09 18:02:34
+modified: 2025-04-09 18:02:34
+category: "AWS"
+tags: ["AWS","cloud","ec2","cost optimization","compute"]
+published: true
+slug: "cloudfix-finder-fixer-ec2-retype-ecs-fargate-tasks"
+---
+
+CloudFix's ECS Fargate Service-Level Optimization feature enhances cost optimization in ECS Fargate environments by analyzing and optimizing at the service level rather than individual tasks. This approach provides more accurate and actionable recommendations while maintaining performance and reliability.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+Traditional approaches to ECS Fargate optimization often focus on individual task-level analysis, which can be data-intensive and less actionable. This granular approach may miss broader patterns and opportunities for optimization at the service level, potentially leading to inefficient resource allocation and higher costs.
+
+## AWS Services Affected
+
+![Amazon EC2](/media/uploads/EC2.svg)
+
+![Amazon ECS](/media/uploads/Elastic-Container-Service.svg)
+
+![AWS Fargate](/media/uploads/Fargate.svg)
+
+[Amazon EC2](https://aws.amazon.com/ec2/)
+
+[Amazon ECS](https://aws.amazon.com/ecs/)
+
+[AWS Fargate](https://aws.amazon.com/fargate/)
+
+## How It Works
+
+### Finder Component
+
+The Finder component analyzes ECS Fargate services using the following criteria:
+
+-   Identifies active ECS Fargate services in running clusters
+-   Aggregates historical task usage data at the service level
+-   Analyzes CPU and memory utilization metrics
+-   Evaluates potential over-provisioning using AWS CUR data
+-   Incorporates AWS Compute Optimizer recommendations
+
+### Fixer Component
+
+When optimization opportunities are identified, the Fixer component:
+
+1.  Analyzes service-level metrics to determine optimal configuration
+2.  Generates recommendations for CPU and memory allocation adjustments
+3.  Implements changes through the ECS UpdateService API when approved
+
+## FAQ
+
+### Is it possible to rollback the changes?
+
+Yes, any changes made to service configuration via the UpdateService API can be easily reversed through the ECS console or CLI.
+
+### Does this fix require downtime?
+
+No. ECS services can be reconfigured using rolling updates that maintain service availability throughout the process.
+
+### Can CloudFix implement the fix automatically?
+
+Currently, the execution is manual or semi-automated via internal runbooks. The Fixer development is aligned with existing runbook-based deployment methods.
+
+## Related Resources
+
+-   [ECS Service Configuration Guide](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-connect-concepts.html)
+-   [ECS UpdateService API Reference](https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_UpdateService.html)
+-   [AWS Compute Optimizer for ECS on Fargate](https://docs.aws.amazon.com/compute-optimizer/latest/ug/ecs-fargate.html)
+-   [CloudFix Support: ECS Fargate Service-Level Optimization](https://support.cloudfix.com/article/123393-ecs-fargate-service-level-optimization)

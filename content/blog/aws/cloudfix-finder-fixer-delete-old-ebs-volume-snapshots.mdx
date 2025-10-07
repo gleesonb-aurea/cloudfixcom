@@ -1,0 +1,120 @@
+---
+title: "CloudFix Finder/Fixer: Delete Old EBS Volume Snapshots"
+description: "Overview CloudFix helps you identify and safely delete old EBS volume snapshots that are no longer needed. This feature helps optimize storage costs while maint..."
+date: 2025-04-06 23:41:38
+modified: 2025-04-06 23:41:38
+category: "AWS"
+tags: ["AWS","cloud","ec2","rds","cost optimization"]
+published: true
+slug: "cloudfix-finder-fixer-delete-old-ebs-volume-snapshots"
+---
+
+## Overview
+
+CloudFix helps you identify and safely delete old EBS volume snapshots that are no longer needed. This feature helps optimize storage costs while maintaining data safety through careful snapshot management.
+
+## Contents
+
+-   [Overview](#overview)
+    -   [Key Benefits](#key-benefits)
+-   [AWS Services Affected](#aws-services-affected)
+    -   [Dependencies](#dependencies)
+    -   [Service Limits](#service-limits)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [Implementation Details](#implementation-details)
+-   [Important Considerations](#important-considerations)
+-   [Safety and Rollback](#safety-and-rollback)
+    -   [Safety Measures](#safety-measures)
+    -   [Rollback Process](#rollback-process)
+-   [Related Resources](#related-resources)
+
+### Key Benefits
+
+-   Reduce storage costs by removing unnecessary snapshots
+-   Maintain data safety through careful snapshot selection
+-   Automated identification of old snapshots
+-   Easy rollback process if needed
+
+## AWS Services Affected
+
+![AWS EBS icon](/media/uploads/Elastic-Block-Store.svg)
+
+![AWS EC2 icon](/media/uploads/EC2.svg)
+
+[Amazon Elastic Block Store (EBS)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AmazonEBS.html)
+
+[Amazon Elastic Compute Cloud (EC2)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html)
+
+### Dependencies
+
+-   [AWS CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html) (for monitoring)
+-   [AWS CloudTrail](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html) (for logging)
+
+### Service Limits
+
+-   Maximum number of concurrent snapshot deletions
+-   API rate limits for snapshot operations
+
+## How It Works
+
+### Finder Component
+
+-   Identifies old EBS snapshots
+-   Checks snapshot dependencies
+-   Calculates potential cost savings
+-   Verifies snapshot eligibility for deletion
+
+### Fixer Component
+
+-   Validates snapshot selection
+-   Checks for dependent AMIs or volumes
+-   Deletes eligible snapshots
+-   Records actions in CloudTrail
+
+## Implementation Details
+
+The implementation process involves:
+
+1.  Snapshot Analysis
+    -   Identify old snapshots
+    -   Check snapshot age
+    -   Verify dependencies
+2.  Safety Verification
+    -   Check for AMI dependencies
+    -   Verify no active volumes
+    -   Confirm snapshot age threshold
+3.  Snapshot Cleanup
+    -   Delete eligible snapshots
+    -   Update CloudWatch metrics
+    -   Log deletion actions
+
+## Important Considerations
+
+-   Snapshot dependencies
+-   Recovery requirements
+-   Regional restrictions
+-   API rate limits
+
+## Safety and Rollback
+
+### Safety Measures
+
+-   Dependency checking
+-   Age threshold validation
+-   CloudTrail logging
+-   Staged implementation
+
+### Rollback Process
+
+-   Note: Snapshot deletions cannot be directly rolled back
+-   Maintain good snapshot management practices
+-   Consider creating archive copies of critical snapshots
+
+## Related Resources
+
+-   [CloudFix Blog: Reduce Costs by Removing Old EBS Snapshots](/blog/reduce-aws-ebs-costs-orphaned-snapshots)
+-   [Support Article: Delete Old EBS Volume Snapshots](https://support.cloudfix.com/article/16958-delete-old-ebs-volume-snapshots)
+-   [AWS Documentation: Deleting an Amazon EBS Snapshot](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-deleting-snapshot.html)
+-   [AWS Blog: Cost Optimization with EBS Snapshot Management](https://aws.amazon.com/blogs/storage/delete-ebs-snapshots-cost-optimization/)

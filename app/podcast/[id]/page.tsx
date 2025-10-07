@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getEpisodeById, getAllEpisodes } from '@/lib/podcast';
 import PodcastPlayer from '@/components/podcast/PodcastPlayer';
+import PlatformBadges from '@/components/podcast/PlatformBadges';
+import GuestPanel from '@/components/podcast/GuestPanel';
 
 interface PageProps { params: { id: string } }
 
@@ -36,6 +38,11 @@ export default async function PodcastEpisodePage({ params }: PageProps) {
         <h1 className="text-4xl font-bold mt-4">{ep.title}</h1>
         <div className="text-sm text-gray-500 mt-1">{new Date(ep.publishDate).toLocaleDateString('en-GB', { dateStyle: 'medium' })} • {ep.duration} min</div>
         <div className="mt-6"><PodcastPlayer episode={ep} /></div>
+        <PlatformBadges episode={ep} className="mt-4" />
+        <div className="mt-6">
+          <h2 className="text-2xl font-semibold mb-3">Guest</h2>
+          <GuestPanel guest={ep.guest} />
+        </div>
         <div className="mt-6">
           <h2 className="text-2xl font-semibold mb-2">Show Notes</h2>
           <ul className="list-disc pl-5 text-gray-700">

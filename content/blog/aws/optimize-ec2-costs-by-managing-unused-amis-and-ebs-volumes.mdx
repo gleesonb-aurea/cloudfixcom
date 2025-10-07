@@ -1,0 +1,525 @@
+---
+title: "Optimize EC2 Costs by Managing Unused AMIs and EBS Volumes"
+description: "1. Introduction Many kids (and a select breed of adults, too) love card collecting: Baseball cards, Magic: The Gathering cards, and even Xena: Warrior Princess..."
+date: 2023-08-09 13:55:58
+modified: 2025-01-23 11:24:01
+category: "AWS"
+tags: ["AWS","cloud","ec2","s3","rds"]
+published: true
+slug: "optimize-ec2-costs-by-managing-unused-amis-and-ebs-volumes"
+---
+
+## 1\. Introduction
+
+Many kids (and a select breed of adults, too) love card collecting: [Baseball cards](https://en.wikipedia.org/wiki/Baseball_card), [Magic: The Gathering](https://en.wikipedia.org/wiki/Magic:_The_Gathering) cards, and even Xena: Warrior Princess cards. One of my senior colleagues recounts the story of wanting to collect Garbage Pail Kids in the 80’s, but his mom wouldn’t let him and he still resents her for it. Regardless, card collecting has always had an inherent challenge: there are many, many cards that have little to no value, and only a few that have high value. As a result, most collectors end up spending too much time, money, and wasted storage space dealing with low-value cards.  
+  
+In many ways, it’s the perfect analogy for Amazon Machine Images, or AMIs. Many are created during the development process, while never making it to production use. We don’t want to pay for excessive costs for low value objects, be they cards or AMIs! In a moment, we’ll talk about how to spend dramatically less money and better manage your inadvertent AMI collection — but first, for the AWS history buffs like me, here’s the background of how AMIs came to be.
+
+## Table of contents
+
+1.  [Introduction](#Introduction)
+    1.  [The History of EC2 and AMIs](#The-History-of-EC2-and-AMIs)
+    2.  [What are EBS-backed AMIs?](#What-are-EBS-backed-AMIs)
+2.  [EBS-backed AMIs and Usage and Pricing](#EBS-backed-AMIs-and-Usage-and-Pricing)
+    1.  [EBS-backed AMI Pricing](#EBS-backed-AMI-Pricing)
+    2.  [Uses of AMIs](#Uses-of-AMIs)
+    3.  [Example and Pricing](#Example-and-Pricing)
+3.  [Finding and Removing Unused AMIs](#Finding-and-Removing-Unused-AMIs)
+    1.  [Finding Unused AMIs](#Finding-Unused-AMIs)
+        1.  [CUR Query to find EBS Snapshots](#CUR-Query-to-find-EBS-Snapshots)
+        2.  [DescribeImages to Identify EBS-backed AMIs](#DescribeImages-to-Identify-EBS-backed-AMIs "DescribeImages to Identify EBS-backed AMIs")
+        3.  [Determining if the AMI has been recently used](#Determining-if-the-AMI-has-been-recently-used "Determining if the AMI has been recently used")
+    2.  [Deregistering AMIs](#Deregistering-AMIs "Deregistering AMIs")
+        1.  [Recycle Bin Retention Rule](#Recycle-Bin-Retention-Rule "Recycle Bin Retention Rule")
+        2.  [Tag the EBS Snapshot](#Tag-the-EBS-Snapshot "Tag the EBS Snapshot")
+        3.  [Deregister Image](#Deregister-Image "Deregister Image")
+4.  [Why CloudFix?](#Why-CloudFix "Why CloudFix?")
+5.  [Conclusion](#Conclusion "Conclusion")
+
+### 1.1. The History of EC2 and AMIs
+
+17 years ago, [Jeff Barr](https://aws.amazon.com/blogs/aws/author/jbarr/) of AWS wrote the [blog post announcing Amazon EC2 Beta](https://aws.amazon.com/blogs/aws/amazon_ec2_beta/) (the post is dated August 25th, 2006)! At the time the post was written, I was in my very early 20’s and unfortunately wasn’t able to attend the family vacation that year (I am Jeff’s oldest kid). Jeff, Carmen, and the rest of my siblings were in Mexico for a family vacation. It was at this quiet hotel with “pay by the half-hour” internet access where the original post for EC2 was published. In a bit of nostalgia, Jeff returned to that spot later with a commemorative EC2 sticker. 
+
+\[caption id="attachment\_14056" align="alignnone" width="600"\]![Jeff Barr holding a sticker of AWS EC2 cloud computing](/media/uploads/Fixer-Blog-EC2-Image-600x335.jpg) Jeff Barr in Mexico, celebrating the public launch of EC2\[/caption\]
+
+In the introduction to his landmark blog post, we also learned about Amazon Machine Images, or AMIs. Quoting the blog post, "Each AMI is a pre-configured boot disk — just a packaged-up operating system stored as an Amazon S3 object." The AMI contains the operating system, as well as pre-installed software. This way, the instances can have everything they need from the moment they start.
+
+Initially, it was a bit cumbersome to create and manipulate AMIs. The AMI data from S3 was copied to the instance's local storage as part of the startup procedure. Instance storage data is, as the name implies, storage that is physically attached to the instance. It is fast, accessible with minimal latency, and does not incur additional costs. However, there are also downsides - you are limited by the amount of storage on the device, and if the instance is unexpectedly terminated, the data on instance storage is lost.
+
+AWS recognized these limitations and created the EBS-backed AMI. In this article, we are going to talk about what they are, how they can accumulate, and how to not overpay for AMIs in general. And, it wouldn’t be a proper CloudFix article if we didn’t tell you how to create some automation to snapshot the AMIs we aren’t using, saving up to 75% in the process. So let’s jump in!
+
+### 1.2. What are EBS-backed AMIs?
+
+Elastic Block Store (EBS) is another fundamental Amazon Web Service. [Launched in 2008](https://aws.amazon.com/blogs/aws/amazon-elastic/), EBS allows for "persistent, high-performance, high-availability block-level storage which you can attach to a running instance of EC2." The _block storage_ part of EBS refers to the fact that EBS is a very low level data store. It exists at a level below the file system, and from the perspective of the operating system it looks like an unformatted disk drive.
+
+[EBS-backed AMIs were announced in 2009](https://aws.amazon.com/blogs/aws/new-amazon-ec2-feature-boot-from-elastic-block-store/), and offered a new level of flexibility, performance, and durability to EC2. By having EBS-backed AMIs, the _storage_ and _compute_ components of EC2 are truly decoupled. As an example of the flexibility EBS-backed AMIs afford, when using EBS you can stop a running instance. While the instance is stopped, the data persists as an EBS volume, and there are no hourly charges associated with the instance. During this period, the instance can be retyped (e.g. `m6a.12xlarge` to `m7g.12xlarge`) and then restarted. This is an incredible amount of flexibility. It still amazes me that the entire underlying hardware can be changed with a moment's notice, while the operating system and data are completely preserved.
+
+Additionally, there are several varieties of EBS volumes, powered by different underlying hardware. The highest performance volume type, io2, can be sized up to 16TB and provides 500 IOPS per GB and single-digit millisecond latency. EBS also offers the relatively new gp3, which can also be provisioned up to 16TB, and provides high performance (but less IOPS than io2) for a reasonable price. (By the way, did you know that you should always be using gp3 rather than gp2? Check out [this blog post for why, and how to switch](/blog/migrate-gp2-to-gp3-better-performance-lower-costs/).) In short, EBS-backed volumes allow a mix-and-match of instance and volume capabilities. Without EBS-backed volumes, AWS would need to have an exponential number of different configurations of hardware.
+
+## 2 EBS-backed AMIs and Usage and Pricing
+
+In the introduction, we made the case for why EBS-backed AMIs are great. In this section, we’ll talk through some common use patterns and understand how we can accumulate AMIs, both used and unused. To understand why accumulating unused AMIs is not a good thing, we are going to quickly review pricing.
+
+### 2.1. EBS-backed AMI Pricing
+
+EBS-backed AMIs are priced according to the standard EBS rates. According to the [EBS pricing page](https://aws.amazon.com/ebs/pricing/), this is $0.05/GB-month (based on `us-east-1` as of August 2023). A slimmed-down Linux installation works out to about 8 GB, without any additional data or packages. This works out to about $0.40 per month for this image, or $4.80 per year. At first, this doesn’t sound too bad, but during the development process it is easy to accumulate many of these snapshots - we will see an example below. And, as we will see, through the normal course of events these AMIs tend to grow in both size and number.
+
+However, as we will shortly see, during the development process we can accumulate more and more software, pushing the AMI size way past the baseline!
+
+### 2.2. Uses of AMIs
+
+As discussed, an AMI is an image of the root disk of an operating system. It is what allows the software configuration of one EC2 instance to be saved and launched on multiple EC2 instances. There are several main use cases of AMIs, and these use cases are facilitated by the fact that it is very easy to create an AMI from either a few [clicks in the console](https://docs.aws.amazon.com/toolkit-for-visual-studio/latest/user-guide/tkv-create-ami-from-instance.html) or an AWS CLI command. The main reasons that AMIs get created are:
+
+1.  Backups - Making a backup of a running EC2 instance, complete with all of its attached volumes, is easy with EBS-backed AMIs. According to AWS' excellent [Prescriptive Guidance](https://aws.amazon.com/prescriptive-guidance/?apg-all-cards.sort-by=item.additionalFields.sortDate&apg-all-cards.sort-order=desc&awsf.apg-new-filter=*all&awsf.apg-content-type-filter=*all&awsf.apg-code-filter=*all&awsf.apg-category-filter=*all&awsf.apg-rtype-filter=*all&awsf.apg-isv-filter=*all&awsf.apg-product-filter=*all&awsf.apg-env-filter=*all) for [Restoring an Amazon EBS volume or an EC2 instance,](https://docs.aws.amazon.com/prescriptive-guidance/latest/backup-recovery/restore.html) "If you need to restore an entire EC2 instance, including all of its associated volumes, you must use an Amazon Machine Image (AMI) backup of your instance."
+2.  Encapsulating development and production environments - AMIs contain the entire operating system and software stack. In order to use EC2 effectively, custom AMIs can be created for development and production environments which contain all of the software needed to develop or run your application. This ensures consistency as many instances can be launched with identical software. In this use case, AMIs play a similar role to containers (but AMIs predate Docker by about 8 years).
+3.  Artifacts of Automation (e.g. CI/CD pipelines) - AMIs can be created as part of an automated process in order to make sure that all environments are reproducible at any time. We are big fans of automation, but you do need to be aware of the volume of artifacts it can create. I am reminded of the original [Fantasia](https://en.wikipedia.org/wiki/Fantasia_\(1940_film\)), where Mickey used sorcery to automate moving buckets of water. Spoiler alert: his _automation_ ran wild and flooded the castle. 
+
+\[caption id="attachment\_14061" align="aligncenter" width="345"\]![Mickey Mouse with his magical automated broomsticks](/media/uploads/Mickey-Fantasia.jpg) Mickey with his automated broomsticks, from Fantasia. © Disney, 1940.\[/caption\]
+
+### 2.3. Example and Pricing
+
+In addition to accumulating in number, the AMIs themselves tend to get bigger. Software over time requires more and more dependencies, and if you are adding data (e.g. trained LLM's), the size of your EBS volumes will only increase. The following table shows how AMIs can accumulate during the normal software development cycle.
+
+_Table: Accumulation of AMIs during the software development process_
+
+AMI
+
+Size (GB)
+
+Annual Cost
+
+Date added
+
+Notes
+
+In use?
+
+ami-abc123
+
+8.5
+
+$5.10
+
+1 Jan 2023
+
+Base OS install
+
+N
+
+ami-bcd234
+
+14.4
+
+$8.64
+
+5 Jan 2023
+
+Added software 1.2.0
+
+N
+
+ami-aaa012
+
+16.2
+
+$9.72
+
+17 Jan 2023
+
+1.2.1 - added image render
+
+N
+
+ami-bce234
+
+18.7
+
+$11.22
+
+2 Feb 2023
+
+1.3.0 - Embedded data
+
+N
+
+ami-ace999
+
+20.1
+
+$12.06
+
+18 Feb 2023
+
+1.3.1 - Added profile data
+
+N
+
+... more AMIs...
+
+425
+
+$255.00
+
+Mar-July 2023
+
+Several more AMIs
+
+N
+
+ami-cde345
+
+26.4
+
+$15.84
+
+10 July 2023
+
+Added LLaMA LLM
+
+N
+
+ami-def456
+
+27.3
+
+$16.38
+
+1 Aug 2023
+
+Updated to 1.7.4
+
+N
+
+ami-aaa111
+
+27.3
+
+$16.38
+
+2 Aug 2023
+
+1.7.4-hotfix
+
+Y
+
+**In Use Annual Cost**
+
+ 
+
+**$16.38**
+
+ 
+
+ 
+
+ 
+
+**Total Annual Cost**
+
+ 
+
+**$350.34**
+
+ 
+
+ 
+
+ 
+
+Looking at the table, we can see that a developer started at the beginning of the year with an AMI containing a base operating system. Over time, she added software, libraries, embedded data, etc. For every new AMI, there is an associated annual cost. From the developer’s perspective, she wants to make sure that she can revert her changes if necessary, and she is under a bit of a time crunch. As soon as the new AMIs are ready, the DevOps team pushes them into production, and she moves on to the next feature. This process continues throughout the year. Notice that both the **Size** and **Annual Cost** continues to grow with each new version.
+
+As I mentioned in the list above, another way that we accumulate AMIs is via continuous integration / continuous deployment pipelines. For the uninitiated, [CI/CD](https://about.gitlab.com/topics/ci-cd/) is a DevOps practice where actions related to building, testing, and deployment are created when code is committed to a version control system. [Github](https://github.blog/2022-02-02-build-ci-cd-pipeline-github-actions-four-steps/), [Gitlab](https://docs.gitlab.com/ee/ci/), and [AWS CodeBuild](https://docs.aws.amazon.com/managedservices/latest/userguide/code-build.html) all offer CI/CD frameworks. With CI/CD and AWS, one could set up their version control system to, for example:
+
+1.  Build an application
+2.  Run tests
+3.  If successful, build an AMI of the application
+4.  Deploy the AMI to a staging environment
+5.  Message a Slack channel with the URL of the newly staged AMI
+
+This may be a good approach, but if you do this on the development branch (where commits are very frequent), you will accumulate AMIs very quickly, and many of these will be short-lived. Just like automation, we love CI/CD and use it heavily for our internal development. This is simply a caution that when you are creating artifacts automatically, you need to make sure to manage their lifecycle or they will accumulate.
+
+Further compounding the cost issue is that, unlike EBS snapshots, AMIs are not incremental. Although the underlying technology, [EBS, is renowned for its ability to create incremental snapshots](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSSnapshots.html), when dealing with AMIs this behavior is hidden from the end user. If this were not the case, then AMIs would have a _lineage_ and deregistering an AMI within the lineage could affect downstream AMIs. We are meant to think of AMIs as independent, atomic units. Each AMI represents a full snapshot and is billed as such, regardless of the compression that AWS uses behind the scenes. BTW, it is exactly the _incremental_ nature of EBS snapshots which make deciding which EBS snapshot to archive a complicated endeavor - check out our [blog post on EBS volume snapshot archiving](/blog/cutting-aws-costs-ebs-volume-snapshot-archiving/) for another great way to save!
+
+Most importantly, note the **In use** column. Only the most recent AMI is in use. For the other AMIs, we are paying standard EBS storage rates. **This is where the savings opportunity exists**. For AMIs which have not been used recently, we would be better off to deregister the AMI and snapshot the EBS volume. The snapshot cost is $0.125 per GB, 1/4th the cost of the standard rate! If we do need to launch an EC2 instance with a snapshotted AMI, it is straightforward to restore. The savings would be well worth it, especially if it can be automated. **_That is exactly what this finder/fixer is doing - identifying unused AMIs and snapshotting them._** Let’s keep going to find out how.
+
+**Summary**: It is very easy to create AMIs, especially during the software development process. These AMIs are backed by EBS volumes, and these EBS volumes have an associated cost.  EBS has a feature called “snapshotting”, and for unused AMIs we should leverage this feature to reduce the storage costs by 75%.
+
+## 3\. Finding and Removing Unused AMIs
+
+Now that we have made the case for why removing unused AMIs is worthwhile, let's talk about how to actually do it. As per normal, this process is divided into two parts, a "finder" phase where we identify the unneeded resource, and a "fixer" phase where we go about removing it. 
+
+For the finder phase, we will turn to our tried and true companion of cost optimization, the AWS Cost and Usage report. For the fixer phase, we will build on previous automation and also leverage a relatively new ["recycle bin"](https://aws.amazon.com/blogs/aws/new-recycle-bin-for-ebs-snapshots/) feature for EBS snapshots, where we can mark snapshots for deletion and have the actual deletion occur a few weeks later. This makes sure that if we inadvertently delete something we didn't mean to, we have a way to reverse course. This is a practice called "limiting the blast radius." We want to make sure that any process that involves your infrastructure, or your data, has built-in redundancies and protections in place.
+
+### 3.1. Finding Unused AMIs
+
+In order to find unused instances, let's first come up with a precise characterization of what we mean by "unused".
+
+We have found the following characterization to be useful:
+
+We consider an AMI unused if:
+
+1.  It is not being used by a running instance, AND
+2.  It has not started within the past 31 days.
+
+For example, an AMI running on an instance that has been running for more than 31 days is considered "in use." You may want to fine-tune the definition of AMI based on your operating model, but we have found this to be a good general definition.
+
+To find these AMIs, we are going to start with EBS snapshots and then use the AWS APIs to figure out which of the EBS snapshots are associated with AMIs, and then further filter to see when these AMIs were last used.
+
+Steps:
+
+1.  Query the Cost and Usage Report (CUR) for EBS snapshots
+2.  Use the [DescribeImages](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeImages.html) to see which EBS snapshots are associated with EBS-backed AMIs.
+3.  Use the [DescribeImageAttribute](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeImageAttribute.html) and [DescribeInstances](https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html) APIs to determine if the AMI is _unused_ (according to our definition above).
+
+### 3.1.1 CUR Query to find EBS Snapshots
+
+The CUR query we would like to run looks like this:
+
+```sql
+SELECT line_item_usage_account_id AS account_id, 
+       product_region AS region, 
+       line_item_resource_id AS resource_id, 
+       (SUM(pricing_public_on_demand_cost) / 30) * 365 AS annual_public_cost 
+FROM my_aws_cur_dataset 
+WHERE line_item_product_code = 'AmazonEC2'
+      AND line_item_line_item_type = 'Usage'
+      AND line_item_usage_type LIKE '%Snapshot%'
+      AND line_item_usage_start_date >= current_date - interval '31' day
+      AND line_item_usage_start_date < current_date
+GROUP BY line_item_usage_account_id, product_region, line_item_resource_id;
+```
+
+Breaking down this table, we are looking for the `account_id`, `resource_id`, `region`, and an annualized estimate of the cost. We are filtering the data to look for EBS snapshots. Note that the price estimation is based on the public price, and is not taking into account any special pricing that your organization may have, so you may want to account for that in prioritizing which EBS snapshots to look at.
+
+The data which is returned from this query will look like this:
+
+`account_id`
+
+`region`
+
+`resource_id`
+
+`annual_public_cost`
+
+0123456789
+
+us-east-1
+
+arn:aws:ec2:us-east-1:0123456789:snapshot/snap-0a1b2c3d4e5f6g7h8
+
+45.67
+
+3456789012
+
+us-west-2
+
+arn:aws:ec2:us-west-2:3456789012:snapshot/snap-0b1a2cd3f4e5g6h7i
+
+67.89
+
+5678901234
+
+eu-west-1
+
+arn:aws:ec2:eu-west-1:5678901234:snapshot/snap-0c1b2a3d4f5g6h7j6
+
+123.45
+
+7890123456
+
+ap-south-1
+
+arn:aws:ec2:ap-south-1:7890123456:snapshot/snap-0d1e2f3g4h5i6j7k8
+
+89.01
+
+As you can see, these EBS snapshots can really add up, and they are spread over multiple accounts and regions. By using the CUR on your master payer account, you are able to very quickly gain a high level perspective on your usage.
+
+Most importantly, note that this table is querying all EBS snapshots, and many of these will not be related to EBS-backed AMIs. To figure this out, we proceed to the next step.
+
+### 3.1.2 DescribeImages to Identify EBS-backed AMIs
+
+In the sample data table in the previous section, we see the `resource_id` column containing the ARN of a snapshot. It looks like:
+
+`arn:aws:ec2:us-east-1:0123456789:snapshot/snap-0a1b2c3d4e5f6g7h8`
+
+The last bit of the string, after the`/`, is the snapshot-id. ([Check out this handy ARN cheat sheet from Towards the Cloud](https://towardsthecloud.com/amazon-resource-names-arns)).
+
+The DescribeImages command queries AMIs, and can take as input multiple filters. This includes filters on CPU architecture (x86, arm64, etc), creation-date, description, and many other attributes. Most importantly, we can filter for `block-device-mapping.snapshot-id`. We will want to use DescribeImages, filtering on snapshot-id based on the list in the previous step.
+
+If you are using the AWS CLI, the command would look something like this:
+
+```bash
+aws ec2 describe-images \
+```
+
+Note that for the command to run properly, the credentials must be set for the correct account, and the environment variable for the region must also be set. If you are using automation, it will be a lot easier to use a higher-level language such as Python with [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html), AWS's official AWS Software Development Kit. In either case, the `describe-images` API will respond with a list of [Image objects](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Image.html). If there is an associated AMI, it will be listed in the response. The output looks like the following:
+
+{    "Images": [
+        {            
+            "Architecture": "x86_64",           
+            "CreationDate": "2020-02-28T21:28:32.000Z",          
+            "ImageId": "ami-def456",      
+            "ImageLocation": "0123456789/app-image-v1.3-llama",          
+            "ImageType": "machine",          
+            "Public": false,        
+            "OwnerId": "0123456789",                      "State": "available",          
+            "BlockDeviceMappings": [
+                {
+                    "DeviceName": "/dev/xvda",
+                    "Ebs": {
+                        "DeleteOnTermination": true,
+                        "SnapshotId": "snap-0a1b2c3d4e5f6g7h8",
+                        "VolumeSize": 12,
+                        "VolumeType": "gp3",
+                        "Encrypted": false
+                    }
+                }
+            ],
+            "Description": "App image v1.3 with LLaMa",
+            "Name": "Now with LLaMA",
+            "RootDeviceName": "/dev/xvda",
+            "RootDeviceType": "ebs",
+            "VirtualizationType": "hvm",
+            "Hypervisor": "xen"
+        }
+    ]
+}
+
+If the EBS volume is not associated with an AMI, the result will simply be the empty list.
+
+`{`
+    "Images" : []
+`}`
+
+The functional result of this process is that we have taken as input a `snapshot-id` and received as output an associated `ImageId` referencing an AMI.
+
+Summary: Using DescribeImages, we can determine if an EBS snapshot belongs to an EBS-backed AMI, and retrieve the identifier of the AMI if this is the case. In the next step, we will determine if the AMI has been used recently.
+
+### 3.1.3 Determining if the AMI has been recently used
+
+We enter this section with an `ImageId` which we know is associated with an EBS snapshot-id. We now want to use [DescribeImageAttribute](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeImageAttribute.html) and [DescribeInstances](https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html) APIs to determine if the AMI is _unused_.
+
+**When was the image last used to launch an EC2 instance?**
+
+The first command, DescribeImageAttribute, can be used to find the last launched time of the instance. Using the CLI, the call would look like this:
+
+```bash
+aws ec2 describe-image-attributes \
+    --attribute lastLaunchedTime  \ 
+    --image-id ami-def456
+```
+
+This will output a structure which looks like the following:
+
+```json
+{
+    "lastLaunchedTime" : "2023-02-01T12:44:32+0000",
+    "ImageId" : "ami-def456"
+}
+```
+
+The `lastLaunchedTime` is in [ISO8601](https://en.wikipedia.org/wiki/ISO_8601) format and, as the name implies, specifies when this AMI was last used to launch an instance. In this case, we see that an instance was last launched with this AMI on Feb 1st, 2023.
+
+**Is there a running EC2 instance with this AMI?**
+
+To answer this question, we use the DescribeInstances API. The command to do this, using the AWS CLI, is used like this:
+
+aws ec2 describe-instances \
+    --filters "Name=image-id,Values=YOUR_IMAGE_ID" \
+    --query
+ 'Reservations[*].Instances[*].{InstanceId:InstanceId,ImageId:ImageId,State:State.Name,LaunchTime:LaunchTime}' \
+    --output json
+
+To use this command, we want to replace `YOUR_IMAGE_ID` with the AMI in question. This output to this command looks like:
+
+[
+  {
+    "InstanceId": "i-01020x2763fd2e891",
+    "ImageId": "ami-def456",
+    "State": "terminated",
+    "LaunchTime": "2023-02-15T18:12:25.000Z"
+  },
+  {
+    "InstanceId": "i-0abcd1234d5ef6789",
+    "ImageId": "ami-def456",
+    "State": "terminated",
+    "LaunchTime": "2023-02-20T08:12:30.000Z"
+  }
+]
+
+Looking at the output above, note that the instances in question were launched in Feb 2023, and are in a terminated state. If the instances are not in a terminated state, then the AMIs will not be able to be deregistered.
+
+**Summary**
+
+1.  Use the DescribeImageAttribute API to make sure that the `lastLaunchedTime` for this AMI is more than 31 days in the past.
+2.  Use the DescribeInstances API to make sure that all instances launched with this AMI are in a terminated state.
+
+### 3.2 Deregistering AMIs
+
+We enter this section with an `ImageId` referencing an unused AMI, and an EBS `snapshot-id` backing this AMI. As is often the case, the actual "fixing" part is relatively straightforward. But, the really neat thing about this "fixer" is that it leverages other work. In particular, the fixer uses AWS' [EBS Recycle Bin](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recycle-bin.html) and our own EBS snapshot archiving finder/fixer!
+
+Let's go over the process. To summarize, we are going to:
+
+1.  Create a [Recycle Bin](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recycle-bin.html) policy for EBS-backed AMIs which match specific tags and other criteria
+2.  Apply tags to the EBS snapshot such that the aforementioned Recycle Bin policy applies
+3.  Deregister the AMI
+
+The end result of this process is that unused AMIs are deregistered, get sent to the Recycle Bin for a set period of time (we recommend 31 days), and the [EBS Snapshot Archiving finder/fixer](/blog/cutting-aws-costs-ebs-volume-snapshot-archiving/) does the final cleanup.
+
+### 3.2.1 Recycle Bin Retention Rule
+
+As mentioned in the beginning of this section, the Recycle Bin for EBS Snapshots is a relatively new feature, [having launched in Nov 2021](https://aws.amazon.com/blogs/aws/new-recycle-bin-for-ebs-snapshots/). According to the [documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recycle-bin.html), EBS snapshots get into the Recycle Bin by way of Retention rules. These rules specify:
+
+-   -   -   _The resource type that you want to protect._
+        -   _The resources that you want to retain in the Recycle Bin when they are deleted._
+        -   _The retention period for which to retain resources in the Recycle Bin before they are permanently deleted._
+    
+    In our use case, we characterize our rule this way:
+    
+    ResourceType
+    
+    `EC2_IMAGE`
+    
+    ResourceTags
+    
+    `TagKey:MY_AUTOMATION, TagValue:CleanupUnusedAMIs`
+    
+    RetentionPeriod
+    
+    31 days
+    
+    The command for doing this is:
+    
+    ```bash
+    aws rbin create-rule
+    ```
+    
+
+Note that the scope of a retention rule is per region. Thus, for each region in each account, for each account in the organization, the same retention rule must be created.
+
+### 3.2.2 Tag the EBS Snapshot
+
+Remember that we started the "fixer" step with an `InstanceId` and a `snapshot-id`. In order for the recycle bin policy to apply, we must tag to the EBS snapshot to match the rule. In this case, we called the tag `MY_AUTOMATION` and the value of this tag is `CleanupUnusedAMIs`. You can and should customize these to meet your needs.
+
+To create the tag itself, use this command:
+
+```bash
+aws ec2 create-tags                    \
+```
+
+### 3.2.3 Deregister Image
+
+Finally, we are at the step where we want to deregister the image using the aptly named [deregister-image](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/deregister-image.html) command. It is worth reading the documentation of the command carefully. First, since we are deregistering an AMI which matches a Recycle Bin retention rule (which we made sure happened in the previous 2 steps), the AMI will stay in the recycle bin for the retention period. In general, AMIs can be deregistered while EC2 instances using those AMIs remain on, but our selection criteria for AMIs specifically makes sure that any associated EC2 instances are terminated.
+
+Finally, "when you deregister an Amazon EBS-backed AMI, it doesn't affect the snapshot that was created for the root volume of the instance during the AMI creation process." Luckily, we already have a mechanism in place for this, the [EBS Snapshot Archiving finder/fixer](/blog/cutting-aws-costs-ebs-volume-snapshot-archiving/). Once the AMI is deregistered, the EBS snapshot remains and can be treated like any other EBS snapshot — meaning it can be archived. As mentioned earlier, an archived snapshot costs 25% of the standard price, and can be readily restored. It is neat to see these finder/fixers work together. It is almost like dropping crumbs, knowing that the robot vacuum is always running. But, instead of vacuuming up crumbs, we are getting rid of wasted spend!
+
+## 4\. Why CloudFix?
+
+This finder/fixer is a perfect illustration of the benefits of automation. Each individual step is fairly straightforward, but there are a lot of them and you want to make sure it is done right. Your AMIs are a core part of your AWS infrastructure, and you want to be sure that you only deregister AMIs which you truly aren't using, and have not used in a while. The way we have implemented the finder/fixer leverages Recycle Bin, the AWS-native EBS tooling for protecting against accidental deletion of EBS snapshots. By using AWS-recommended approaches and best practices, we make sure that the automation is extremely reliable.
+
+Finally, this blog post highlights that CloudFix is more than just a collection of independent finder/fixers. Rather, it is an ecosystem where the components build on and reinforce each other.
+
+## 5\. Conclusion
+
+Whether you utilize CloudFix or implement this yourself, we hope you enjoy the cost savings. There are so many interesting AWS technologies coming out such as [Amazon Bedrock](https://aws.amazon.com/bedrock/), which supports generative AI models. By saving on unused AMIs, those savings can be reinvested into the next great innovation for your application!

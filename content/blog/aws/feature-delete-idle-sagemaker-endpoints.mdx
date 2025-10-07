@@ -1,0 +1,87 @@
+---
+title: "CloudFix Finder: Delete Idle SageMaker Endpoints (Manual Fix)"
+description: "Amazon SageMaker endpoints provide real-time inference capabilities but incur costs even when not actively processing requests. CloudFix identifies SageMaker en..."
+date: 2025-04-09 18:06:54
+modified: 2025-04-09 18:06:54
+category: "AWS"
+tags: ["AWS","cloud","storage","compute"]
+published: true
+slug: "feature-delete-idle-sagemaker-endpoints"
+---
+
+Amazon SageMaker endpoints provide real-time inference capabilities but incur costs even when not actively processing requests. CloudFix identifies SageMaker endpoints that have received zero invocations over the past 30 days, suggesting potential candidates for deletion to optimize costs. Deleting these idle endpoints eliminates their associated compute and storage charges.
+
+## Manual Fix Required
+
+**CloudFix identifies potentially idle SageMaker endpoints but does not automatically delete them.** Deleting an endpoint is irreversible and removes its ability to serve inferences. Users must manually verify that an endpoint is truly no longer needed before performing the deletion.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How CloudFix Identifies the Opportunity](#how-it-works)
+-   [Manual Fix Steps](#manual-fix-steps)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+SageMaker endpoints, while powerful for deploying machine learning models, continuously incur costs for the underlying compute instances, regardless of invocation traffic. Endpoints left running after projects conclude or models are updated become idle resources contributing to unnecessary AWS expenditure.
+
+### Solution Identification
+
+CloudFix analyzes CloudWatch metrics for SageMaker endpoints. By identifying endpoints with zero invocations over an extended period (typically 30 days), CloudFix flags them as potentially idle. This allows users to manually investigate and confirm whether these endpoints can be safely deleted to realize cost savings.
+
+## AWS Services Affected
+
+Service
+
+Icon
+
+[Amazon SageMaker](https://docs.aws.amazon.com/sagemaker/latest/dg/whatis.html)
+
+![Amazon SageMaker](/media/uploads/SageMaker.svg)
+
+## How CloudFix Identifies the Opportunity
+
+CloudFix identifies potentially idle SageMaker endpoints based on the following criteria:
+
+-   The resource is an Amazon SageMaker Endpoint.
+-   The endpoint has received 0 invocations over the past 30 days, based on CloudWatch metrics.
+-   The extrapolated potential annual cost saving from deleting the endpoint exceeds a defined threshold (default $100).
+-   The endpoint is not tagged with `cloudfix_dont_fix_it`.
+
+## Manual Fix Steps
+
+After CloudFix identifies a potentially idle SageMaker endpoint, follow these steps:
+
+1.  **Verify Idleness:** Confirm that the identified endpoint is genuinely not in use and is not required for any ongoing or future applications, testing, or development work. Check application logs and dependencies.
+2.  **Check Associated Resources:** Deleting an endpoint does not automatically delete the associated Endpoint Configuration or the underlying Model(s). Determine if these associated resources are also idle and candidates for deletion in separate steps.
+3.  **Delete the Endpoint:** Use the AWS Management Console, AWS CLI (`aws sagemaker delete-endpoint --endpoint-name <your-endpoint-name>`), or SDKs to delete the endpoint. Refer to the [DeleteEndpoint API documentation](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_DeleteEndpoint.html).
+4.  **Delete Endpoint Configuration (Optional):** If the associated Endpoint Configuration is no longer needed, delete it using the Console, CLI (`aws sagemaker delete-endpoint-config --endpoint-config-name <your-config-name>`), or SDKs.
+5.  **Delete Model(s) (Optional):** If the underlying model(s) are also no longer required, delete them using the Console, CLI (`aws sagemaker delete-model --model-name <your-model-name>`), or SDKs.
+
+## FAQ
+
+**Q: Why doesn't CloudFix automatically delete the endpoint?**  
+A: Deleting an endpoint is irreversible. CloudFix requires user confirmation to prevent accidental removal of an endpoint that might still be needed for intermittent tasks, testing, or other purposes not captured by recent invocation counts.
+
+**Q: What are the potential savings?**  
+A: Savings are equivalent to the hourly cost of the compute instances backing the idle endpoint. The actual amount depends on the instance type and count configured for the endpoint.
+
+**Q: Does deleting the endpoint affect the model or endpoint configuration?**  
+A: No. The endpoint, endpoint configuration, and model are separate resources. Deleting the endpoint does not automatically delete the other two.
+
+**Q: What considerations are important before deleting?**  
+A: Ensure the endpoint is truly idle and not required for any purpose. Check for dependencies and consider the status of the associated endpoint configuration and model(s).
+
+## Related Resources
+
+-   [Deploy Models for Inference (SageMaker Documentation)](https://docs.aws.amazon.com/sagemaker/latest/dg/deploy-model.html)
+-   [DeleteEndpoint API Reference](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_DeleteEndpoint.html)
+-   [DeleteEndpointConfig API Reference](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_DeleteEndpointConfig.html)
+-   [DeleteModel API Reference](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_DeleteModel.html)
+-   [Ensure Efficient Compute Resources on Amazon SageMaker (AWS Blog)](https://aws.amazon.com/blogs/machine-learning/ensure-efficient-compute-resources-on-amazon-sagemaker/)
+-   [ML Delete Idle Endpoints (CloudFix Support)](https://support.cloudfix.com/article/17016-ml-delete-idle-endpoints)

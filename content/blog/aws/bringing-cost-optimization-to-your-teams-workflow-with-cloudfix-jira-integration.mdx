@@ -1,0 +1,75 @@
+---
+title: "Bringing Cost Optimization to Your Team's Workflow with CloudFix Jira Integration"
+description: "Bringing Cost Optimization to Your Team's Workflow with CloudFix JIRA Integration At CloudFix, we are laser-focused on cost optimization, but we understand that..."
+date: 2024-12-31 21:47:05
+modified: 2025-02-12 22:29:17
+category: "AWS"
+tags: ["AWS","cloud","cost optimization","compute"]
+published: true
+slug: "bringing-cost-optimization-to-your-teams-workflow-with-cloudfix-jira-integration"
+---
+
+# Bringing Cost Optimization to Your Team's Workflow with CloudFix JIRA Integration
+
+At CloudFix, we are laser-focused on cost optimization, but we understand that most people are balancing the demands of cost optimization with many other responsibilities. Cloud resource owners are often on product- or service-oriented teams, and managing cost-optimization efforts is not a primary focus. We've built a Jira integration to make it easy for resource owners to implement cost-optimization efforts. With this integration, resource owners can see exactly what action they need to take, the justification for the action, and the cost savings. This integration makes it easier than ever to implement FinOps initiatives across your organization.
+
+Let's dive into the details and explore why we built this integration and how it works.
+
+# The Challenge of Cost Optimization at Scale
+
+In large organizations, cost optimization often follows a hub-and-spoke model. The centralized FinOps team is a hub, driving cost optimization initiatives across the organization. Various teams and individuals - the spokes - manage the actual resources while focusing on their specific applications and services.[![Centralized FinOps model](/media/uploads/finops-3.svg)](/wp-content/uploads/finops-3.svg)
+
+This structure can be highly functional. Centralized FinOps teams can push focused initiatives, and the resource owners can implement them and act as a knowledge source. For example, a company may have best practices for using Graviton. Some widely used internal code may exist, and Central FinOps would want to ensure this code is Graviton-compatible before advocating a FinOps rollout. This function is much better accomplished centrally than by each team.
+
+The difficulty with this model is that Central FinOps are not the resource owners. They don't know the exact needs of any particular resource. Thus, it falls to the resource owners to implement the changes. These resource owners may have some incentive to optimize cost, e.g., through chargebacks, but ultimately, it is one initiative among many.
+
+So, how can we make it easier for resource owners to implement cost-optimization efforts? The CloudFix Jira integration aims to provide them with the technical and financial information they need to make the right decisions.
+
+## CloudFix JIRA Integration in Action
+
+![Create Jira tickets from CloudFix](/media/uploads/cf-interface-arrow.png)
+
+Our JIRA integration bridges the gap between cost optimization insights and team workflows. Here's how it works:
+
+1.  When CloudFix identifies a cost optimization opportunity, instead of directly executing the finder-fixer, users can click "Create JIRA ticket."
+2.  A ticket is automatically created and assigned to the appropriate resource owner.
+3.  The ticket contains comprehensive information about the recommendation.
+
+![CloudFix Jira ticket](/media/uploads/cf-jira-ticket-arrow.png)
+
+For example, when CloudFix identifies an opportunity to optimize EBS provisioning, the JIRA ticket includes:
+
+-   Specific configuration changes (e.g., "Reduce provisioned IOPS from 16,000 to 3,000")
+-   Historical utilization data demonstrating performance impact analysis
+-   Precise cost savings calculations (e.g., "$1,082 annual savings")
+-   Resource ownership information via AWS tags
+-   Implementation guides and documentation
+-   AWS account and region details for context
+
+# The Right Information at the Right Time
+
+Producing "alerts" about the many things you could optimize as a resource owner is easy. We could email you 10, 20, or 100 things per day! Some of them may be relevant, and some may not. However, if we did this, you would experience the dreaded "alert fatigue," the actionable recommendations would be lost in the noise.
+
+Other fields, from healthcare to aviation, have had the issue of "alert fatigue." In a story from the book [Digital Doctor](https://www.amazon.com/Digital-Doctor-Hope-Medicines-Computer/dp/1260019608), author Robert Wachter compares the usage of alerts in aviation to healthcare. He discusses how many doctors and nurses are overwhelmed by the sheer number of alerts and accidentally tune out the important ones. The author discussed with famous pilot Chesley "Sully" Sullenberger, who described how alerts in an airplane's many systems are routed to the cockpit:
+
+> The warnings in cockpits now are prioritized so you don't get alarm fatigue," he told me. "We work very hard to avoid false positives because false positives are one of the worst things you could do to any warning system. It just makes people tune them out. - "Digital Doctor" by Robert Wachter
+
+Similarly, our JIRA integration doesn't just dump information - it presents cost optimization opportunities in a clear, actionable format that fits into existing workflows. Just as modern cockpits prioritize warnings to avoid alarm fatigue, we've carefully designed our tickets to provide:
+
+-   Clear, actionable information
+-   Relevant context and data
+-   Direct links to implementation resources
+-   Appropriate priority levels
+
+## Getting Started
+
+Ready to directly bring CloudFix's cost optimization capabilities into your team's workflow? Contact our professional services team to:
+
+-   Set up the JIRA integration for your organization
+-   Configure custom workflows and templates
+-   Train your teams on best practices
+-   Establish optimization KPIs and tracking
+
+[Contact Us to Get Started](/contact-us/)
+
+By meeting teams where they already work, we're making cost optimization a natural part of the development and operations process, not another tool to context-switch to. Let's work together to make AWS cost optimization seamless and effective for your entire organization.

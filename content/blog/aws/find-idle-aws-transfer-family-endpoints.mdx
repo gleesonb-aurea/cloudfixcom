@@ -1,0 +1,101 @@
+---
+title: "Find Idle AWS Transfer Family Endpoints"
+description: "Introduction AWS Transfer Family is a bridge between traditional file transfer protocols like SFTP/FTP and S3. The purpose of Transfer Family is to allow data i..."
+date: 2025-05-20 01:51:51
+modified: 2025-05-20 02:04:12
+category: "AWS"
+tags: ["AWS","cloud","s3","migration","monitoring"]
+published: true
+slug: "find-idle-aws-transfer-family-endpoints"
+---
+
+# Introduction
+
+AWS Transfer Family is a bridge between traditional file transfer protocols like SFTP/FTP and S3.
+
+The purpose of Transfer Family is to allow data ingest into S3, without needing to change the client to support S3.
+
+This can be used for recurring data transfer tasks, such as an hourly log dump.
+
+At the same time, Transfer Family can also be used when you need a short-lived SFTP server during a one-off data migration process.
+
+Transfer Family acts as a server, and these servers are called Endpoints. Each endpoint supports 1 protocol, and is billed at $0.30/hour/protocol.
+
+If you are hosting endpoints for all 3 protocols, SFTP, FTP, and FTPS, this will cost $0.90/hour, or $648/month.
+
+There's no reason to be paying that if you don't need to be.
+
+In this article, lets talk about how we detect idle Transfer Family endpoints using CloudFix.
+
+# Identifying Idle Transfer Family Endpoints
+
+To figure out a Transfer Family is idle, we look at the associated [CloudWatch metrics](https://docs.aws.amazon.com/transfer/latest/userguide/metrics.html). The point is we want to make sure that there is no data going into or out of the the endpoint. To this end, we look at these metrics:
+
+\- DataIn
+- DataOut
+- FilesUploaded
+- FilesDownloaded
+
+When all these metrics show zero activity over the configured period, we flag the endpoint as idle.
+
+While LoginAttempts aren't used to determine idleness, we include this data in reports to provide additional context for your decisions.
+
+Our system focuses on servers with at least $10 in estimated annual cost through CloudFix Cost and Usage Report filtering.
+
+The default monitoring period is 30 days, but this is adjustable.
+
+This approach helps identify Transfer Family endpoints that are unnecessarily consuming your AWS budget.
+
+# How to Delete a Transfer Family Endpoint
+
+Once you've identified idle Transfer Family endpoints, you can delete them to save costs. AWS provides multiple methods to delete these endpoints. Here are the main approaches:
+
+## Using the AWS Management Console
+
+1\. Open the AWS Transfer Family console at https://console.aws.amazon.com/transfer/
+
+2\. In the left navigation pane, choose **Servers**
+
+3\. Select the checkbox of the server (endpoint) you want to delete
+
+4\. From the \*\*Actions\*\* dropdown menu, choose **Delete**
+
+5\. In the confirmation dialog box, type delete and choose **Delete** to confirm
+
+The server is deleted from the **Servers** page, and you will no longer be billed for it.
+
+## Using the AWS CLI
+
+To delete a server using the AWS Command Line Interface:
+
+1\. (Optional) First, you can view the server details with the following command:
+
+aws transfer describe-server --server-id your-server-id
+
+2\. Delete the server with this command:
+
+aws transfer delete-server --server-id your-server-id
+
+If successful, the command deletes the server and doesn't return any information.
+
+## Impact
+
+The most important thing is that deleting a Transfer Family endpoint does not affect the underlying data in the S3 bucket.
+
+An endpoint is a path to the S3 bucket, but the endpoint itself does not store data.
+
+The financial impact is easy to calculate.
+
+Each removed endpoint is $0.30/protocol/hour.
+
+This means approximately $2600-$7900 per endpoint in annualized savings.
+
+# Using CloudFix to Find Idle Transfer Family Endpoints
+
+\[caption id="attachment\_16620" align="alignnone" width="1200"\]![](/media/uploads/transfer-family-locate-1200x785.png) Find the "Transfer Family Delete Idle Servers" in the Advaned Section\[/caption\]
+
+\[caption id="attachment\_16621" align="alignnone" width="1200"\]![](/media/uploads/transfer-family-go-to-mgmt-console-1200x785.png) Click on the Transfer Family to be taken to the AWS Management Console, at the page for that Transfer Family\[/caption\]
+
+![With our Jira integration, you can Create a Ticket directly from the CloudFix Web Interface](/media/uploads/transfer-family-create-ticket-1200x785.png)
+
+Note that each of these idle Transfer Family endpoints are showing ~$2300 in annualized savings! We want you to recover those savings and do something great with them!

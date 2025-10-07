@@ -1,0 +1,116 @@
+---
+title: "Optimizing AWS Bedrock Costs"
+description: "Cutting AWS Bedrock Costs: Finding and Removing Unused Models Amazon Bedrock is one of the most exciting services out there. We are seeing Bedrock usage skyrock..."
+date: 2025-04-04 22:21:51
+modified: 2025-04-04 22:25:43
+category: "AWS"
+tags: ["AWS","cloud","storage"]
+published: true
+slug: "remove-idle-bedrock-models"
+---
+
+# Cutting AWS Bedrock Costs: Finding and Removing Unused Models
+
+[Amazon Bedrock](https://aws.amazon.com/bedrock/?trk=36201f68-a9b0-45cc-849b-8ab260660e1c&sc_channel=ps&ef_id=Cj0KCQjwhr6_BhD4ARIsAH1YdjBigNdVeTRgmMPtLql47bC1akhyY8ExnP0Rowbkj_LPa2woMy09A-4aAsjhEALw_wcB:G:s&s_kwcid=AL!4422!3!692006004850!e!!g!!amazon%20bedrock!21048268689!159639953975&gbraid=0AAAAADjHtp-8l8NE7cSNXGFlEl-KEEZ7f&gclid=Cj0KCQjwhr6_BhD4ARIsAH1YdjBigNdVeTRgmMPtLql47bC1akhyY8ExnP0Rowbkj_LPa2woMy09A-4aAsjhEALw_wcB) is one of the most exciting services out there. We are seeing Bedrock usage skyrocket across AWS organizations. The [expected return on investment](https://www.mckinsey.com/industries/technology-media-and-telecommunications/our-insights/how-an-ai-enabled-software-product-development-life-cycle-will-fuel-innovation) for having your teams learn to use Bedrock will vary, but in general you should encourage your developers to experiment with Bedrock. Generating waste is part of that process.
+
+Part of the waste of using Bedrock can be idle [custom models](https://docs.aws.amazon.com/bedrock/latest/userguide/custom-models.html). Custom models are [distilled](https://docs.aws.amazon.com/bedrock/latest/userguide/model-distillation.html), [fine tuned](https://aws.amazon.com/blogs/machine-learning/fine-tune-anthropics-claude-3-haiku-in-amazon-bedrock-to-boost-model-accuracy-and-quality/), and [pre-trained versions](https://aws.amazon.com/blogs/aws/customize-models-in-amazon-bedrock-with-your-own-data-using-fine-tuning-and-continued-pre-training/) of existing foundation models like Sonnet, Llama, Cohere, etc.
+
+## Hidden Expenses of Inactive Bedrock Models
+
+When you customize a foundation model in Bedrock, AWS charges for storage regardless of usage. These fees continue month after month until you delete the model.
+
+Consider this common situation: A data science team customizes several Bedrock models during testing. After choosing one for production, the others remain deployed but unused. Each inactive model continues generating storage costs—sometimes for months or years—without providing any business value.
+
+According to CloudFix research, companies often keep dozens of unused Bedrock models, with storage costs frequently totaling thousands of dollars yearly.
+
+## Finding Inactive Bedrock Models: Method
+
+Spotting unused Bedrock models requires a systematic analysis. This is the heuristics that work for us:
+
+1.  **Define "Inactive" Using Clear Metrics**
+    
+    -   1a - No inference requests for at least 30 days
+    -   1b - Storage costs exceeding $100/year when annualized
+2.  **Set Up Usage Tracking**
+    
+    -   Use AWS CloudWatch metrics to monitor inference requests for each model
+    -   With this setup, you can see if any models match the 'no inference for 30 days' criteria
+3.  **Determine Storage Costs**
+    
+    -   Calculate the yearly storage cost for each inactive model
+
+## Cost Savings Analysis
+
+The savings from removing inactive Bedrock models can be substantial, especially for organizations with active ML programs. Understanding AWS Bedrock's Custom Model Unit (CMU) pricing is essential for accurate calculations.
+
+Let's look at examples using Llama 3.1 models:
+
+Model Size
+
+\# Custom Model Units
+
+Monthly Storage Cost
+
+\# of Inactive Models
+
+Annual Storage Costs
+
+Llama 3.1 8B (128K)
+
+2 CMUs
+
+$3.90 ($1.95 × 2)
+
+5
+
+$234.00
+
+Llama 3.1 70B (128K)
+
+8 CMUs
+
+$15.60 ($1.95 × 8)
+
+3
+
+$561.60
+
+Mixed Fleet
+
+10 CMUs total
+
+$19.50 ($1.95 × 10)
+
+8
+
+$1,872.00
+
+ 
+
+ 
+
+ 
+
+**Total:**
+
+**$2,667.60**
+
+This shows how just a few inactive models can create unnecessary costs. For example, five unused 8B models and three unused 70B models could waste over $2,600 annually in storage costs alone.
+
+For larger organizations with many data scientists testing various model architectures, the potential waste—and savings—can be much greater. A thorough audit often finds tens of thousands of dollars in avoidable yearly costs.
+
+These calculations don't include opportunity costs from having resources tied up in unused assets. The actual business impact goes beyond direct storage expenses.
+
+## Carrying Out Model Deletion
+
+After identifying inactive models and completing the pre-deletion steps, you can remove them using the AWS Bedrock API. The actual command to delete a custom model is straightforward.
+
+aws bedrock delete-custom-model --model-identifier arn:aws:bedrock:us-west-2:123456789012:custom-model/my-custom-model
+
+## Creating a Long-Term Model Management Plan
+
+CloudFix' automation will find idle models once they have been idle for 30 days. This is going to catch long term issues. However, it is still useful to practice good AWS account hygeine. Make sure that all models (along with other resources) are tagged with an owner and a project. In addition, you can setup tags to represent versions of a model, and setup automation to only keep the most recent versions of a model.
+
+## Conclusion: Balancing Innovation and Cost Control
+
+Managing Bedrock models effectively offers a significant opportunity to reduce AWS costs without limiting innovation. By leveraging CloudFix' automation, you can encourage your team to experiment with Bedrock, while knowing that you won't be accumulating cost and unused artifacts.

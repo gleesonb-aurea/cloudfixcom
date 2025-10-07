@@ -1,0 +1,231 @@
+---
+title: "Save thousands on AWS: A step-by-step guide to cleaning up idle VPC NAT gateways"
+description: "The two most compelling problems facing the IP Internet are IP address depletion and scaling in routing. Long-term and short-term solutions to these problems ar..."
+date: 2023-05-22 11:55:06
+modified: 2023-08-21 21:55:49
+category: "AWS"
+tags: ["AWS","cloud","ec2","s3","rds"]
+published: true
+slug: "save-on-aws-guide-clean-up-idle-vpc-nat-gateways"
+---
+
+> The two most compelling problems facing the IP Internet are IP address depletion and scaling in routing. Long-term and short-term solutions to these problems are being developed….This memo proposes another short-term solution, address reuse, that complements CIDR or even makes it unnecessary. The address reuse solution is to place Network Address Translators (NAT) at the borders of stub domains.
+> 
+> _– [RFC 1631, Kjell Egevang and Paul Francis](https://www.rfc-editor.org/rfc/pdfrfc/rfc1631.txt.pdf), May 1994_
+
+Let’s turn back the clock nearly 30 years. The internet was no longer in its infancy, but firmly in the toddler phase. And, like many toddlers, it was a bit wobbly on its feet. 
+
+One of the early internet’s growing pains was the realization that the IP address specification only allowed for 4.2 billion IP addresses. At the time, computer manufacturers like Apple, IBM, and Packard Bell were advertising the idea that everyone could (and should!) have a personal, connected computer. The only problem: The 1994 [World Population Profile](https://www.census.gov/content/dam/Census/library/publications/1994/demo/wp-94.pdf) report estimated the population at 5.6 billion. Clearly, the math didn’t add up. 
+
+To address this looming issue, members of the Internet Engineering Task Force came up with RFC 1631, the design document for a _short-term solution_ to this problem: Network Address Translators (NAT). NAT allows for one computer, the _NAT gateway_, to make ‘proxy’ requests on behalf of a private network of computers. The NAT gateway is the go-between, the only computer connected to both networks. NAT was supposed to be a placeholder until a more comprehensive strategy came about… but as we engineers are fond of saying, "There is nothing more permanent than a temporary fix."
+
+![1994 Apple Performa Computer Ad](/media/uploads/1994-Apple-Performa-Computer-Ad-444x600.jpg)
+
+Fast forward to today, and NAT is a key part of network design. AWS offers NAT gateways as part of its [Virtual Private Cloud](https://aws.amazon.com/vpc/), called [VPC NAT Gateways](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html). Knowing how to use VPC NAT gateways is an important tool in your AWS toolbelt. 
+
+Just as important: knowing when and how to get rid of VPC NAT gateways that are no longer in use. As with idle [VPC endpoints](/blog/eliminating-idle-vpc-endpoints-achieve-aws-cost-savings/), [elastic load balancers](/blog/savings-remove-idle-elastic-load-balancers/), [Elastic IP addresses](/blog/remove-unused-aws-elastic-ip-addresses-cut-costs-improve-security/) and more, eliminating these seemingly small components can add up to significant AWS savings. Let’s dive in. 
+
+## Table of Contents
+
+1.  [The what, how, and why of VPC NAT gateways](#vpc-nat-gateways)
+2.  [Why idle VPC NAT gateways are costing you thousands of dollars](#cost-of-idle-nat-gateways)
+3.  [Three steps to manually deleting idle VPC NAT gateways](#manually-delete-idle-nat-gateways)
+    1.  [List all of the idle VPC NAT gateways](#list-idle-vpc-nat-gateways)
+    2.  [Determine which of these NAT Gateways are idle and eligible for deletion](#determine-eligible-for-deletion)
+    3.  [Delete the idle NAT gateways](#delete-idle-nat-gateways)
+4.  [Eliminate idle VPC NAT gateways automatically with CloudFix](#automate-with-cloudfix)
+
+## The what, how, and why of VPC NAT gateways
+
+Let’s start with a closer look at how VPC NAT gateways work. In the diagram below, you can see that the internal instances (which all happen to be Graviton3s, [one of our favorite instance types](/blog/elasticsearch-opensearch-to-graviton/)) have internal IP addresses of the form 192.168.0.XXX. The VPC NAT gateway has two network interfaces, attached to two different networks.
+
+![A diagram showing a VPC NAT running on AWS infrastructure, with EC2 instances on a private subnet](/media/uploads/VPC-Diagram-min.png)
+
+When one of the EC2 instances makes a request to an external network, the request is routed over the NAT gateway. The NAT gateway uses its external interface, makes the request to the external network, and then sends the results back to the right instance. Note that this layout only makes sense for requests originating on the private side of the network. If a request comes from the external network to the NAT gateway, it will not be forwarded to any of the internal nodes.
+
+VPC NAT gateways have a number of handy use cases, such as:
+
+1.  **Securely accessing the internet from private subnets**. If you have EC2 instances that need outbound access but not inbound access, like for downloading security updates, NAT gateways can make it happen. They’re also useful for allowing access to services such as [S3](/blog/aws-s3-intelligent-tiering-default-storage-class/), [DynamoDB](/blog/reduce-costs-dynamodb-infrequent-access-class/), or CloudWatch.
+2.  **Reducing data transfer charges**. By routing AWS service-bound egress traffic from your private subnets through a NAT gateway into an interface [VPC endpoint](/blog/eliminating-idle-vpc-endpoints-achieve-aws-cost-savings/), you can avoid unnecessary data transfer charges.
+3.  **Leveraging Elastic IP addresses**. With NAT, you can have multiple compute resources associated with a single IP address. This is useful if the IP address is known/trusted with other entities. For example, if you are operating a [fleet of web crawlers](https://udger.com/resources/ip-list) to create a search engine and you want them all to operate under one trusted IP address, using NAT would be the way to go. With NAT, websites that want their content indexed by your search engine can add your known IP address to an [allowlist](https://www.linkedin.com/pulse/allowlist-blocklist-better-terms-everyone-lets-use-them-rob-black).
+
+These are all excellent reasons to use NAT gateways and illustrate why they’re a great resource across the AWS ecosystem. But what happens when you stop using NAT gateways? Drumroll please… nothing. They continue to exist, and you continue to pay for them, even though they’re no longer needed. Now let’s do something about it.
+
+**Useful aside:**  
+If NAT was the short-term solution, then IPv6 is the long-term solution. With IPv6, there are 10^38 possible IP addresses, so there are zero worries of running out! When IPv6 is widely deployed, we probably won’t need NAT anymore, but that day’s a long way off. After all, [3.5” floppy disks are still in widespread use, especially in industrial machines](https://www.youtube.com/watch?v=nPqX_GV80E8).
+
+## Why idle VPC NAT gateways are costing you thousands of dollars
+
+How do we end up with a stack of idle VPC NAT gateways?
+
+Readers of our other [fixer blogs](/blog/) will find the answers familiar. Just like with [idle VPC endpoints](/blog/eliminating-idle-vpc-endpoints-achieve-aws-cost-savings/), the reasons include:
+
+-   **They’re left over from the development and testing process**. During the development and testing phase of a project, it’s common to create ad-hoc VPC NAT gateways to facilitate secure communication between various virtual network components. Once the design has stabilized and the infrastructure is properly managed via IaC, the artifacts are no longer necessary. However, it’s easy to forget about them and simply move on to the next project. This can lead to orphaned infrastructure components that are neither managed nor tagged, making it difficult to remember their purpose over time.
+-   **They were associated with retired services**. Services become deprecated over time. We usually remember to delete most of the standing resources associated with these services, like EC2 instances and RDS databases, that take up the majority of the costs. We often forget, however, to delete the smaller components that go with the services. If the infrastructure contains VPC NAT gateways, they should be deleted too.
+
+What are these idle VPC NAT gateways costing us? More than you would think. 
+
+NAT gateways are priced on an hourly basis. As of [May 2023 in us-east-1](https://aws.amazon.com/vpc/pricing/), the hourly charge is $0.045/hr, which adds up to just under $400 per year. That doesn’t sound too bad at first, but like many of these smaller charges, becomes significant at scale. A typical NAT gateway configuration includes at least two per region (one public, one private). If you’re operating in 10 regions, with 20 NAT gateways, it amounts to nearly $8000 dollars every year. And that’s not even the full scope – don’t forget about extraneous gateways that get created during the dev and test process. Suddenly, we’re talking thousands of dollars in potential AWS savings.
+
+## Three steps to manually deleting idle VPC NAT gateways
+
+We’ve seen why VPC NAT gateways are useful, how we end up with idle NAT gateways, and how much those idle NAT gateways cost. Next step: let’s get rid of them. Manually identifying and deleting idle NAT gateways involves three steps:
+
+1.  List all of the idle VPC NAT Gateways
+2.  Determine which of these NAT Gateways are idle and eligible for deletion
+3.  Delete the idle NAT gateways
+
+### 1\. List all of the idle VPC NAT gateways
+
+We can find idle VPC NAT gateways by using our trusty friend the Cost and Usage Report (CUR). The query would look like:
+
+```sql
+SELECT line_item_resource_id, 
+       line_item_usage_start_date, 
+       line_item_usage_end_date, 
+       line_item_usage_type, 
+       line_item_cost 
+FROM "your_aws_schema"."your_aws_cur_table" 
+WHERE line_item_line_item_type = 'Usage' 
+  AND line_item_usage_start_date >= date_trunc('day', current_date - interval '31' DAY) 
+  AND line_item_usage_start_date < date_trunc('day', current_date - interval '1' DAY) 
+  AND line_item_resource_id LIKE '%natgateway%' 
+  AND (line_item_usage_type LIKE '%NatGateway-Hours%' OR line_item_usage_type LIKE '%NatGateway-Bytes%');
+```
+
+Notice a few key facts about this query:
+
+1.  We’re looking for rows where `line_item_line_item_type` is `Usage`. The data in these rows represent usage-based consumption of AWS resources. Other possible values of `LineItemType` are `Fee`, `RIFee`, `Tax`, etc. [See the Line Item columns document for more information](https://docs.aws.amazon.com/cur/latest/userguide/Lineitem-columns.html).
+2.  We’re filtering for one month's worth of data (well, 31 days to be precise).
+3.  The resource IDs are the NAT gateway identifiers.
+4.  If we aggregate the data over the entire window, grouping by `resource_id` and `line_item_usage_type`, we can identify all the NAT gateways and determine which are in use and which are not.
+
+**line\_item\_resource\_id**
+
+**line\_item\_usage\_start\_date**
+
+**line\_item\_usage\_end\_date**
+
+**line\_item\_usage\_type**
+
+**line\_item\_cost**
+
+natgateway-xyz0987def0125rst999
+
+2021-09-01 00:00:00
+
+2021-09-01 01:00:00
+
+NatGateway-Bytes
+
+3.142
+
+natgateway-xyz0987def0125rst999
+
+2021-09-01 00:00:00
+
+2021-09-01 01:00:00
+
+NatGateway-Hours
+
+0.045
+
+natgateway-0x33338abp9898r023r3
+
+2021-09-01 00:00:00
+
+2021-09-01 01:00:00
+
+NatGateway-Bytes
+
+0.000
+
+natgateway-0x33338abp9898r023r3
+
+2021-09-01 00:00:00
+
+2021-09-01 01:00:00
+
+NatGateway-Hours
+
+0.045
+
+### 2\. Determine which of these NAT Gateways are idle and eligible for deletion
+
+NAT gateways have a fixed hourly charge and a metered data charge. We can see both rows in the output from the CUR. We want to find NAT gateways that have the `NatGateway-Hours` charge, but no `NateGateway-Bytes` charges for a defined amount of time, like 31 days. You can do this in SQL using `sum` and `join`, or use a script in Python. Use whatever tool you’re comfortable with, but pick one that can easily use the AWS APIs. I find Python, using the [boto3 library](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html), to be the easiest way.
+
+### 3\. Delete the idle NAT gateways
+
+Now that we have a list of idle NAT gateways, it’s time to delete them. This is where the savings come in! It’s a pretty straightforward process:
+
+1.  Use [DescribeNATGateway API](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/describe-nat-gateways.html) to ensure that it still exists, see whether it is public or private, and determine what the NatGatewayAddress is.
+2.  Use [DeleteNATGateway API](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DeleteNatGateway.html) to delete the NAT gateway.
+
+To complete the first step, we can use the AWS CLI:
+
+```bash
+aws ec2 describe-nat-gateways --nat-gateway-ids natgateway-0x33338abp9898r023r3
+```
+
+This will return a JSON or XML structure of a list of [NatGatway](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_NatGateway.html) objects. Some sample output would look like:
+
+{
+  "NatGateways": [
+    {
+      "CreateTime": "2021-09-01T12:30:00.000Z",
+      "NatGatewayAddresses": [
+        {
+          "AllocationId": "eipalloc-0123456789abcdef0",
+          "NetworkInterfaceId": "eni-abcdefghijkl123456",
+          "PrivateIp": "10.0.0.1",
+          "PublicIp": "203.0.113.25"
+        }
+      ],
+      "NatGatewayId": "natgateway-0x33338abp9898r023r3",
+      "State": "available",
+      "SubnetId": "subnet-06a692ed4ef8c4d38",
+      "VpcId": "vpc-0a4aa1e4bfd3c84e57"
+    }
+  ]
+}
+
+Note that the `AllocationId` inside of the `NatGatewayAddresses` list refers to the ElasticIP address associated with the NAT gateway. It’s a good practice to save this response somewhere, so you can decide what to do with the Elastic IP address. 
+
+If `DescribeNATGateway` returns a response, this validates that the NAT gateway still exists. Now, we can use this command to delete it:
+
+```bash
+aws ec2 delete-nat-gateway --nat-gateway-id natgateway-0x33338abp9898r023r3
+```
+
+This will return the following output:
+
+```json
+{
+  "NatGateway": {
+    "NatGatewayId": "natgateway-0x33338abp9898r023r3",
+    "State": "deleting"
+  }
+}
+```
+
+To confirm that the NAT gateway is deleted, we can use `describe-nat-gateway` command again, filtering on a particular NAT gateway.
+
+```bash
+aws ec2 describe-nat-gateways --filter Name=nat-gateway-id,Values=natgateway-0x33338abp9898r023r3
+```
+
+If it’s still in the process of being deleted, we will get the same response as before. Once the deletion has completed successfully, you will see an empty response:
+
+{
+  "NatGateways": []
+}
+
+That’s one less NAT gateway and $400 per year in annualized savings. Do this a few times, and the savings really add up.
+
+## Eliminate idle VPC NAT gateways automatically with CloudFix
+
+This fix, like many of the others that we’ve covered, is certainly possible to implement manually. The tricky part isn’t doing it; it’s deciding whether or not it’s a good use of your time. Is a relatively small optimization worth the engineering hours required to ensure the process runs without errors, especially when it’s not related to your core functionality? For most teams, the answer is no.
+
+Enter CloudFix. CloudFix’s automation has been tried, tested, and proven across thousands of AWS accounts. With CloudFix, you don’t have to choose between saving money and investing engineering time. It automates fixes like removing idle VPC NAT gateways so they can be executed quickly and consistently with just a few clicks. That means more time to spend on business-critical projects, and more budget to fund them. We think the Internet Engineering Task Force would approve.
+
+{ "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": { "@type": "Question", "name": "Finding savings: What is AWS S3 Intelligent-Tiering?", "acceptedAnswer": { "@type": "Answer", "text": "Use the AWS CLI (Command Line Interface) to run the describe-nat-gateways command. Provide the --nat-gateway-ids flag followed by the ID of the NAT gateway you want to delete. This command will return information about the specified NAT gateway. Once you have confirmed the NAT gateway's details and its existence, proceed to delete it using the delete-nat-gateway command. This command will initiate the deletion process." } } }

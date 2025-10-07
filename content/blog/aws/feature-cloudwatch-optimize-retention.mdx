@@ -1,0 +1,56 @@
+---
+title: "CloudFix Finder/Fixer: CloudWatch Log Retention Optimization"
+description: "Are your AWS CloudWatch logs silently increasing your cloud costs? CloudFix's CloudWatch Log Retention Finder/Fixer automatically optimizes log retention period..."
+date: 2025-04-06 23:44:45
+modified: 2025-04-06 23:44:45
+category: "AWS"
+tags: ["AWS","cloud","storage"]
+published: true
+slug: "feature-cloudwatch-optimize-retention"
+---
+
+Are your AWS CloudWatch logs silently increasing your cloud costs? CloudFix's CloudWatch Log Retention Finder/Fixer automatically optimizes log retention periods, helping you reduce storage costs without compromising operational visibility.
+
+## Contents
+
+-   [AWS Services Affected](#aws-services)
+-   [Opportunity Description](#opportunity-description)
+-   [How It Works](#how-it-works)
+-   [Key Benefits](#benefits)
+-   [Important Considerations](#considerations)
+
+## AWS Services Affected
+
+![Amazon CloudWatch](/media/uploads/CloudWatch.svg)
+
+[Amazon CloudWatch](https://aws.amazon.com/cloudwatch/)
+
+## Opportunity Description
+
+CloudFix identifies opportunities to optimize CloudWatch log group retention settings to reduce storage costs without compromising compliance or operational needs. By analyzing log storage trends and usage patterns, CloudFix recommends and implements appropriate retention policies to help you save on unnecessary storage costs.
+
+## How It Works
+
+1.  Finder Phase:
+    -   Scans all CloudWatch log groups
+    -   Identifies groups without retention settings
+    -   Analyzes storage patterns
+    -   Calculates potential savings
+2.  Fixer Phase:
+    -   Creates change request for 30-day retention policy
+    -   Implements via AWS Systems Manager
+    -   Provides audit trail
+
+## Key Benefits
+
+-   Immediate cost reduction
+-   Zero performance impact
+-   Complete audit trail
+-   Organization-wide implementation
+
+## Important Considerations
+
+-   Verify compliance requirements
+-   Review data retention needs
+-   Changes can be rolled back
+-   Use {"cloudfix:dontFixIt": true} tag to exclude resources

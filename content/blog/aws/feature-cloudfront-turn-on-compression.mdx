@@ -1,0 +1,106 @@
+---
+title: "CloudFix Finder/Fixer: CloudFront Turn on Compression"
+description: "CloudFront can automatically compress text-based content between 1KB and 10MB in size, resulting in reduced data transfer costs and improved response times. Wit..."
+date: 2025-04-07 00:26:08
+modified: 2025-04-07 00:26:08
+category: "AWS"
+tags: ["AWS","cloud","networking"]
+published: true
+slug: "feature-cloudfront-turn-on-compression"
+---
+
+CloudFront can automatically compress text-based content between 1KB and 10MB in size, resulting in reduced data transfer costs and improved response times. With CloudFix, you can enable this optimization across your CloudFront distributions with just a few clicks, saving up to 65% or more on CloudFront data transfer costs.
+
+## Contents
+
+-   [What is the Problem?](#what-is-the-problem)
+-   [How CloudFix Helps](#how-cloudfix-helps)
+-   [AWS Services Affected](#aws-services-affected)
+-   [Benefits](#benefits)
+-   [How It Works](#how-it-works)
+-   [Frequently Asked Questions](#faqs)
+-   [Related Resources](#related-resources)
+
+## What is the Problem?
+
+Amazon CloudFront is a content delivery network (CDN) that charges based on "data egress" - the amount of data transferred from CloudFront to clients. Since 2015, CloudFront has supported automatic compression of text-based content, which can significantly reduce data transfer sizes and costs, but this feature is not enabled by default. Many organizations miss out on this straightforward optimization opportunity, unnecessarily paying higher CloudFront bills than needed.
+
+Common issues include:
+
+-   CloudFront distributions with compression disabled, leading to higher data transfer costs
+-   Distributions that have no caching policies configured or incompatible cache policies
+-   Uncertainty about which distributions are suitable for compression
+
+## How CloudFix Helps
+
+CloudFix automatically identifies CloudFront distributions where compression can be safely enabled and configures them with the optimal settings. The fixer applies compression only where appropriate, ensuring there are no negative impacts on your application's functionality.
+
+Our solution:
+
+-   Analyzes your CloudFront distributions to find compression opportunities
+-   Validates that compression can be safely enabled
+-   Automatically configures both GZIP and Brotli compression
+-   Ensures proper cache policy settings are in place
+-   Applies changes without service disruption
+
+## AWS Services Affected
+
+![Amazon CloudFront](/media/uploads/CloudFront.svg)
+
+[Amazon CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/)
+
+## Benefits
+
+Enabling CloudFront compression offers several important benefits:
+
+-   **Cost Reduction:** Reduce data transfer costs by up to 65% or more
+-   **Improved Performance:** Faster page loads and content delivery
+-   **Better User Experience:** Reduced latency for website visitors
+-   **Zero Downtime:** Implementation without service disruption
+-   **Transparent Implementation:** No changes to your application code required
+
+## How It Works
+
+When you enable the CloudFront Turn on Compression fixer in CloudFix, the following process occurs:
+
+1.  **Discovery:** CloudFix identifies CloudFront distributions where compression can be enabled
+2.  **Analysis:** The fixer examines each distribution's cache behaviors and policies
+3.  **Validation:** CloudFix checks that enabling compression won't conflict with existing settings
+4.  **Implementation:** For eligible distributions, compression is enabled with both GZIP and Brotli compression
+5.  **Cache Policy Update:** If needed, cache policies are configured to support compression
+
+CloudFix uses the following criteria to determine when compression can be safely enabled:
+
+-   Compression is currently disabled
+-   Cache behaviors are not configured with the CachingDisabled managed policy
+-   Cache policies or settings have non-zero TTL values (minimum, default, or maximum)
+
+If a cache policy is configured as CachingOptimizedForUncompressedObjects, it will be changed to the CachingOptimized policy, which supports compression.
+
+## Frequently Asked Questions
+
+**Q: Will enabling compression affect all content types?**
+
+A: No. CloudFront only compresses file types with Content-Type headers that are compressible, such as HTML, CSS, JavaScript, and other text-based formats. Already compressed formats like JPEG, PNG, or video files will not be compressed further.
+
+**Q: Does enabling compression require downtime?**
+
+A: No. The compression changes are applied without any service disruption.
+
+**Q: Can I rollback the changes if needed?**
+
+A: Yes. The configuration can be manually reverted by disabling compression and associated cache policy compression settings for the affected cache behaviors.
+
+**Q: How significant are the savings?**
+
+A: According to AWS, the overall payload reduction for a typical web page can approach 80%. For text-based files like JavaScript, compression ratios around 77% are common, meaning you pay for only 23% of the original data transfer.
+
+**Q: Are there any potential downsides to enabling compression?**
+
+A: For most use cases, there are no downsides. The minimal CPU overhead for decompression on client devices is negligible compared to the bandwidth savings and performance improvements.
+
+## Related Resources
+
+-   [AWS Documentation: Serving Compressed Files](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/ServingCompressedFiles.html)
+-   [AWS Blog: New – Gzip Compression Support for Amazon CloudFront](https://aws.amazon.com/blogs/aws/new-gzip-compression-support-for-amazon-cloudfront/)
+-   [Amazon CloudFront Developer Guide](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/)

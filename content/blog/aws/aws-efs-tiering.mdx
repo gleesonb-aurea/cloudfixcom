@@ -1,0 +1,28 @@
+---
+title: "Lower your AWS costs by optimizing EFS tiering"
+description: "AWS EFS tiering provides pricing up to 92% lower compared to EFS Standard. AWS EFS infrequent access (IA) has different pricing and lifecycle guidelines."
+date: 2022-06-09 11:40:21
+modified: 2022-11-17 14:02:50
+category: "AWS"
+tags: ["AWS","cloud","serverless","ec2","cost optimization"]
+published: true
+slug: "aws-efs-tiering"
+---
+
+## Finding savings: What is EFS tiering?
+
+AWS Elastic File System is a network file system for Linux machines on AWS (EC2 or VMC) that allows you to build a serverless and scalable file system with ease. EFS has two primary storage tiers: Standard and OneZone, each of which has a secondary tier called [Infrequent Access (IA)](https://aws.amazon.com/efs/features/infrequent-access/).
+
+![](/media/uploads/pricing-table-2-768x317.png)
+
+AWS EFS Tiering for US East as of April 2022
+
+The main trade-off involved with moving files to this tier is that files in this tier have 10x higher latency, meaning that files in IA should never require quick access by clients or applications.
+
+## Realizing savings: How EFS Intelligent-Tiering lowers your costs
+
+EFS comes with “Intelligent Tiering” which allows you to create a lifecycle policy that automatically migrates your less-frequently accessed files to the less-expensive Infrequent Access tier, saving you up to 92% on your EFS bills. Migrating to IA, however, means that your files will have much lower latency. To ensure that you have the right balance between quick access and cost savings, we created a capacity model that maximizes savings while minimizing any financial or downtime risk. You can read [more detailed information here](https://awsmadeeasy.com/blog/aws-efs-tiering/), including instructions on how to implement this same capacity model and lifecycle policies with your own EFS.
+
+## Optimizing savings: Optimize EFS with CloudFix
+
+Realistically, modern businesses need cost optimization across their entire AWS environment. That’s why we created CloudFix. CloudFix optimizes your AWS safely by regularly monitoring usage and cost, searching for opportunities to realize risk-free savings. Not only does CloudFix monitor for these opportunities, but it will also fix them for you. This means that you can now be efficient as well as effective. CloudFix not only monitors EFS, but it also monitors for numerous other optimizations. Pulling from AWS’s own advisory blog for risk-free solutions, CloudFix filters through potential savings opportunities to find and present the right ones for your business. Introducing CloudFix to your business will optimize your AWS space to be more efficient, have better performance, and save you money.

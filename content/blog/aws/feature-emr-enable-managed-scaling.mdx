@@ -1,0 +1,88 @@
+---
+title: "CloudFix Finder/Fixer: EMR Enable Managed Scaling"
+description: "Amazon EMR clusters can benefit significantly from cost optimization by enabling managed scaling. This CloudFix Finder/Fixer identifies EMR clusters that could..."
+date: 2025-04-07 00:24:04
+modified: 2025-04-07 00:24:04
+category: "AWS"
+tags: ["AWS","cloud","ec2","cost optimization","security"]
+published: true
+slug: "feature-emr-enable-managed-scaling"
+---
+
+Amazon EMR clusters can benefit significantly from cost optimization by enabling managed scaling. This CloudFix Finder/Fixer identifies EMR clusters that could have managed scaling enabled to optimize costs, helping you reduce expenses while maintaining optimal performance.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+-   [Implementation Details](#implementation-details)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+Amazon EMR clusters often run with static capacity settings, causing unnecessary costs during periods of low processing demand. CloudFix identifies EMR clusters that could benefit from enabling managed scaling, which automatically resizes your cluster for best performance at the lowest possible cost. Cost savings are calculated based on the average active hours per day of Task instances in the cluster over the last 30 days, with users typically saving up to 19% on their EMR costs.
+
+## AWS Services Affected
+
+![Amazon EMR](/media/uploads/EMR.svg)
+
+[Amazon EMR](https://aws.amazon.com/emr/)
+
+## How It Works
+
+The CloudFix Finder analyzes your EMR clusters and identifies candidates for managed scaling by:
+
+-   Checking if the EMR cluster exists
+-   Verifying that the cluster is not already using managed scaling with a minimum capacity of more than one
+-   Ensuring the cluster version is compatible with managed scaling (compatible versions are 5.30.2, 5.31.1, 5.32.1, 5.33.1 and higher, and 6.x releases 6.1.1, 6.2.1, 6.3.1 and higher)
+-   Checking that the annual cost, extrapolated from the last 31 days of usage, exceeds the annual public cost threshold (default $100)
+-   Verifying that estimated savings are greater than 2% of the annual cost
+
+This is a manual fixer that requires user intervention to implement. The CloudFix dashboard will display recommendations for implementing managed scaling, and users must manually apply these recommendations by updating their EMR cluster configurations.
+
+## Implementation Details
+
+1.  Review the recommendation in the CloudFix dashboard
+2.  Identify the EMR cluster that would benefit from managed scaling
+3.  Update the cluster configuration to enable managed scaling through the AWS Management Console, AWS CLI, or AWS CloudFormation
+4.  Specify appropriate minimum and maximum capacity units for your workload
+5.  Monitor the cluster's performance after enabling managed scaling
+
+When implementing managed scaling, consider:
+
+-   **Performance impact:** Better resource utilization and improved performance during peak processing times
+-   **Data integrity:** No direct impact on data, but monitoring is essential
+-   **Security considerations:** No direct security concerns, but ensure configurations remain consistent
+
+## FAQ
+
+**Q: What is EMR Managed Scaling?**
+
+A: Amazon EMR Managed Scaling automatically resizes your cluster for best performance at the lowest possible cost. It adds and removes instances or units in your cluster based on workload.
+
+**Q: Which EMR cluster versions support managed scaling?**
+
+A: Compatible versions are 5.30.2, 5.31.1, 5.32.1, 5.33.1 and higher, and 6.x releases 6.1.1, 6.2.1, 6.3.1 and higher.
+
+**Q: Can I customize the scaling behavior?**
+
+A: Yes, you can specify minimum and maximum capacity limits, as well as on-demand and spot instance allocation strategies.
+
+**Q: Will enabling managed scaling affect my running jobs?**
+
+A: EMR managed scaling is designed to minimize disruption to running jobs. It scales down by removing idle instances and ensures that nodes running tasks are not terminated.
+
+**Q: Is there an additional cost for using EMR managed scaling?**
+
+A: No, there is no additional charge for using EMR managed scaling. You only pay for the EC2 instances and EMR service when they are running.
+
+## Related Resources
+
+-   [CloudFix's Newest Addition: The EMR Instance Optimizer](/blog/introducing-emr-instance-optimizer/)
+-   [EMR Enable Managed Scaling Support Article](https://support.cloudfix.com/article/16992-emr-enable-managed-scaling)
+-   [Using managed scaling in Amazon EMR](https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-managed-scaling.html)
+-   [Understanding managed scaling metrics in Amazon EMR](https://docs.aws.amazon.com/emr/latest/ManagementGuide/managed-scaling-metrics.html)
+-   [Introducing Amazon EMR Managed Scaling](https://aws.amazon.com/blogs/big-data/introducing-amazon-emr-managed-scaling-automatically-resize-clusters-to-lower-cost/)
+-   [Amazon EMR Features](https://aws.amazon.com/emr/features/)

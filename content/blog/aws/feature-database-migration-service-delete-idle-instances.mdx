@@ -1,0 +1,84 @@
+---
+title: "CloudFix Finder/Fixer: Database Migration Service Delete Idle Instances"
+description: "AWS Database Migration Service (DMS) instances incur costs even when idle. This CloudFix feature identifies and terminates idle DMS instances to help you save o..."
+date: 2025-04-09 18:04:53
+modified: 2025-04-09 18:04:53
+category: "AWS"
+tags: ["AWS","cloud","s3","cost optimization","migration"]
+published: true
+slug: "feature-database-migration-service-delete-idle-instances"
+---
+
+AWS Database Migration Service (DMS) instances incur costs even when idle. This CloudFix feature identifies and terminates idle DMS instances to help you save on unnecessary expenses. It backs up the instance configuration to S3 before deletion, allowing for manual restoration if needed.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+AWS Database Migration Service (DMS) replication instances are charged on an hourly basis, regardless of whether they are actively migrating data. Instances left running but unused contribute to unnecessary AWS spending. Identifying and removing these idle instances is crucial for cost optimization.
+
+### Solution
+
+CloudFix identifies DMS instances that have been idle for over 90 days. It checks that the instance was created more than 90 days ago, has no current activity (replication tasks are stopped, failed, or ready), and hasn't run a task in the last 90 days. The Fixer then backs up the configurations of the instance and its associated tasks to an S3 bucket and terminates the idle DMS instance, eliminating ongoing costs.
+
+## AWS Services Affected
+
+Service
+
+Icon
+
+[AWS Database Migration Service (DMS)](https://docs.aws.amazon.com/dms/latest/userguide/Welcome.html)
+
+![AWS Database Migration Service](/media/uploads/Database-Migration-Service.svg)
+
+[Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)
+
+![Amazon S3](/media/uploads/Simple-Storage-Service.svg)
+
+## How It Works
+
+### Finder Component
+
+The Finder component scans your AWS environment for DMS replication instances. It identifies opportunities based on the following criteria:
+
+-   The instance was created more than 90 days ago.
+-   There is currently no activity on the instance. Any associated replication tasks must be in a 'failed', 'failed-move', 'ready', or 'stopped' state.
+-   The instance has not executed a replication task within the last 90 days.
+
+### Fixer Component
+
+When executed, the Fixer performs the following actions:
+
+1.  Calls the `DeleteReplicationTask` API for each task associated with the idle instance. The response containing the task configuration is saved as a JSON backup file in an S3 bucket (`cloudfix-fixer-executions<AccountId>/DmsCleanupIdleClusters/<instanceId>/tasks/<TaskId>.json`).
+2.  Calls the `DeleteReplicationInstance` API to delete the idle replication instance. The response containing the instance configuration is also saved as a JSON backup file in the S3 bucket (`cloudfix-fixer-executions<AccountId>/DmsCleanupIdleClusters/<instanceId>/<InstanceId>.json`).
+
+## FAQ
+
+**Q: What are the potential savings?**  
+A: This feature saves nearly 100% of the cost associated with idle DMS instances. A negligible cost remains for storing the small configuration backup files (typically <5KB) in S3.
+
+**Q: Is rollback possible?**  
+A: Yes, manual rollback is possible. You can execute the SSM document "Cloudfix-Runbook-DMSCleanupIdleInstances-rollback-prod" to recreate the DMS instance and optionally restore its associated tasks using the backup configurations stored in S3.
+
+**Q: Can CloudFix implement the fix automatically?**  
+A: Yes, upon your approval, CloudFix can automatically execute the fix.
+
+**Q: Does this fix require downtime?**  
+A: No, since the instances are already idle, deleting them does not cause downtime for active migration tasks.
+
+## Related Resources
+
+-   [AWS DMS User Guide](https://docs.aws.amazon.com/dms/latest/userguide/Welcome.html)
+-   [Amazon S3 User Guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)
+-   [Cost Optimization Strategies for DMS (AWS Blog)](https://aws.amazon.com/blogs/database/cost-optimize-database-migrations-with-aws-dms-part-1/)
+-   [Clean up idle DMS instances (CloudFix Support)](https://support.cloudfix.com/article/16864-clean-up-idle-dms-instances)

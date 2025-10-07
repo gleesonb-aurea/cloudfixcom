@@ -1,0 +1,124 @@
+---
+title: "CloudFix Finder/Fixer: EC2 Fix Instance Agents VPC Endpoint Configuration"
+description: "AWS Systems Manager (SSM) and CloudWatch agents need to communicate with their respective AWS services to properly monitor and manage your EC2 instances. For in..."
+date: 2025-04-08 18:28:44
+modified: 2025-04-08 18:28:44
+category: "AWS"
+tags: ["AWS","cloud","ec2","s3","vpc"]
+published: true
+slug: "cloudfix-finder-fixer-ec2-fix-instance-agents-vpc-endpoint-configuration"
+---
+
+AWS Systems Manager (SSM) and CloudWatch agents need to communicate with their respective AWS services to properly monitor and manage your EC2 instances. For instances in private VPC subnets without internet access, VPC endpoints provide this critical connectivity. This Finder/Fixer automatically detects and creates the necessary VPC endpoints to ensure your infrastructure monitoring and management tools function properly, unlocking cost optimization opportunities.
+
+## Contents
+
+-   [Overview](#overview)
+    -   [Problem Statement](#problem-statement)
+    -   [Solution & Benefits](#solution-benefits)
+    -   [Expected Cost Savings](#expected-cost-savings)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+EC2 instances in private VPC subnets often lack internet access for security reasons, but this creates a challenge: CloudWatch and SSM agents installed on these instances need to communicate with their respective AWS services. Without proper connectivity, these agents cannot send metrics, receive commands, or implement cost-saving recommendations. Many AWS cost optimization features depend on functional agent connectivity, so resolving this issue unlocks potential savings across your infrastructure.
+
+### Solution & Benefits
+
+CloudFix systematically identifies private VPC subnets connected to EC2 instances and checks for the presence of required VPC endpoints. When missing endpoints are detected, CloudFix can automatically create them, providing secure connectivity for your CloudWatch and SSM agents without requiring internet access. This solution maintains your security posture while enabling critical infrastructure management capabilities.
+
+-   Enables agent connectivity without compromising security
+-   Unlocks cost optimization opportunities that depend on agent functionality
+-   Improves infrastructure visibility through proper agent communication
+-   Maintains compliance with security best practices by avoiding public internet traffic
+
+### Expected Cost Savings
+
+While this Finder/Fixer actually increases costs by approximately $87 per year for each VPC endpoint created, it unlocks significantly greater savings potential. Once agents can properly communicate, CloudFix and AWS Compute Optimizer can provide accurate sizing recommendations and implement other cost optimization measures that deliver substantial savings, typically far exceeding the minimal cost of the VPC endpoints.
+
+## AWS Services Affected
+
+This CloudFix feature interacts with the following AWS services:
+
+![Amazon EC2](/media/uploads/EC2.svg)
+
+![Amazon VPC](/media/uploads/Virtual-Private-Cloud.svg)
+
+![AWS Systems Manager](/media/uploads/Systems-Manager.svg)
+
+![Amazon CloudWatch](/media/uploads/CloudWatch.svg)
+
+[Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html)
+
+[Amazon VPC](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html)
+
+[AWS Systems Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html)
+
+[Amazon CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html)
+
+## How It Works
+
+### Finder Component
+
+The CloudFix Finder analyzes your AWS infrastructure to identify VPC endpoint configuration issues:
+
+-   Scans your environment for EC2 instances in private subnets (without internet access)
+-   Examines network configurations to identify which VPC endpoints are required for agent connectivity
+-   Checks for the presence of the following endpoint types in each private subnet:
+    -   SSM endpoint (for Systems Manager agent communication)
+    -   EC2 Messages endpoint (for SSM Run Command functionality)
+    -   SSM Messages endpoint (for Session Manager functionality)
+    -   CloudWatch Monitoring endpoint (for metric collection)
+    -   S3 endpoint (for accessing S3 resources needed by agents)
+-   Verifies IP address availability in the subnets to ensure endpoints can be created
+-   Generates detailed recommendation reports showing missing endpoints
+
+### Fixer Component
+
+Once approved, the CloudFix Fixer implements the necessary changes:
+
+-   Creates interface VPC endpoints for the required services (SSM, EC2 Messages, SSM Messages, CloudWatch Monitoring)
+-   Creates a gateway VPC endpoint for S3 access
+-   Configures appropriate security groups to allow agent traffic
+-   Ensures endpoints are created in all availability zones where private subnets with EC2 instances exist
+-   Applies proper endpoint policies that provide least-privilege access
+-   Validates that endpoints are functioning correctly after creation
+
+All operations are performed with zero downtime to your EC2 instances, and endpoints are created in a way that maintains security best practices.
+
+## FAQ
+
+**Q: Will implementing this fix require downtime for my EC2 instances?**
+
+No, this fix can be implemented without any downtime to your existing infrastructure. VPC endpoints are created in parallel to existing traffic flows.
+
+**Q: Can I roll back this change if needed?**
+
+Yes, you can manually delete the VPC endpoints created by CloudFix if necessary. However, removing these endpoints will cause agent connectivity issues to resurface.
+
+**Q: How much do VPC endpoints cost?**
+
+Each interface VPC endpoint costs approximately $0.01 per hour (~$7.30 per month). A typical implementation with all required endpoints might cost around $7-8 per month per VPC. These costs are typically far outweighed by the savings unlocked through proper agent functionality.
+
+**Q: Will this affect my security posture?**
+
+No, implementing VPC endpoints actually improves security by allowing your instances to communicate with AWS services without requiring internet access. All traffic remains within the AWS network.
+
+**Q: Which AWS services require endpoints for agents to function properly?**
+
+For complete functionality, CloudFix creates endpoints for AWS Systems Manager (SSM), EC2 Messages, SSM Messages, CloudWatch Monitoring, and Amazon S3.
+
+## Related Resources
+
+-   [AWS Foundational Skills: Your guide to AWS Systems Manager](/blog/aws-foundational-skills-aws-systems-manager/)
+-   [Fix VPC Endpoints for Agents (Support Article)](https://support.cloudfix.com/article/17075-fix-vpc-endpoints-for-agents)
+-   [AWS Documentation: VPC Endpoints](https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints.html)
+-   [AWS Systems Manager: Create VPC Endpoints](https://docs.aws.amazon.com/systems-manager/latest/userguide/setup-create-vpc.html)
+-   [Installing and Running the CloudWatch Agent](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/install-CloudWatch-Agent-commandline-fleet.html)

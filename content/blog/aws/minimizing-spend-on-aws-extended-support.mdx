@@ -1,0 +1,182 @@
+---
+title: "When Software Grows Old... Minimizing Spend on AWS Extended Support"
+description: "Updated 25 Aug 2024 Introduction Amazon Elastic Kubernetes Service (EKS) and Relational Database Service (RDS) both lean on open source projects at the core of..."
+date: 2024-03-28 20:35:55
+modified: 2024-08-26 05:18:40
+category: "AWS"
+tags: ["AWS","cloud","rds","security","databases"]
+published: true
+slug: "minimizing-spend-on-aws-extended-support"
+---
+
+_Updated 25 Aug 2024_
+
+# Introduction
+
+Amazon Elastic Kubernetes Service (EKS) and Relational Database Service (RDS) both lean on open source projects at the core of their offering. For EKS, the core open source dependencies are Kubernetes, etcd, CoreDNS, CNI Core binaries, CSI Sidecar Containers, and various other components and security updates (see [EKS Distro Introductory Blog Post](https://aws.amazon.com/about-aws/whats-new/2020/12/introducing-amazon-eks-distro/)). For RDS, the major open source dependencies are the core database engines, namely PostgreSQL and MySQL. These core open source projects are not controlled by Amazon. In fairness, AWS does contribute to Kubernetes, Postgres, MySQL, and many other open source projects. For a great blog post on AWS’ contributions to these and other projects, see this [AWS blog post](https://aws.amazon.com/blogs/opensource/behind-the-scenes-on-aws-contributions-to-open-source-databases/#:~:text=Aurora%20PostgreSQL%20and%20MySQL%2Dcompatible,including%20three%20security%20team%20members.) as well as the entire [AWS Open Source Blog](https://aws.amazon.com/blogs/opensource/).
+
+![Old robot](/media/uploads/Old-robot.jpg)
+
+In the rest of this blog post, I’m going to discuss the challenges of maintaining old software, the End Of Life (EOL) policies for Kubernetes, MySQL, and Postgres, discuss Amazon’s Extended Support plans and pricing, how you can identify RDS and EKS usage which will incur Extended Support Charges, and how CloudFix can automatically find such software for you.
+
+# Maintaining Old Software
+
+Maintaining old versions of software is difficult. You need to make sure that the software does not fail catastrophically, but without changing any behavior of the function. This is especially true for foundational pieces of software such as databases and container orchestration engines, where there are many downstream software projects. It has become a known fact that [much of the financial system runs on COBOL](https://www.wealthsimple.com/en-ca/magazine/cobol-controls-your-money), and programmers who are proficient in COBOL can command high salaries. This speaks to the difficulty of maintaining older software systems. For programs which can communicate with the public internet, keeping old programs secure is complicated. This is because flaws are often discovered in the latest running versions of the code, and the patches to fix these flaws must be then “backported.” This can be difficult and even introduce new bugs, and the code changes over time. In fact, just last year a bug was introduced to the Linux kernel due to [a failed attempt to backport a patch](https://lore.kernel.org/stable/CAFsF8vL4CGFzWMb38_XviiEgxoKX0GYup=JiUFXUOmagdk9CRg@mail.gmail.com/). Quoting [Chris Siebenmann’s blog](https://utcc.utoronto.ca/~cks/space/blog/programming/BackportsAreHard):
+
+_the more old versions you ask people to support (and the more support you want for those old versions), the more backports you're asking them to do and the more bugs you're going to get._
+
+With all of these downsides to using (and therefore, maintaining) old versions of software, why do some people choose to do so? There are many possible reasons, from a simple lack of engineering resources, a general aversion to change, or, most likely, external dependencies. There may be third party software that has not been certified to work with newer versions. For whatever reason, we can see that, like most decisions, there is a tradeoff of costs and benefits. 
+
+# AWS EOL for EKS and RDS
+
+Amazon considers software at End Of Life (EOL) once it is past the standard support date.
+
+## RDS mySQL
+
+For AWS RDS, the standard support dates are announced for each major version. MySQL is versioned X.Y.Z, and the “major version” component of this is 8.0. The MySQL major version support dates are listed in the [MySQL on Amazon RDS versions page](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/MySQL.Concepts.VersionMgmt.html#MySQL.Concepts.VersionMgmt.ReleaseCalendar), and in this table:
+
+**MySQL major version**
+
+**Community release date**
+
+**RDS release date**
+
+**Community end of life date**
+
+**RDS end of standard support date**
+
+**RDS start of Extended Support year 1 pricing date**
+
+**RDS start of Extended Support year 3 pricing date**
+
+**RDS end of Extended Support date**
+
+MySQL 8.0
+
+19 April 2018
+
+23 October 2018
+
+April 2026
+
+31 July 2026
+
+1 August 2026
+
+1 August 2028
+
+31 July 2029
+
+MySQL 5.7\*
+
+21 October 2015
+
+22 February 2016
+
+October 2023
+
+29 Feb 2024  
+  
+
+1 March 2024
+
+1 March 2026
+
+28 Feb 2027
+
+ 
+
+ 
+
+ 
+
+ 
+
+## RDS PostgreSQL
+
+In PostgreSQL land, to quote the official versioning policy:
+
+_Starting with PostgreSQL 10, a major version is indicated by increasing the first part of the version, e.g. 10 to 11. Before PostgreSQL 10, a major version was indicated by increasing either the first or second part of the version number, e.g. 9.5 to 9.6._
+
+Amazon RDS support for [PostgreSQL is given in this page](https://docs.aws.amazon.com/AmazonRDS/latest/PostgreSQLReleaseNotes/postgresql-versions.html#postgresql-version16). There is also an RDS command, `describe-db-engine-versions` which does exactly what its name suggests.
+
+By “support”, Amazon is committing to provide patches for “Amazon RDS will supply patches for Critical and High CVEs as defined by the National Vulnerability Database (NVD) CVSS severity ratings.” This support is baked into the RDS pricing during the period defined as the _Standard Support Date_. Outside of this period, Amazon offers _Extended Support._
+
+## Kubernetes
+
+As described in the [AWS EKS Kubernetes versions](https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html) page, standard support applies to versions 1.29, 1.28, 1.27, 1.26, and 1.25. Extended support applies to 1.24 and 1.23. EKS standard support typically lasts for 26 months after the release of the major version. 
+
+## Extended Support, and Pricing
+
+### Extended support for RDS MySQL and PostgreSQL
+
+Extended Support is Amazon’s way of providing High and Critical CVEs and bug fixes to older versions of software, which are outside of the standard support window. For both RDS and PostgreSQL, the pricing is between $0.10 - $0.12 per vCPU-hour in years 1 and 2, and up to $0.419 per hour in year 3. See the Amazon RDS Extended Support costs section of the [MySQL](https://aws.amazon.com/rds/mysql/pricing/) and [PostgreSQL](https://aws.amazon.com/rds/postgresql/pricing/) for the full pricing tables. Note that the pricing for extended support can very substantially by region. Note that this pricing is in addition to the standard instance price. A db.trg.2xlarge running RDS MySQL in Sao Paulo would cost $1.12 per hour during the Standard Support phase, and has 8 vCPUs. During Years 1 and 2 of the extended support window, there is an additional charge of $0.210 per vCPU, or $1.12 + 8 \* $0.210 = $2.80 per hour. During Year 3 of the extended support window, the surcharge jumps to $0.419 per vCPU, or $1.12 + 8 \* $0.49 = $5.04 per hour.
+
+Price of db.trg.2xlarge
+
+**Standard Support**
+
+**Extended Support****Year 1 and Year 2**
+
+**Extended Support****Year 3**
+
+$1.12 / hour
+
+$2.80 / hour
+
+$5.04 / hour
+
+Of particular note is that you are **automatically enrolled in Extended Support** if your RDS instances are running a version which is no longer in the Standard Support window. This was announced in an [AWS News Blog in late 2023](https://aws.amazon.com/blogs/aws/your-mysql-5-7-and-postgresql-11-databases-will-be-automatically-enrolled-into-amazon-rds-extended-support/). Due to this automatic enrolment, it is crucial that you are aware of any RDS clusters which are nearing the end of a support window, as the pricing will change drastically. Depending on the constraints of the environment, it may or may not be worth the effort to upgrade to a version in Standard Support, but this decision should be made well in advance and with full information.
+
+### Extended Support for EKS
+
+[Amazon EKS extended support for Kubernetes versions](https://aws.amazon.com/blogs/containers/amazon-eks-extended-support-for-kubernetes-versions-pricing/) was announced early January of 2024. According to the blog post, the pricing for EKS Extended Support is $0.60 per cluster per hour. This is in contrast to standard EKS pricing, which is $0.10 per cluster per hour (in addition to the instances and other costs). 
+
+# Finding RDS and EKS Clusters 
+
+To identify eligible clusters within RDS, you can use the `describe-db-clusters` command. Here is an example of using that command to find PostgreSQL RDS instances:
+
+aws rds describe-db-instances --query 'DBInstances[?Engine==`postgres`].[DBInstanceIdentifier,EngineVersion]'
+
+This command will have the following output:
+
+[
+    ["postgres-instance1", "13.3"],
+    ["postgres-dev-instance", "12.4"]
+]
+
+Depending on the date that this command is run, and the known support schedules, you can infer if a cluster is in Extended Support. 
+
+For EKS, you can use the `describe-cluster` command:
+
+```bash
+aws eks describe-cluster --name <your-cluster-name> --query 'cluster.version'
+```
+
+Which will produce a string with output,e.g.
+
+```json
+"1.25"
+```
+
+This can be compared with the EKS Extended Support schedule.
+
+# Using CloudFix
+
+The Finder/Fixers associated with this article are “RDS Optimize EOL Version” and “EKS Optimize EOL Version”, both of which are found in the Advanced panel of the CloudFix dashboard.
+
+![Select EOL Fixer on CloudFix dashboard](/media/uploads/Select-EOL-Fixer-on-CloudFix-dashboard.gif)
+
+Clicking on either Finder/Fixer will present the familiar interface.
+
+![EOL Fixer details](/media/uploads/EOL-Fixer-details.png)
+
+We see all of the identified EKS or RDS clusters, along with their associated account, organizational unit, cost, and potential savings. With this information in hand, it makes prioritizing which databases to migrate straightforward. Clicking on Options will give you more details:
+
+![EOL Fixer parameters](/media/uploads/EOL-Fixer-parameters.png)
+
+In the above panel, we see that this cluster is running Kubernetes 1.23, and that standard support ended in 11 Oct 2023, and extended support ends 11 Oct 2024. The potential savings on the previous screen is showing us how much can be saved by migrating the EKS cluster to a Kubernetes version on standard support. With this information, you can decide if the savings are worth the effort. As they say, knowledge is power - in this case the power to save!
+
+## Try CloudFix
+
+Whether you decide to upgrade versions or pay the extended support costs is up to you. With CloudFix, you can see all extended support costs associated with EKS and RDS in one place, and from there decide which upgrades are worth pursuing. Give CloudFix a try today. Get started with a [savings assessment](/assessment/), and find out how much you can save with our automated Finder/Fixers.

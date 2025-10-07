@@ -1,0 +1,94 @@
+---
+title: "CloudFix Finder/Fixer: EC2 Migrate SQL Server Windows To Linux"
+description: "Running Microsoft SQL Server on Windows EC2 instances can result in significant licensing costs. This CloudFix Finder identifies opportunities to migrate SQL Se..."
+date: 2025-04-09 18:03:38
+modified: 2025-04-09 18:03:38
+category: "AWS"
+tags: ["AWS","cloud","ec2","migration","compute"]
+published: true
+slug: "cloudfix-finder-fixer-ec2-migrate-sql-server-windows-to-linux"
+---
+
+Running Microsoft SQL Server on Windows EC2 instances can result in significant licensing costs. This CloudFix Finder identifies opportunities to migrate SQL Server workloads from Windows to Linux EC2 instances, helping you reduce both operating system and database licensing expenses while maintaining performance and functionality.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+Windows licensing costs significantly increase the total cost of running EC2 instances. When these instances are used to host Microsoft SQL Server, you're paying premium prices for both the operating system and the database software. Since Microsoft began supporting SQL Server on Linux with SQL Server 2017, many workloads can be migrated to Linux-based EC2 instances, reducing costs by approximately 30% while maintaining full functionality.
+
+### Solution
+
+CloudFix identifies SQL Server installations on Windows EC2 instances that are suitable candidates for migration to Linux. The Finder evaluates factors like SQL Server version, instance utilization patterns, and dependencies to determine migration suitability. While the migration itself must be performed manually due to its complexity, CloudFix provides guidance and support to help teams plan and execute this cost-saving transformation.
+
+## AWS Services Affected
+
+![Amazon EC2](/media/uploads/EC2.svg)
+
+[Amazon EC2](https://aws.amazon.com/ec2/)
+
+## How It Works
+
+### Finder Component
+
+The Finder analyzes your AWS environment to identify Windows EC2 instances running Microsoft SQL Server that could benefit from migration to Linux. It uses the following criteria:
+
+-   Windows EC2 instances with SQL Server installed
+-   SQL Server version 2017 or newer (which support Linux deployment)
+-   Instances not part of managed environments like ECS or Auto Scaling Groups
+-   CPU and memory utilization patterns that suggest suitability for migration
+-   Excludes Spot instances and ephemeral test/dev workloads
+
+The Finder provides detailed information about potential savings from both reduced EC2 Windows licensing costs (approximately 30% reduction) and optimized SQL Server licensing costs through Linux deployment options.
+
+### Fixer Component
+
+This CloudFix feature does not include an automatic Fixer component due to the complexity and customer-specific nature of database migrations. The migration process requires manual implementation and typically involves:
+
+1.  Provisioning a new Linux-based EC2 instance
+2.  Installing and configuring SQL Server on Linux
+3.  Migrating databases and associated applications
+4.  Validating functionality and performance
+5.  Decommissioning the original Windows instance
+
+CloudFix provides guidance and support materials to help plan and execute this migration, but the implementation must be done manually or through engagement with professional services.
+
+## FAQ
+
+**Is it possible to roll back once the migration is complete?**
+
+Yes, rollback is possible but complex. It requires maintaining snapshots or AMIs of the original Windows environment to restore if needed. A dual-run migration strategy (running both Windows and Linux systems in parallel during the transition) is recommended to minimize risk.
+
+**Can CloudFix implement the fix automatically once I accept the recommendation?**
+
+No. Due to the complexity and business-specific nature of the migration, the fix must be implemented manually. CloudFix identifies the opportunity and provides guidance, but the migration itself requires careful planning and execution by your team.
+
+**Does this migration require downtime?**
+
+Yes, application and database migration typically require planned downtime or a controlled cutover process. Testing in a staging environment is strongly advised before attempting the full migration to production systems.
+
+**What versions of SQL Server can be migrated to Linux?**
+
+Microsoft began supporting SQL Server on Linux with SQL Server 2017. SQL Server 2017 and later versions (2019, 2022) can be migrated to Linux platforms. Older versions would require an upgrade as part of the migration process.
+
+**What are the typical cost savings from this migration?**
+
+Customers can typically save approximately 30% on EC2 instance costs by eliminating Windows licensing fees. Additional savings may be realized through optimized SQL Server licensing on Linux, particularly by leveraging options like BYOL (Bring Your Own License) or using open-source alternatives where feasible.
+
+## Related Resources
+
+-   [Microsoft SQL Server on Amazon EC2 Overview](https://docs.aws.amazon.com/sql-server-ec2/latest/userguide/sql-server-on-ec2-overview.html)
+-   [Migrating your on-premises SQL Server Windows workloads to Amazon EC2 Linux](https://aws.amazon.com/blogs/database/migrating-your-on-premises-sql-server-windows-workloads-to-amazon-ec2-linux/)
+-   [Escape unfriendly licensing practices by migrating enterprise workloads to Linux](https://aws.amazon.com/blogs/publicsector/escape-unfriendly-licensing-practices-by-switching-enterprise-workloads-to-linux/)
+-   [Migrating an on-premises database to Amazon EC2](https://docs.aws.amazon.com/sql-server-ec2/latest/userguide/migrate-sql-from-on-premises.html)
+-   [CloudFix Support: EC2 SQL Server Windows to Linux Migration](https://support.cloudfix.com/article/123383-ec2-sql-server-windows-to-linux-migration)

@@ -1,0 +1,87 @@
+---
+title: "CloudFix Finder/Fixer: EC2 Enable Memory Metrics"
+description: "Memory utilization is a critical metric for understanding EC2 instance performance and making informed decisions about instance sizing. Without memory metrics,..."
+date: 2025-04-08 18:37:18
+modified: 2025-04-08 18:37:18
+category: "AWS"
+tags: ["AWS","cloud","ec2","cost optimization","monitoring"]
+published: true
+slug: "cloudfix-finder-fixer-ec2-enable-memory-metrics"
+---
+
+Memory utilization is a critical metric for understanding EC2 instance performance and making informed decisions about instance sizing. Without memory metrics, you're flying blind when it comes to optimizing your EC2 costs. This CloudFix Finder identifies EC2 instances that aren't reporting memory metrics to CloudWatch, helping you establish the visibility needed for effective cost optimization.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [Benefits](#benefits)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+EC2 instances by default do not report memory utilization metrics to CloudWatch. Without these metrics, it's impossible to determine if an instance is over-provisioned with memory or running close to its limits. This lack of visibility prevents effective cost optimization through right-sizing and can lead to performance issues if memory constraints go undetected.
+
+## AWS Services Affected
+
+![Amazon EC2](/media/uploads/EC2.svg)
+
+![Amazon CloudWatch](/media/uploads/CloudWatch.svg)
+
+[Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html)
+
+[Amazon CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html)
+
+## How It Works
+
+### Finder Component
+
+The Finder scans your EC2 instances to identify those that are not reporting memory metrics to CloudWatch. This typically indicates that the CloudWatch Agent is either not installed or not properly configured on these instances.
+
+### Fixer Component
+
+This is a manual fix that requires installing and configuring the CloudWatch Agent on the identified EC2 instances. While CloudFix identifies the opportunity, the implementation needs to be done manually following AWS's recommended procedures.
+
+The implementation process involves:
+
+1.  Installing the required dependencies and CloudWatch Agent package on the EC2 instance
+2.  Configuring the agent to collect memory metrics
+3.  Starting the agent to begin streaming metrics to CloudWatch
+
+## Benefits
+
+-   Gain visibility into memory utilization across your EC2 fleet
+-   Enable data-driven decisions for instance right-sizing
+-   Prevent memory-related performance issues through proactive monitoring
+-   Support cost optimization initiatives with complete resource utilization data
+-   Enable automated right-sizing recommendations through AWS Compute Optimizer
+
+## FAQ
+
+### Does this fix require downtime?
+
+No, installing and configuring the CloudWatch Agent does not require instance downtime or service interruption.
+
+### Can CloudFix implement this fix automatically?
+
+No, this is a manual process. While CloudFix identifies instances missing memory metrics, the installation and configuration of the CloudWatch Agent must be performed manually following AWS documentation.
+
+### Are there any direct cost savings?
+
+While enabling memory metrics doesn't directly reduce costs, it provides the visibility needed to make informed decisions about instance sizing that can lead to significant cost savings through right-sizing initiatives.
+
+### Can the change be rolled back?
+
+Yes, the CloudWatch Agent can be stopped or uninstalled at any time if needed, though this would result in losing visibility into memory metrics.
+
+## Related Resources
+
+-   [Installing the CloudWatch Agent](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Install-CloudWatch-Agent.html)
+-   [Metrics Collected by the CloudWatch Agent](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/metrics-collected-by-CloudWatch-agent.html)
+-   [AWS Compute Optimizer Metrics](https://docs.aws.amazon.com/compute-optimizer/latest/ug/metrics.html)

@@ -1,0 +1,110 @@
+---
+title: "Automatically Removing Idle DynamoDB Tables"
+description: "CloudFix features many different optimizations. Broadly speaking, we have Finder/Fixers which adjust, and others which eliminate. Examples of adjusting finder/f..."
+date: 2025-02-12 06:13:35
+modified: 2025-02-12 06:13:35
+category: "AWS"
+tags: ["AWS","cloud","ec2","s3","cost optimization"]
+published: true
+slug: "automatically-remove-idle-dynamodb-tables"
+---
+
+CloudFix features many different optimizations. Broadly speaking, we have Finder/Fixers which _adjust_, and others which _eliminate_. Examples of _adjusting_ finder/fixers are [Optimize AWS EC2 Auto Scaling Groups](/blog/optimize-auto-scaling-groups/) and [S3 Intelligent Tiering](/blog/aws-s3-intelligent-tiering-default-storage-class/). These Finder/Fixers are typically based on a cost-tradeoff, and CloudFix adds value by doing this calculation and implementing the fix. The _eliminating_ Finder/Fixers get rid of idle resources. 
+
+There is something jarring about paying for things you aren’t using. I’m sure I’m not the only one who has seen something on their credit card and thought “Oh shoot! How long have I been paying for _that?_” We can’t help you with that Hulu subscription you forgot to cancel, but idle AWS resources can get A LOT more expensive and that is exactly what we can help with.
+
+In this blog post, I’ll talk about the situations where DynamoDB incurs a fixed cost, how we identify idle DynamoDB tables, and our process for deactivating them. 
+
+## **What is DynamoDB?**
+
+DynamoDB is AWS's flagship NoSQL database service, offering consistent single-digit millisecond performance at any scale. However, like many cloud resources, DynamoDB tables can sometimes fall into disuse while continuing to generate costs. This commonly happens during development and testing phases, or when applications are deprecated but their supporting infrastructure remains.
+
+The challenge isn't just identifying these idle tables - it's also ensuring their safe removal while maintaining proper backups for compliance and recovery purposes. Manual identification and cleanup processes are time-consuming and error-prone, making automation the ideal solution.
+
+## **DynamoDB Pricing and Options**
+
+DynamoDB pricing two major dimensions: Provisioned vs On-Demand and Standard vs Infrequent Access. Here is an infographic to show where the different scenarios are relevant.
+
+\[caption id="attachment\_16155" align="alignnone" width="1027"\]![](/media/uploads/dynamo-db-pricing-viz.png) Provisioned vs On-Demand, Standard vs Infrequent\[/caption\]
+
+In us-east-1, as of Feb 2025, the pricing is given in this table:
+
+**Feature**
+
+**Provisioned Capacity**
+
+**On-Demand Capacity**
+
+Writes
+
+$0.00065 per WCU per hour (~$0.043 per million writes)
+
+$1.25 per million write request units
+
+Reads
+
+$0.00013 per RCU per hour (~$0.043 per million reads)
+
+$0.25 per million read request units
+
+Storage
+
+$0.25 per GB per month (Standard)
+
+$0.25 per GB per month (Standard)
+
+  
+Whether to use Provisioned or On-Demand is the subject of a different article. Provisioned Capacity DynamoDB tables incur an hourly charge, so we certainly do not want to be paying that. However, in either case we are paying for storage at a relative premium - DynamoDB [cold storage](https://aws.amazon.com/blogs/database/archive-to-cold-storage-with-amazon-dynamodb/) is 1/8th the price! If we aren’t using the table at all, then let's not pay for it either way.
+
+## **Identifying Idle Tables: CloudFix's Smart Finder**
+
+CloudFix's new DynamoDB idle table detection uses a multi-step approach to make sure that identified tables are indeed idle. First, we use the [AWS Cost and Usage Report](/blog/aws-foundational-skills-cost-and-usage-report-cur/), searching for line items with product code AmazonDynamoDB. This is the most reliable way to find all tables across the organization. Once this is done, our validator makes sure that we only consider:  
+
+-   Tables that are at least 30 days old
+-   No significant read or write activity within the configured lookback period
+-   Minimal consumed read/write capacity units (configurable threshold)
+-   Tables that aren't tagged with the cloudfix\_dont\_fix\_it tag (our tag for ignoring resources)
+
+This multi-faceted approach ensures that only genuinely idle tables are flagged for removal, preventing any disruption to active workloads.
+
+## **Locking in the Savings: CloudFix’s Smart Fixer**
+
+When an idle table is identified, we put together a runbook for removing the idle table. This runbook goes through the following steps:
+
+-   Validates table is in ACTIVE state
+-   Enables DynamoDB advanced features for the backup
+-   Creates a backup with 7-day cold storage transition, 97 day deletion period, and tags for tracking
+
+Once the backup is completed successfully, the DynamoDB table is deleted. Savings unlocked ✅
+
+# **A Numerical Example**
+
+Let's look at a typical scenario. A development team creates multiple DynamoDB tables during a three-month project. This can happen easily during a project, with different tables for dev, test, staging, prod, and various feature tables. After the project concludes, these test tables remain unused but provisioned. With 10 idle tables each provisioned with 100 RCUs and 100 WCUs (. 
+
+-   Storage Cost: 10GB × $0.25 = $2.50 per month
+-   Provisioned Capacity:
+    -   Write Capacity Units (WCU): 100 WCU @ $0.00065 per WCU-hour  
+        100 WCU × $0.00065 × 730 hours = $47.45 per month
+
+-   -   Read Capacity Units (RCU): 100 RCU @ $0.00013 per RCU-hour  
+        100 RCU × $0.00013 × 730 hours = $9.49 per month
+
+-   Monthly cost per table = $2.50 (storage) + $47.45 (WCU) + $9.49 (RCU) = $59.44 per table
+-   Total monthly cost ~ $600/month
+
+With this CloudFix Finder/Fixer, rather than pay for the WCUs and RCUs, you pay the storage cost at the cold storage rate of $0.03/GB, or $0.30/month per table, for $3/month total. This is the difference between, say, a single espresso vs a [Rancilio Silvia Espresso machine](https://www.ranciliogroup.com/rancilio/silvia/). Maybe use 1 month's of savings to get one for the office!
+
+# **Getting Started with CloudFix's DynamoDB Optimization**
+
+Ready to start optimizing your DynamoDB costs? CloudFix makes it simple:
+
+1.  Enable the DynamoDB idle table fixer in your CloudFix dashboard
+2.  Configure your preferred detection thresholds and backup retention policies
+3.  Review the automatically generated findings
+4.  Approve the recommended actions
+
+CloudFix handles the rest, ensuring your DynamoDB infrastructure stays lean and cost-effective without compromising data safety or compliance requirements.
+
+## **Beyond DynamoDB: Comprehensive Cost Optimization**
+
+The DynamoDB idle table fixer is just one of many ways CloudFix helps optimize your AWS costs. Check out our other blog posts for details on additional fixers or find out how much you could save with our free, secure, personalized savings assessment.

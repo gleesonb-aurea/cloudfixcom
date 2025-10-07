@@ -1,0 +1,90 @@
+---
+title: "CloudFix Finder/Fixer: EC2 Resize ASG Instances"
+description: "Auto Scaling Groups (ASGs) are a powerful AWS feature that helps maintain application availability by automatically adjusting the number of EC2 instances. Howev..."
+date: 2025-04-07 00:15:42
+modified: 2025-04-07 00:15:42
+category: "AWS"
+tags: ["AWS","cloud","ec2","cost optimization","compute"]
+published: true
+slug: "cloudfix-finder-fixer-ec2-resize-asg-instances"
+---
+
+Auto Scaling Groups (ASGs) are a powerful AWS feature that helps maintain application availability by automatically adjusting the number of EC2 instances. However, if not properly optimized, ASGs can lead to unnecessary costs. CloudFix's EC2 Resize ASG Instances Finder/Fixer helps identify and implement cost-saving opportunities for your Auto Scaling Groups while maintaining performance.
+
+## Contents
+
+-   [Overview](#overview)
+-   [How It Works](#how-it-works)
+    -   [Finding Optimization Opportunities](#finding-opportunities)
+    -   [Validation Process](#validation-process)
+    -   [Implementation](#implementation)
+-   [Benefits](#benefits)
+-   [AWS Services Affected](#aws-services)
+-   [Requirements](#requirements)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+The EC2 Resize ASG Instances Finder/Fixer analyzes your Auto Scaling Groups to identify instances that could be optimized for better cost efficiency. It leverages AWS Compute Optimizer recommendations to ensure all suggested changes maintain performance while reducing costs.
+
+## How It Works
+
+### Finding Optimization Opportunities
+
+The Finder evaluates your ASG configurations by:
+
+-   Analyzing EC2 instances associated with Auto Scaling Groups
+-   Reviewing usage patterns over the last 31 days
+-   Identifying instances with significant cost impact
+-   Excluding resources managed by services like EMR or EKS
+-   Respecting exclusions for CloudFormation-managed resources and resources tagged with cloudfix\_dont\_fix\_it
+
+### Validation Process
+
+Before implementing any changes, the Fixer performs multiple validation checks:
+
+-   Verifies ASG existence and configuration
+-   Checks for launch template usage (skips legacy launch configurations)
+-   Evaluates existing Reserved Instance coverage
+-   Assesses instance age and configuration complexity
+-   Reviews Compute Optimizer recommendations
+
+### Implementation
+
+The implementation process involves:
+
+1.  Reviewing automatically generated savings recommendations
+2.  Creating a change ticket through JIRA integration
+3.  Manual implementation of the recommended changes
+4.  Verification of performance post-change
+
+## Benefits
+
+-   Typical cost savings of 10-15% on applicable ASGs
+-   Zero performance impact due to AWS validation
+-   Automated identification of optimization opportunities
+-   Safe implementation through manual verification
+-   Continuous optimization as new instance types become available
+
+## AWS Services Affected
+
+![Amazon EC2](/media/uploads/EC2.svg)
+
+![AWS Auto Scaling](/media/uploads/Auto-Scaling.svg)
+
+[Amazon EC2](https://docs.aws.amazon.com/ec2/)
+
+[AWS Auto Scaling](https://docs.aws.amazon.com/autoscaling/)
+
+## Requirements
+
+-   AWS Compute Optimizer must be enabled
+-   ASGs must use launch templates (not launch configurations)
+-   Instances should not have active Reserved Instance coverage
+-   ASGs should not use warm pools or complex overrides
+
+## Related Resources
+
+-   [AWS Auto Scaling User Guide](https://docs.aws.amazon.com/autoscaling/ec2/userguide/)
+-   [AWS Compute Optimizer User Guide](https://docs.aws.amazon.com/compute-optimizer/latest/ug/)
+-   [AWS Blog: Cost Optimization with EC2 Auto Scaling](https://aws.amazon.com/blogs/compute/cost-optimization-with-ec2-auto-scaling/)

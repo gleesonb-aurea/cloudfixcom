@@ -40,6 +40,15 @@ export default async function ResourcesPage({ searchParams }: { searchParams?: {
     <div className="min-h-screen">
       <section className="max-w-6xl mx-auto py-12 px-4">
         <h1 className="text-4xl font-bold mb-6">Resources</h1>
+        <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-gray-600">Quick filters:</span>
+          <a href="/resources" className="rounded-full border border-gray-200 px-3 py-1">All</a>
+          <a href="/resources?type=blog" className="rounded-full border border-gray-200 px-3 py-1">Blogs</a>
+          <a href="/resources?type=podcast" className="rounded-full border border-gray-200 px-3 py-1">Podcasts</a>
+          <a href="/resources?type=video" className="rounded-full border border-gray-200 px-3 py-1">Videos</a>
+          <a href="/resources?type=case-study" className="rounded-full border border-gray-200 px-3 py-1">Case Studies</a>
+          <a href="/resources?type=success-story" className="rounded-full border border-gray-200 px-3 py-1">Success Stories</a>
+        </div>
         <form method="get" className="mb-8 flex flex-col md:flex-row gap-4 md:items-center">
           <input name="q" defaultValue={q} placeholder="Search resources" className="rounded-lg border border-gray-300 px-3 py-2 w-full md:w-80" />
           <div className="flex gap-2 items-center">

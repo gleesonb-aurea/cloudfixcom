@@ -1,0 +1,148 @@
+---
+title: "RDS/Aurora PostgreSQL Retype and Resize"
+description: "Databases comprise a significant portion of the cost of an application. With AWS, there are many different database choices, and each of those choices has optio..."
+date: 2024-02-22 13:28:45
+modified: 2024-07-11 17:03:57
+category: "AWS"
+tags: ["AWS","cloud","serverless","ec2","rds"]
+published: true
+slug: "rds-aurora-postgresql-retype-and-resize"
+---
+
+Databases comprise a significant portion of the cost of an application. With AWS, there are many different database choices, and each of those choices has options for configuration. No matter what database you are using, we want to make sure you are using it optimally. Today, we are excited to announce the Postgres retype and resize finder/fixer. In the rest of this blog post, we'll get into the details of how this finder/fixer optimizes your Aurora PostgreSQL-compatible and RDS Postgres instances, the expected savings, and how you can get started.
+
+## Aurora and RDS Pricing
+
+This finder/fixer focuses on retyping and resizing database instances for Aurora and RDS Postgres. As a quick refresher, both Aurora PostgreSQL and RDS for PostgreSQL are "database engines" within the Amazon Relational Database Service collection. Typically we use the term "Aurora Postgres" and "RDS Postgres" to differentiate between these choices. Aurora Postgres is a cloud-native database engine, built by AWS to be highly scalable. That scalability was greatly expanded with the [late 2023 launch of Aurora Limitless Database](https://aws.amazon.com/about-aws/whats-new/2023/11/amazon-aurora-limitless-database/). For a great tutorial on how Aurora scales, watch the [reInvent 2023 Peter DeSantis keynote](https://www.youtube.com/watch?v=pJG6nmR7XxI). RDS Postgres, by comparison, is the more traditional offering. RDS for PostgreSQL offers managed database deployments across single or multiple availability zones.
+
+Both Aurora Postgres and RDS Postgres are powered by database instances, prefixed with a `db.` For example, the Graviton3 RDS instance family is denoted `db.m7g.*` , e.g. `db.m7g.16xlarge`. RDS instance pricing is [detailed on the RDS for PostgreSQL pricing page](https://aws.amazon.com/rds/postgresql/pricing/). Aurora has a serverless offering, as well as Provisioned On-Demand and Provisioned Reserved Instance pricing. In order to compare apples-to-apples, this article will focus on the Provisioned On-Demand portion. To find these prices, have a look at the [Aurora PostgreSQL-Compatible Edition pricing page](https://aws.amazon.com/rds/aurora/pricing/). Click on "Pricing by database instances" and then the "Provisioned On-Demand Instance Tab".
+
+Comparing the prices, we see the following:
+
+**Instance Type**
+
+**Aurora PostgreSQL**
+
+**RDS for PostgreSQL**
+
+**EC2 On Demand**
+
+db.t4g.medium
+
+$0.073
+
+$0.065
+
+$0.034
+
+db.t4g.large
+
+$0.146
+
+$0.129
+
+$0.067
+
+db.t3.medium
+
+$0.082
+
+$0.072
+
+$0.042
+
+db.t3.large
+
+$0.164
+
+$0.145
+
+$0.083
+
+db.r6i.16xlarge
+
+$9.280
+
+$8.000
+
+$4.032
+
+db.r6i.12xlarge
+
+$6.960
+
+$6.000
+
+$3.024
+
+db.r6g.16xlarge
+
+$8.306
+
+$7.194
+
+$3.226
+
+db.r6g.12xlarge
+
+$6.229
+
+$5.395
+
+$2.419
+
+The "Aurora PostgreSQL" column is sourced from the "Provisioned On-Demand Instance" part of the Aurora PostgreSQL pricing page, the RDS for PostgreSQL column is sourced from the RDS for PostgreSQL pricing page, and the EC2 On Demand pricing comes from the [Amazon EC2 On-Demand Pricing page](https://aws.amazon.com/ec2/pricing/on-demand/). All prices are based on `us-east-2`, queried Feb 2024. The On-Demand instances do not have the `db.` prefixes but are otherwise identical in terms of hardware. Note that:
+
+-   Aurora PostgreSQL is approximately 15% more expensive for the same instance.
+-   RDS for PostgreSQL is approximately 75%-125% than the equivalent standard instance.
+-   A **resizing operation**, e.g. `db.r6i.16xlarge` ➝ `db.r6i.12xlarge` or `db.r6g.16xlarge` ➝ `db.r6g.12xlarge`, is a 25% decrease in cost. This represents the minimum gains from this step, as the `.12xlarge` and `.16xlarge` are only 1 step apart.
+-   A **retype to graviton operation,** e.g. `db.r6i.12xlarge` ➝ `db.r6g.12xlarge` shows a 10.5% price decrease.
+-   Combining the operations, e.g. `db.r6i.16xlarge` ➝ `db.r6g.12xlarge` yields an approximate 33% reduction in instance costs.
+
+## Finder/Fixer Strategy
+
+As these database instances are just instances, and thus we can leverage AWS Compute Optimizer, an AWS service which monitors instances and makes right-sizing recommendations. For an overview of AWS Compute Optimizer, check our Rahul and Stephen's interview with Rick Ochs.
+
+To learn more about Compute Optimizer, watch/listen to Episode 66 of the AWS Made Easy livestream with AWS guest Rick Ochs.
+
+For this finder/fixer, we:
+
+-   Utilize the Cost and Usage Report (CUR) to identify candidate instances. For more information on the cost and usage report, see our article, [**AWS Foundational Skills: Optimizing AWS costs with the Cost and Usage Report (CUR)**](/blog/aws-foundational-skills-cost-and-usage-report-cur/)**.** The key filters for this CUR query are:
+
+```sql
+PRODUCT_CODE = 'AmazonRDS' 
+PRODUCT_FAMILY NOT IN ('ServerlessV2', 'Serverless')
+RESOURCE_ID LIKE '%:db:%'
+DATABASE_ENGINE IN ('Aurora PostgreSQL', 'PostgreSQL')
+```
+
+-   For each instance which has been running for at least 14 days, use the AWS Compute Optimizer API. In particular, the [GetEC2InstanceRecommendations](https://docs.aws.amazon.com/compute-optimizer/latest/APIReference/API_GetEC2InstanceRecommendations.html) endpoint.
+-   We filter the recommendations to:
+    -   Provide at least 15% savings
+    -   Focus on gen6 or gen7 instances
+    -   Include Graviton instances when surfaced
+    -   Are rated as "low" or "very low" risk
+
+## Using the CloudFix User Interface
+
+This Finder/Fixer is found in the RDS Optimize Instances panel, located within the "Advanced" section. Note that RDS Optimize Instances include several other related Finder/Fixers, including similar support for MySQL.
+
+![CloudFix dashboard](/media/uploads/CloudFix-dashboard.gif)
+
+Each database will be a particular cluster which can be migrated. Click the "Show" button to learn more about a particular course of action.
+
+![Show action details](/media/uploads/Show-action-details.gif)
+
+Clicking on the "Show" button will reveal the parameters of the fix.
+
+![Show Fix Parameters](/media/uploads/Show-Fix-Parameters.png)
+
+Issue the RDS `modify-db-instance` command with the Instance ID and target instance type, and you will realize the savings! Documentation for modifying the DB instance by either CLI or the Management Console is [available here](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html).
+
+## Use CloudFix for Automated Savings!
+
+If you are a current user of CloudFix, go have a look at the RDS Optimize Instances panel and check for recommendations to retype and resize your PostgreSQL database instances. Please reach out to us if you have any questions!
+
+To learn how much you can save, sign up for a **[free CloudFix Savings Assessment](/assessment/)**!
+
+Check back next week for another CloudFix Finder/Fixer!

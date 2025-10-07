@@ -1,0 +1,29 @@
+---
+title: "How CloudFix works: A deep dive into roles and permissions"
+description: "staying on top of every advisory and then creating and managing scripts for every recommendation is time consuming for cloud teams. That’s why we built CloudFix."
+date: 2022-06-09 13:02:48
+modified: 2023-08-21 10:43:48
+category: "AWS"
+tags: ["AWS","cloud","s3","rds","databases"]
+published: true
+slug: "deep-dive-into-roles-and-permissions"
+---
+
+Every week, AWS releases more than 50 advisories in the form of blog posts to help their customers take advantage of the latest AWS recommendations, including cost and performance improvements. However, staying on top of every advisory and then creating and managing scripts for every recommendation is time consuming for cloud teams. That’s why we built CloudFix. CloudFix helps companies reduce AWS costs and improve compliance with AWS best practices by providing ongoing cloud hygiene. CloudFix removes the burden on IT teams to track, test, and implement these advisories by adding the AWS-recommended optimizations to its always-growing “Fixer” library. In this blog, we will go behind the scenes to understand how CloudFix helps you quickly and easily see your potential savings by safely connecting your AWS account.
+
+## Getting started with your AWS account
+
+CloudFix allows you to connect multiple AWS accounts so that you can review all your recommendations from a single dashboard. CloudFix is completely transparent and purposefully uses roles to allow you to easily audit what the roles are doing. An AWS CloudFormation template is used to configure your account with the appropriate IAM roles and permissions so that CloudFix can both identify and execute fixes. The AWS CloudFormation template creates two AWS IAM roles to set up the appropriate access and permissions. Below are the IAM roles and access created:
+
+1.  **“Finder”** - READ-ONLY AWS IAM role to get resource and usage information across AWS Config, AWS CUR, and AWS CloudWatch metrics. CloudFix does not have permission to read actual user data. For example, we can read metrics about your AWS S3 bucket to see how much they cost but we cannot access any of the data in the bucket.
+2.  **“Fixer”** - WRITE AWS IAM role with very strict function permission boundaries so that we only take limited permissions to create AWS Change Manager templates and change requests to realize the savings. CloudFix does not require any elevated permission and will not make changes directly. Instead, CloudFix leverages AWS Change Manager templates that need approval and are only executed by your AWS account.
+
+IAM roles do not have any long-term credentials, passwords, access keys, or permissions. Instead, access keys are created dynamically and provided to the role only temporarily. Below you can find a quick summary of the CloudFix IAM roles and permissions set up by the AWS CloudFormation template: ![](/media/uploads/cloudfix-permissions-and-iam-roles-768x622.png)
+
+## Scanning your AWS account for suggested recommendations
+
+Once your AWS accounts are connected, CloudFix will scan each account using the Finder role. You can think of a Finder as a read-only process that scans and analyzes your AWS accounts for cost saving and performance improving opportunities. Finders use a combination of AWS Config snapshots, cost and usage reports (CUR), and API calls to CloudWatch and other services to get the necessary usage metrics and metadata that is not in the Config snapshot. The Config snapshots and CUR are stored in your account, and the Finder role, created by CloudFix, accesses this data to make recommendations but does not read any content in your databases or any other stored data. CloudFix will not suggest any blanket changes but instead uses the information and data to make intelligent, safe and risk-free recommendations. CloudFix is also continuously scanning your accounts for any changes in your AWS environments or any new AWS advisories.
+
+## Implementing suggested fixers
+
+CloudFix implements the AWS best practice of a “least privilege” model with no elevated permissions. Instead, [CloudFix utilizes AWS Change Manager](/blog/aws-change-manager-cost-savings/) to execute fixes. AWS Change Manager, a capability of AWS Systems Manager, is an enterprise change management framework for requesting, approving, implementing, and reporting on operational changes to your application configuration and infrastructure. With AWS Change Manager, you can use change templates to help automate change processes and help avoid unintentional results when making operational changes. Once a Fixer change template is approved, CloudFix will initiate the Fixer execution via the AWS Change Manager Request which, in turn, runs SSM runbooks. With CloudFix, you have complete control over who can approve fixer templates, since AWS IAM user IDs must be designated as template approvers in AWS Change Manager before those users can approve fixers. You also have complete control over when to run fixers. As part of the approval process, you can choose to execute the fixer instantly, or to schedule it for a specific day and time. Designated approvers can always change a Fixer’s schedule in the CloudFix dashboard, or cancel the Fixer by deleting its template in AWS Change Manager. The CloudFix Finder-Fixer lifecycle, documented below, is designed to be simple and straightforward while keeping you in control. ![](/media/uploads/cloudfix-finder-fixer-768x551.png) Check out our other blog posts on [how CloudFix integrates with AWS Systems Manager Change Manager](https://aws.amazon.com/blogs/mt/how-cloudfix-uses-aws-systems-manager-change-manager-to-deliver-cost-savings/) to execute its Fixer optimizations, as well as specific Fixers that CloudFix runs.

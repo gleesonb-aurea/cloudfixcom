@@ -1,9 +1,9 @@
 {
   "summary": {
-    "totalPosts": 167,
-    "totalResources": 0,
+    "totalPosts": 157,
+    "totalResources": 28,
     "recentPosts2024": 21,
-    "recentPosts2025": 86,
+    "recentPosts2025": 82,
     "totalWordCount": 214315,
     "postsWithExcerpt": 26,
     "postsWithCategories": 0,
@@ -2420,5 +2420,5 @@
   ],
   "categories": [],
   "tags": [],
-  "analysisDate": "2025-10-07T12:51:39.179Z"
+  "analysisDate": "2025-10-07T13:01:22.191Z"
 }

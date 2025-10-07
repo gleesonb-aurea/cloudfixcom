@@ -1,0 +1,148 @@
+---
+title: "CloudFix Finder/Fixer: ASG Manual Optimization"
+description: "If you're running workloads on AWS, there's a good chance you're using Auto Scaling Groups (ASGs) to manage your EC2 instances. While ASGs are great for maintai..."
+date: 2025-04-07 00:24:08
+modified: 2025-04-07 00:24:08
+category: "AWS"
+tags: ["AWS","cloud","ec2","compute"]
+published: true
+slug: "feature-asg-manual-optimization"
+---
+
+If you're running workloads on AWS, there's a good chance you're using Auto Scaling Groups (ASGs) to manage your EC2 instances. While ASGs are great for maintaining application availability, they can also be a source of unnecessary costs if not optimized properly. In this article, we'll look at how CloudFix's ASG Manual Optimization works to identify and implement cost-saving opportunities for your Auto Scaling Groups.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+Many organizations use Auto Scaling Groups (ASGs) to manage their EC2 instances, but often these ASGs aren't configured with the most cost-efficient instance types. This leads to unnecessary AWS spending on over-provisioned or outdated instance types that could be replaced with newer, more efficient alternatives.
+
+### Solution & Benefits
+
+The ASG Manual Optimization Finder/Fixer identifies EC2 instances in your Auto Scaling Groups that can be retyped to more cost-effective alternatives. It leverages AWS Compute Optimizer's recommendations to suggest changes that maintain performance while reducing costs. Unlike automatic fixers, this opportunity requires manual implementation, either by your team or with CloudFix Professional Services assistance.
+
+### Expected Cost Savings
+
+Implementing ASG instance retyping can typically achieve 10-15% savings on applicable Auto Scaling Groups. The cost reduction is based on the percentage reduction of on-demand costs when switching to the recommended instance types.
+
+## AWS Services Affected
+
+![Amazon EC2](/media/uploads/EC2.svg)
+
+![Amazon EC2 Auto Scaling](/media/uploads/EC2-Auto-Scaling.svg)
+
+![AWS Compute Optimizer](/media/uploads/Compute-Optimizer.svg)
+
+[Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html)
+
+[Amazon EC2 Auto Scaling](https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-groups.html)
+
+[AWS Compute Optimizer](https://docs.aws.amazon.com/compute-optimizer/latest/ug/getting-started.html)
+
+## How It Works
+
+### Finder Component
+
+#### Detection Method
+
+The Finder uses a sophisticated Cost and Usage Report (CUR) query to identify EC2 instances that are part of Auto Scaling Groups. It analyzes usage patterns over the last 31 days (excluding the most recent day for data accuracy) and focuses on instances with significant cost impact.
+
+#### Resource Analysis
+
+The Finder performs two critical cost calculations:
+
+1.  **Standard On-demand Cost (annualized\_public\_cost)**
+    -   Base EC2 instance pricing without any discounts
+    -   Projected annual cost based on current usage
+2.  **True Cost Analysis (annualized\_amortized\_cost)**
+    -   Accounts for Savings Plans
+    -   Factors in Reserved Instance usage
+    -   Includes applicable discounts and credits
+    -   Considers tax implications
+
+This dual analysis ensures accurate numbers when calculating potential savings.
+
+#### Identification Criteria
+
+The Finder specifically looks for EC2 instances that:
+
+-   Are associated with Auto Scaling Groups
+-   Have recommendations from AWS Compute Optimizer
+-   Are not part of managed services like EMR or EKS
+-   Are not excluded via specific tags (e.g., `cloudfix_dont_fix_it`)
+-   Are not covered by Reserved Instances
+-   Don't use warm pools or have complex configurations
+
+### Fixer Component
+
+Unlike many other CloudFix Finders/Fixers, the ASG Manual Optimization requires manual implementation. This is because changing Auto Scaling Group instance types often involves planning for potential downtime and requires specific knowledge of your application requirements.
+
+#### Implementation Process
+
+The implementation can be handled in two ways:
+
+-   **Customer Implementation**: Your team reviews the recommendations and implements the changes according to your change management procedures
+-   **Professional Services**: CloudFix Professional Services can assist with implementing the recommended changes
+
+#### Safety Measures
+
+Before any implementation, multiple validation checks are performed:
+
+-   Verification that the ASG still exists
+-   Checking if the ASG uses launch configurations (legacy configurations are skipped)
+-   Age-based filtering (older instances may be skipped)
+-   Analysis of Compute Optimizer recommendations to ensure they're valid
+
+#### Rollback Process
+
+If issues arise after implementation, rollback is possible but must be done manually. The rollback would involve reverting the Auto Scaling Group's configuration to use the original instance types.
+
+## FAQ
+
+**Q: Can CloudFix implement this fix automatically once I accept the recommendation?**
+
+No, this is an opportunity with a manual fix. You can either implement it yourself or request assistance from CloudFix Professional Services.
+
+**Q: Does this fix require downtime?**
+
+Changing EC2 instance types can require stopping and restarting the instances, potentially causing downtime. The specific implementation approach will depend on your application architecture and availability requirements.
+
+**Q: How are the cost savings calculated?**
+
+Cost reduction for retyping is based on the percentage reduction of on-demand costs when switching to the recommended instance types. This takes into account both the current costs and the projected costs with the new instance types.
+
+**Q: What types of ASGs are excluded from these recommendations?**
+
+The Fixer excludes ASGs that use launch configurations (versus launch templates), have Reserved Instance coverage, use warm pools, have complex overrides, or are tagged with `cloudfix_dont_fix_it`.
+
+**Q: How do I start the optimization process?**
+
+To start optimizing your Auto Scaling Groups with CloudFix:
+
+1.  Click on the **EC2 Resize ASG Instances** button in your CloudFix dashboard
+2.  Review the automatically generated savings recommendations
+3.  Click on "Create Ticket" to use the JIRA integration, or "Execute" to trigger the change process if available
+
+## Related Resources
+
+**CloudFix Resources:**
+
+-   [CloudFix Blog: Optimize AWS EC2 Auto Scaling Groups](/blog/optimize-auto-scaling-groups/)
+-   [Support Article: ASG EC2 Manual Retyping](https://support.cloudfix.com/article/16915-asg-ec2-manual-retyping)
+
+**AWS Documentation:**
+
+-   [Auto Scaling Groups Documentation](https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-groups.html)
+-   [Amazon EC2 Instance Types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html)
+-   [EC2 Auto Scaling Recommendations](https://docs.aws.amazon.com/compute-optimizer/latest/ug/view-asg-recommendations.html)
+-   [Getting Started with AWS Compute Optimizer](https://docs.aws.amazon.com/compute-optimizer/latest/ug/getting-started.html)

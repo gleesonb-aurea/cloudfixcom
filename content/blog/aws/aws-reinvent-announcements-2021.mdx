@@ -1,0 +1,62 @@
+---
+title: "Expert Blog: AWS re:Invent Announcements Showcase its Role in the Future of IT"
+description: "AWS re:Invent in Las Vegas was an exciting event. In addition to the sheer pleasure of gathering in person again with innovators across sectors, AWS made a seri..."
+date: 2021-12-13 12:25:00
+modified: 2023-11-16 15:32:50
+category: "AWS"
+tags: ["AWS","cloud","serverless","ec2","s3"]
+published: true
+slug: "aws-reinvent-announcements-2021"
+---
+
+**AWS re:Invent in Las Vegas was an exciting event. In addition to the sheer pleasure of gathering in person again with innovators across sectors, AWS made a series of announcements that further highlight its commitment to moving from being a datacenter to becoming the operating system for solutions of the future – all of which have big implications for the future of IT.**
+
+From my experience talking to IT leaders reluctant to make the move to AWS, they usually cite one of three concerns: security, latency, and service availability or reliability. But from what we saw last week, AWS is hard at work putting these concerns to bed once and for all.  
+I’ve put together what I think are some of the most compelling announcements made at [AWS re:Invent in Las Vegas](https://hostingjournalist.com/aws-reinvent-new-amazon-ec2-instances-private-5g-services-and-more/) and how they will transform the future of IT.
+
+### Security
+
+AWS has baked security at the heart of every service they have built. They continue to build capabilities that allow applications to raise their security posture far beyond what is possible in any datacenter. Fine-grained authentication and authorization control in **Identity Access Management (IAM)** comes with the maximum security posture, where all permissions are turned off by default. The AWS ecosystem has built-in tools to keep data encrypted both at rest and on the wire.
+
+With the announcement of **Graviton3**, AWS is continuing to take steps to build security right into its underlying hardware. What’s more, the new pointer authentication in the Graviton3 processors encrypt return addresses before they are put on the stack and validates them when popping them out to prevent any stack manipulation attacks. All of this is delivered with a 50-75 percent enhanced price-to-performance ratio.
+
+### Reliability and Scale
+
+AWS presented jaw-dropping metrics around the reliability and scale of its services:
+
+-   IAM processes 0.5 billion API calls a second
+-   S3 stores over 100 trillion objects
+-   DynamoDB processes over 80M requests per second
+
+These metrics show that any non-zero error rate would still amount to massive outages for AWS customers. For example, anyone who is proud about “five nines” reliability should realize that, in the AWS world, that would mean roughly 170 billion IAM requests that fail, losing a billion objects on S3, or failing to process over 26 billion DynamoDB requests each year.
+
+AWS is engineering for Zero Failure – an ability that is unfathomable outside. The scale of AWS services today should put to rest any debate about its reliability or scalability.
+
+### Expanding Edge Computing
+
+The future of solutions development is in stitching together services in the cloud. However, for some, there are challenges posed by the latencies involved in moving data to the cloud and then processing it there.
+
+**To bridge the gap, AWS unveiled several edge computing solutions at re:Invent:**
+
+-   **AWS Outpost** – a hybrid IT service that runs locally in organizations
+-   **AWS Panorama** – a hardware device that brings machine learning technology to cameras and other surveillance
+-   **AWS WAN** – where users can produce, manage, and monitor a global network that connects resources across cloud and on-premises environments
+-   **AWS Wavelength** – features storage capabilities to 5G networks to develop, expand, and scale ultra-low latency applications on edge devices
+-   **AWS Local Zone** – places compute, storage, database, and other select AWS services close to a large population and industry centers
+
+### Going Serverless
+
+It’s unfortunate that many on-premise practitioners still think of AWS as just another datacenter. They don’t realize that creating cloud-native solutions is a completely different paradigm than developing and deploying in datacenters. With the unveiling of new serverless solutions, it appears AWS is evolving to not be seen as just an infrastructure provider. Announcements include:
+
+-   **Aurora Serverless V2** – separates data and compute layers for independent scaling
+-   **Neptune Serverless** – assistance for running and building graphs for databases
+-   **Redshift Serverless** – data set storage and analysis for industries such as warehouses
+-   **Managed Streaming for Apache Kafka** – used for application management
+-   **EMR Serverless** – another cluster supporting large data services
+-   **Kinesis Serverless** – management for streaming data in near-real-time
+
+Ultimately, the announcements made at [re:Invent](https://reinvent.awsevents.com/) leave few excuses to stay on-premise. AWS has proven again and again that its decentralized approach of building services and “letting a million flowers bloom” is outpacing everyone in terms of innovation and service delivery.
+
+There’s no better time to change over. Especially with new initiatives launching in the **AWS Machine Learning** community and a $10 million scholarship offered by AWS, learning is now more accessible than ever. If you aren’t leveraging AWS services today and riding its wave of innovation, you are already behind.
+
+[Read the original article here.](https://hostingjournalist.com/expert-blog-aws-reinvent-announcements-showcase-its-role-in-the-future-of-it/)

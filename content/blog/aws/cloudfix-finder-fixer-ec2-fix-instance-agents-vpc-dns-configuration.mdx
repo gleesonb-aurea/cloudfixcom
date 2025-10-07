@@ -1,0 +1,111 @@
+---
+title: "CloudFix Finder/Fixer: EC2 Fix Instance Agents VPC DNS Configuration"
+description: "AWS Systems Manager (SSM) and CloudWatch agents require proper DNS settings in your VPC to function correctly. When these settings aren't configured properly, t..."
+date: 2025-04-08 18:28:40
+modified: 2025-04-08 18:28:40
+category: "AWS"
+tags: ["AWS","cloud","ec2","vpc","cost optimization"]
+published: true
+slug: "cloudfix-finder-fixer-ec2-fix-instance-agents-vpc-dns-configuration"
+---
+
+AWS Systems Manager (SSM) and CloudWatch agents require proper DNS settings in your VPC to function correctly. When these settings aren't configured properly, the agents can't communicate with AWS service endpoints, preventing CloudFix from identifying cost-saving opportunities for your EC2 instances. This Finder/Fixer automatically detects and corrects VPC DNS configuration issues to ensure your infrastructure monitoring and management tools function properly.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+AWS Systems Manager (SSM) and CloudWatch agents need to communicate with their respective AWS service endpoints to function properly. For this communication to work, your VPC must have the appropriate DNS settings enabled. Without proper DNS configuration, these agents cannot resolve the domain names of AWS services, preventing them from sending data or receiving commands. This limitation blocks CloudFix from implementing many cost-saving fixes that rely on these agents.
+
+### Solution & Benefits
+
+The EC2 Fix Instance Agents VPC DNS Configuration Finder/Fixer automatically identifies VPCs with incorrect DNS settings and fixes them by enabling the required DNS support options. This ensures that SSM and CloudWatch agents can communicate with their endpoints, allowing CloudFix to implement its full range of cost optimization recommendations.
+
+Key benefits include:
+
+-   No downtime required to implement the fix
+-   Enables proper functioning of SSM and CloudWatch agents across your infrastructure
+-   Unlocks additional CloudFix cost-saving opportunities that depend on agent connectivity
+-   Improves overall AWS infrastructure manageability
+-   Zero impact on existing workloads
+
+### Expected Cost Savings
+
+While this Finder/Fixer doesn't directly generate cost savings, it's a critical enabler for many other cost optimization opportunities. By ensuring your SSM and CloudWatch agents are functioning correctly, CloudFix can identify and implement numerous other fixes that deliver significant savings on your AWS bill.
+
+## AWS Services Affected
+
+![Amazon EC2](/media/uploads/EC2.svg)
+
+![Amazon VPC](/media/uploads/VPC.svg)
+
+[Amazon EC2](https://docs.aws.amazon.com/ec2/)
+
+[Amazon VPC](https://docs.aws.amazon.com/vpc/)
+
+## How It Works
+
+### Finder Component
+
+The Finder component works through the following process:
+
+1.  Uses the EC2 DescribeVpcs API with the filter state=available to list all available VPCs in your account.
+2.  For each available VPC, calls the EC2 DescribeVpcAttribute API to check the VPC's DNS configuration.
+3.  Identifies VPCs where either enableDnsSupport or enableDnsHostnames attributes are set to false.
+4.  Creates recommendations for VPCs that need their DNS settings corrected.
+
+These attributes are critical for DNS resolution within the VPC:
+
+-   **enableDnsSupport**: When true, the VPC uses the Amazon DNS server for DNS resolution. This is required for instances to resolve AWS service endpoints.
+-   **enableDnsHostnames**: When true, instances in the VPC receive public DNS hostnames that correspond to their public IP addresses.
+
+### Fixer Component
+
+When you approve the recommendation, the Fixer component:
+
+1.  If enableDnsSupport is disabled, calls the EC2 ModifyVpcAttribute API with the parameter EnableDnsSupport = true.
+2.  If enableDnsHostnames is disabled, makes another call to the EC2 ModifyVpcAttribute API with EnableDnsHostnames = true.
+
+Note that separate API calls are required because both parameters cannot be set to true in the same API request.
+
+This fix does not require downtime and has no impact on running instances or applications within your VPC. After the fix is applied, SSM and CloudWatch agents on your instances will be able to resolve AWS service endpoints correctly, enabling them to communicate with AWS services.
+
+## FAQ
+
+**Q: Will enabling these DNS settings impact my existing applications?**
+
+A: No, enabling DNS support and DNS hostnames in your VPC is a non-disruptive change that will not affect running applications. These settings only affect how DNS resolution works within your VPC and do not change any routing or security configurations.
+
+**Q: Can I roll back this change if needed?**
+
+A: Yes, while CloudFix doesn't provide an automated rollback for this specific fix, you can manually reverse the changes by using the EC2 ModifyVpcAttribute API to set the EnableDnsSupport and EnableDnsHostnames parameters back to their original values. However, doing so may cause SSM and CloudWatch agents to stop working properly.
+
+**Q: Does this Finder/Fixer directly save money on my AWS bill?**
+
+A: This specific Finder/Fixer doesn't directly reduce your AWS costs. Instead, it's an enabler for other CloudFix optimizations that require functioning SSM and CloudWatch agents. By fixing your VPC DNS configuration, you'll unlock numerous other cost-saving opportunities.
+
+**Q: Why do I need both enableDnsSupport and enableDnsHostnames enabled?**
+
+A: The enableDnsSupport attribute allows your instances to use the Amazon DNS server for resolution, which is necessary for resolving AWS service endpoints. The enableDnsHostnames attribute ensures instances receive DNS hostnames, which is required for some AWS services to interact properly with your instances.
+
+**Q: Will this fix affect custom DNS configurations I've set up in my VPC?**
+
+A: No, enabling these DNS attributes doesn't override any custom DNS configurations you've established. Custom DHCP option sets will continue to function as configured.
+
+## Related Resources
+
+-   [AWS Foundational Skills: Your guide to AWS Systems Manager](/blog/aws-foundational-skills-aws-systems-manager/)
+-   [Fix VPC DNS settings for SSM and CloudWatch agents](https://support.cloudfix.com/article/16928-fix-vpc-dns-settings-for-ssm-and-cloudwatch-agents)
+-   [DNS attributes in your VPC](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-dns.html)
+-   [Create a VPC endpoint for Systems Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/setup-create-vpc.html)
+-   [Install the CloudWatch agent on Amazon EC2 instances](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/install-CloudWatch-Agent-on-EC2-Instance.html)

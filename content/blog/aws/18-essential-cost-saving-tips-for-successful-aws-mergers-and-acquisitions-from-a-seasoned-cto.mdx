@@ -1,0 +1,55 @@
+---
+title: "18 Essential Cost-Saving Tips for Successful AWS Mergers and Acquisitions from a Seasoned CTO"
+description: "Rahul Subramaniam, Seasoned M&amp;A Expert As co-host of AWS Made Easy alongside Rahul Subramaniam, I'm constantly learning from his vast experience in the worl..."
+date: 2024-07-16 15:51:34
+modified: 2024-07-16 15:55:37
+category: "AWS"
+tags: ["AWS","cloud","serverless","lambda","ec2"]
+published: true
+slug: "18-essential-cost-saving-tips-for-successful-aws-mergers-and-acquisitions-from-a-seasoned-cto"
+---
+
+# Rahul Subramaniam, Seasoned M&A Expert
+
+As co-host of AWS Made Easy alongside Rahul Subramaniam, I'm constantly learning from his vast experience in the world of cloud computing. In our latest episode, we took a deep dive into a topic where Rahul's expertise truly shines: mergers and acquisitions. 
+
+While Rahul and I regularly discuss AWS in general, this particular conversation allowed us to leverage his finely-honed industry experience. As the CTO of ESW Capital for over 15 years, Rahul has overseen hundreds of acquisitions, each one a complex challenge in the AWS landscape. From undocumented servers in forgotten supply closets, to writing customer compilers because the toolchain company no longer exists, Rahul has some stories to tell!
+
+Rahul’s general approach is to move quickly and focus the first 90 days on lifting and shifting the code, and make sure that you fully understand how to build everything from scratch. Use a simple approach at first, and migrate as much of the code to managed services (e.g. ElastiCache, OpenSearch, RDS) as possible. What remains is the application core, and this can then be optimized and right-sized. Eventually, the application core may even be rewritten in a “serverless” approach using Lambda functions.
+
+Our discussion was inspired by a recent AWS Blog post titled "[Best practices to optimize costs after mergers and acquisitions with AWS Organizations](https://aws.amazon.com/blogs/mt/best-practices-to-optimize-costs-after-mergers-and-acquisitions-with-aws-organizations/)". However, Rahul's insights went far beyond, offering a comprehensive roadmap that I believe is invaluable for any company navigating M&A processes in AWS.
+
+What struck me most about Rahul's approach is its blend of pragmatism and innovation. He advocates for swift action - a 90-day migration window to AWS - while emphasizing the importance of long-term optimization. It's a balancing act that few can master, but Rahul's extensive experience makes it seem achievable.
+
+In this blog post, I'm excited to share 18 key tips that Rahul discussed during our conversation. These aren't just theoretical concepts; they're battle-tested strategies refined through countless real-world applications. And the best part? This is just the beginning. We have a second episode/blog (and probably a third) coming soon, promising even more M&A cost optimization tips and strategies.
+
+So, whether you're a seasoned pro in tech acquisitions or facing your first M&A challenge, I believe these insights from my co-host Rahul will provide you with a solid foundation for success in the AWS ecosystem. 
+
+# Rahul's M&A Cost Optimization Tips
+
+Here are Rahul's 18 essential tips for successful AWS mergers and acquisitions:
+
+1.  **Don't be rigid - be adaptable**. The M&A process is unpredictable. Be prepared to think on your feet and adjust your plans as needed.
+2.  **Get into AWS as quickly as possible.** Aim to migrate acquired companies to AWS within 90 days to preserve knowledge and momentum.
+3.  **Have a deadline for full migration.** Set a clear timeline for completing the migration to maintain focus and urgency.
+4.  Migrate all resources into an AWS account with an **org-wide tag policy**. Use a new AWS account with predetermined tagging policies for clean integration.
+5.  Subscribe to [AWS MAPS 2.0 Program](https://aws.amazon.com/migration-acceleration-program/). Leverage AWS's Migration Acceleration Program for significant cost savings and expert assistance.
+6.  **Have a VM "landing zone"** destination to move virtual machines before making any changes. Create a transitional space for virtual machines to ensure business continuity during migration.
+7.  **Don't overcomplicate chargeback initially** - focus efforts on getting the migration right. Keep internal accounting simple in the early stages. Consider using a flat percentage for overhead costs.
+8.  **Assess existing Reserved Instances (RIs)**. Use Convertible Reserved Instances ([CRIs)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ri-convertible-exchange.html) rather than RIs, and consider a conservative [Compute Savings Plan](https://aws.amazon.com/savingsplans/compute-pricing/). Evaluate current commitments and opt for flexible savings options like Convertible Reserved Instances.
+9.  **In the first 90 days after an acquisition, put in monitoring**. Implement comprehensive [monitoring](https://aws.amazon.com/cloudwatch/) to understand the acquired infrastructure and identify optimization opportunities.
+10.  **Complete a "[teardown](https://simran-pm.medium.com/in-the-context-of-apps-and-websites-a-product-teardown-refers-to-the-process-of-analyzing-and-f2abe546d8f3)" of your new codebase to fully understand it**. Perform a detailed analysis of the acquired codebase to grasp its intricacies and potential optimization areas.
+11.  **Assume the documentation is incomplete and out of date**. Be prepared to discover undocumented aspects of the infrastructure and fill in knowledge gaps.
+12.  **Do not worry about Capacity Reservations for the first 90 days**. Just use on-demand. Don't prematurely optimize. Focus on stability and understanding the infrastructure before optimizing capacity.
+13.  **Differentiate cost (what you pay AWS) and pricing (what business units pay internally)**. Use pricing to direct change. Leverage internal pricing strategies to incentivize desired behaviors and optimizations.
+14.  Months 1-3: Migrate the app. **Months 4-12: Reduce costs by a minimum of 50%**. Set clear phases for migration and subsequent cost optimization.
+15.  **Find the "seams" in the code base where functionality can be replaced by AWS Managed Services.** Identify opportunities to transition to managed services like RDS, ElastiCache, and OpenSearch for improved efficiency.
+16.  **The biggest "bang for buck" is properly sizing managed services** (e.g. RDS databases and OpenSearch clusters). Focus on optimizing the size and configuration of managed services for significant cost savings.
+17.  **Use Load Balancers and RDS Proxy to decouple services.** Implement these services to enhance flexibility and facilitate easier future optimizations.
+18.  **Evaluate the AWS Graviton for RDS**. Consider transitioning to the latest instance types, like Graviton 4, for improved performance and cost-efficiency.
+
+# AWS Made Easy Episode
+
+To get the full details, watch the episode:
+
+\[embedyt\] https://www.youtube.com/watch?v=SxiC2y-IiU4\[/embedyt\]

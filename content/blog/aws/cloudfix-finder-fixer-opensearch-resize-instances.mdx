@@ -1,0 +1,77 @@
+---
+title: "CloudFix Finder/Fixer: OpenSearch Resize Instances"
+description: "Amazon OpenSearch clusters are often overprovisioned due to the complexity of sizing them correctly. This CloudFix Finder/Fixer identifies overprovisioned clust..."
+date: 2025-04-09 18:01:31
+modified: 2025-04-09 18:01:31
+category: "AWS"
+tags: ["AWS","cloud","monitoring","storage"]
+published: true
+slug: "cloudfix-finder-fixer-opensearch-resize-instances"
+---
+
+Amazon OpenSearch clusters are often overprovisioned due to the complexity of sizing them correctly. This CloudFix Finder/Fixer identifies overprovisioned clusters and automatically resizes them to target 70% peak utilization, helping you optimize costs without compromising performance.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+Properly sizing OpenSearch clusters can be challenging, often leading to overprovisioning of resources. This Finder/Fixer helps you optimize your OpenSearch cluster costs by analyzing usage patterns and automatically adjusting instance sizes to maintain optimal performance while reducing unnecessary expenses.
+
+## AWS Services Affected
+
+![Amazon OpenSearch Service](/media/uploads/OpenSearch-Service.svg)  
+
+[Amazon OpenSearch Service](https://aws.amazon.com/opensearch-service/)
+
+## How It Works
+
+### Finder Component
+
+The Finder component analyzes your OpenSearch clusters by:
+
+-   Monitoring CPU and memory utilization patterns over the last 30 days through CloudWatch metrics
+-   Identifying clusters that consistently operate well below capacity
+-   Calculating optimal instance sizes targeting 70% peak utilization
+-   Excluding clusters using UltraWarm or Cold storage
+-   Verifying cluster health status is green before recommending changes
+
+### Fixer Component
+
+When executed, the Fixer:
+
+-   Verifies cluster eligibility by checking Processing, UpgradeProcessing, and Deleted flags
+-   Updates both cluster and master node instance types to the recommended sizes
+-   Implements changes using AWS’s blue/green deployment process to minimize service disruption
+-   Monitors the resized cluster to ensure performance meets requirements
+-   Provides automatic rollback capability if performance issues are detected
+
+## FAQ
+
+### What are the potential savings?
+
+Customers typically see 15-20% cost savings on resized clusters. The exact savings depend on the degree of overprovisioning, but average around $0.12 per cluster hour for each resource tier reduction.
+
+### Does this fix require downtime?
+
+No. The fix is implemented using AWS’s blue/green deployment process, which ensures continuous service availability during the resize operation.
+
+### Can changes be rolled back?
+
+Yes. The system includes automatic rollback capabilities triggered by CloudWatch alarms monitoring CPU and memory usage. If performance metrics indicate issues after resizing, the cluster will be automatically restored to its previous configuration.
+
+### Is the fix automatic after accepting the recommendation?
+
+Yes. Once you approve the recommendation, CloudFix will automatically implement the changes using AWS best practices and monitor the results.
+
+## Related Resources
+
+-   [Amazon OpenSearch Service Documentation](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/what-is.html)
+-   [Support Article: Right Size ElasticSearch Clusters](https://support.cloudfix.com/article/17037-right-size-elasticsearch-clusters)

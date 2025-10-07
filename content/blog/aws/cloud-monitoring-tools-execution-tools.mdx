@@ -1,0 +1,63 @@
+---
+title: "AWS cloud monitoring tools: visibility vs execution"
+description: "Cloud monitoring tools help you maintain a clean AWS cloud environment, but they are only the start. Discover why execution tools are required for complete cloud optimization."
+date: 2022-05-26 11:30:59
+modified: 2022-11-17 14:21:51
+category: "AWS"
+tags: ["AWS","cloud","ec2","rds","cost optimization"]
+published: true
+slug: "cloud-monitoring-tools-execution-tools"
+---
+
+As more organizations migrate to the cloud, there is an increasing demand for tools that maximize performance and minimize cost. Cloud monitoring tools provide much needed visibility, allowing you to monitor, assess, and manage every area of your cloud-native architecture and applications. But are they enough? Read on to learn more about cloud monitoring tools, where they fall short, and what you need to do to truly optimize your AWS cloud.
+
+## AWS cloud monitoring tools
+
+For AWS users, there are two main cloud monitoring tools you can use: [AWS CloudWatch](https://aws.amazon.com/cloudwatch/) and [AWS Cost Explorer](https://aws.amazon.com/aws-cost-management/aws-cost-explorer/). Below is an overview of each, as well as some best practices for using them.
+
+### AWS CloudWatch
+
+Built to be used by a range of different roles, including product managers, DevOps, and IT managers, AWS CloudWatch regularly monitors and observes your AWS services, resources, and applications. In Amazon’s own words, AWS CloudWatch is a “metrics repository.” It collects operational data as metrics, logs, and events – either automatically from AWS services or manually from your team’s inputs – and delivers statistical reports in the CloudWatch console. Within these reports, AWS CloudWatch provides actionable insights on:
+
+-   Resource utilization
+-   System performance
+-   Operational health
+-   Optimization opportunities
+
+In addition, you can gain greater control of your cloud by using AWS CloudWatch to:
+
+-   Set metric or composite alarms that perform actions based on metric values or pre-determined conditions
+-   Detect abnormal behavior in your AWS environment
+-   Visualize metrics and logs together
+-   Automate actions
+-   Troubleshoot problems
+
+### AWS Cost Explorer
+
+Having detailed visibility of your ongoing costs is the first step in successful cloud cost optimization. With its simple, free-to-use interface, AWS Cost Explorer allows you to easily:
+
+-   Visualize and manage costs across your AWS environments and services
+-   Monitor and analyze month-to-date and forecasted cost and usage data
+-   Create custom reports tailored to your unique AWS setup
+-   Deep dive into up to 12 months of historical cost and usage data
+-   Identify cost and usage anomalies, current trends, and cost drivers
+-   Programmatically query data using the Cost Explorer API (charged at $0.01 per paginated API request)
+
+Delivering timely, holistic cost and usage data, AWS Cost Explorer is an essential tool that allows you to keep track of your ongoing cloud spend and forecast future expenses.
+
+## The drawback of cloud monitoring tools
+
+These AWS cloud monitoring tools and other third-party cloud visualization tools are good for identifying potential performance and cost saving opportunities. But that is only the first step of cloud optimization – knowing those opportunities doesn’t mean you can achieve them. Many optimizations that these tools identify are actually incredibly hard to implement, especially if your team lacks high-level cloud experience. As an example, one of these tools might tell you your EC2 instances are underprovisioned and you’re only using 10%. You decide to downsize by two sizes, but do you know the repercussions of downsizing a particular workload? What does that do to your IOPS, your drive, or the amount of memory you will have? These are only a few of the multiple dimensions that must be considered when implementing such optimizations. In an ideal world, your cloud costs and operational performance would automatically be under control from day one. Unfortunately we are not quite there, so cloud monitoring tools certainly Ωstill have their place. But in order to start realizing cost savings and improved performance, another step is required.
+
+## Pairing cloud visibility with execution
+
+Compounding this cloud optimization problem is the fact that AWS’s pace of innovation far exceeds the speed at which any of its customers can operate. We are always playing catch up, so when AWS releases a more efficient, less expensive solution, no organization has the resources or experience to implement that solution straight away. The only way to keep up with AWS, and in turn maintain an efficient and cost-effective cloud environment, is to combine cloud visibility with cloud execution. With an effective cloud execution tool, you can automatically and continuously:
+
+-   Monitor AWS’s firehose of advisories
+-   Identify risk-free, AWS-approved fixes
+-   Realize real, scalable cost savings
+-   Reduce the risk of breakages, downtime, and costly mistakes
+-   Improve cloud hygiene
+-   Increase the productivity of your team
+
+Cloud monitoring tools remain an important part of any organization’s cloud optimization strategy, delivering higher visibility on cost and usage. But as AWS evolves, you need an optimization tool that automatically evolves with it. That’s where CloudFix comes in. To execute changes quickly and safely, CloudFix worked with AWS and their best practice of adopting AWS Change Manager, which was introduced in AWS Systems Manager in December 2020. The feature set of Change Manager instantly transformed CloudFix into a scalable cost savings tool by making the change process streamlined and more secure. (Learn more about [how CloudFix uses AWS Systems Manager Change Manager to deliver cost savings](https://aws.amazon.com/blogs/mt/how-cloudfix-uses-aws-systems-manager-change-manager-to-deliver-cost-savings/)) With its ongoing library of Fixers, CloudFix delivers continuous AWS hygiene, cost savings, and improved performance. It goes beyond visibility to enable teams to execute fixes with zero downtime, zero breakages, and zero performance degradation. [Check out our other blogs](/blog/) for AWS cost savings tips and cloud case studies or [see how CloudFix automatically executes savings from AWS](https://aws.amazon.com/marketplace/pp/prodview-5wc4rjxznjmwq) now.

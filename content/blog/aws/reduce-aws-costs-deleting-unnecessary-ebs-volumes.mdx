@@ -1,0 +1,120 @@
+---
+title: "Cut AWS Costs: Remove Unused EBS Volumes Efficiently"
+description: "“Clean up, clean up, everybody everywhere. Clean up, clean up, everybody do your share.” – Barney If you were a kid (or a parent) in the ‘90s, you couldn’t esca..."
+date: 2023-03-13 08:51:27
+modified: 2025-01-23 10:21:23
+category: "AWS"
+tags: ["AWS","cloud","ec2","backup","storage"]
+published: true
+slug: "reduce-aws-costs-deleting-unnecessary-ebs-volumes"
+---
+
+> “Clean up, clean up, everybody everywhere.  
+> Clean up, clean up, everybody do your share.”  
+> _– Barney  
+> _
+
+If you were a kid (or a parent) in the ‘90s, you couldn’t escape a certain big purple dinosaur. Love him or hate him, Barney had something right: it’s important to [clean up](https://www.youtube.com/watch?v=whrNJH8S-Ys). (Apologies for the ear worm. And the Barney reference. I know, we all thought he was behind us, but here we are.)
+
+![](/media/uploads/barney-min.png)
+
+Our old purple friend encouraged us to clean up art supplies, building blocks, and stuffed animals. In the land of AWS, the mess is different but the idea is the same: cleaning up is critical to keeping your environment – and spend – under control. Let’s take a look at how cleaning up EBS volumes attached to long-stopped EC2 instances reduces both cost and digital clutter in our EBS accounts.
+
+## Table of Contents
+
+-   [Why you’re still paying for unnecessary EBS volumes](#why)
+-   [Save 37% or more by detaching and deleting EBS volumes](#save-money)
+-   [How to manually find, snapshot, and delete EBS volumes attached to stopped EC2 instances](#manual-way)
+-   [Automatically clean up EBS volumes with CloudFix](#automate-with-cloudfix)
+
+## Why you’re still paying for unnecessary EBS volumes
+
+As you probably know, AWS experts recommend using EBS volumes with your EC2 instances, with the EBS volume acting as the primary storage device. Here’s why:
+
+1.  EBS volumes are persistent, independent of the EC2 instance. If the associated EC2 instance is terminated, the EBS volume can easily be detached from the terminated instance and attached to a new one.
+2.  EBS volumes can have different performance characteristics. (Side note: [We recommend gp3](/blog/migrate-gp2-to-gp3-better-performance-lower-costs/). #minivan4life.)
+3.  EBS volumes can be snapshotted for backup purposes (more on optimizing those snapshots [here](/blog/cutting-aws-costs-ebs-volume-snapshot-archiving/)). It can also hold the “state” of an EC2 instance during an EC2 resize operation.
+
+As you also probably know, it’s very easy to stop an EC2 instance and forget about it. We’ve all been guilty of this. It seems innocuous; EC2 instances don’t incur any charges when they’re stopped. No harm, no foul.
+
+An EBS volume, however, does keep racking up costs – $0.08/GiB/month, to be exact, using February 2023 prices in us-east-1. While turning off the EC2 instance takes care of the lion’s share of the monthly cost, the associated EBS volumes are still chugging away in the background.
+
+We get it: At first glance, $4/month doesn’t seem like an urgent concern. But as with many cloud costs, it’s a matter of scale. Over time, it’s easy to accumulate hundreds or thousands of EBS volumes and waste thousands of dollars paying for volumes that you don’t need – the ones associated with EC2 instances that haven’t been started in weeks or months and may never be started again.
+
+That’s where the savings come in.
+
+## Save 37% or more by detaching and deleting EBS volumes
+
+The first step to wrangling your unnecessary EBS volumes is to put some guardrails in place. We recommend that EBS volumes attached to EC2 instances that have been stopped for more than one month should be detached and deleted. 
+
+It’s also important to snapshot the volume before it’s deleted to make sure that no data is lost. There are costs associated with snapshotting, but the savings still shake out. 
+
+Based on February 2023 pricing in us-east-1, an EBS volume costs $0.08/GiB/month for a gp3 volume, plus the additional costs for provisioned IOPS and throughput. A snapshot costs $0.05/GiB/month. 
+
+**Therefore, you’ll still save at least 37.5%** (comparing a gp3 volume with no extra IOPS or throughput at $0.08/GiB/Month vs $0.05 for an EBS Snapshot in the storage tier). You can also realize additional savings if the snapshots are archived using [EBS volume snapshot archiving](/blog/cutting-aws-costs-ebs-volume-snapshot-archiving/).
+
+## How to manually find, snapshot, and delete EBS volumes attached to stopped EC2 instances
+
+Like [other fixers](/blog/compression-reduce-amazon-cloudfront-costs/) that we’ve discussed, the key difficulty here is finding the EBS volumes eligible for deletion. To do that manually, we need to:
+
+1.  Identify EC2 instances that have been stopped for at least a month
+2.  For each stopped instance from step 1, query for attached volumes
+3.  For each volume, create a snapshot
+
+We can use the AWS command line tool to find the stopped instances.
+
+![aws cli: find stopped instances](/media/uploads/aws_cli_find_stopped_instances-min.png)
+
+This command will output a JSON object that contains a list of instances. _For each instance ID in the list_:
+
+![cli: aws ec2 describe-volumes](/media/uploads/aws_ec2_descibe-volumes-min.png)
+
+This will return a list of volume IDs. _For each volume ID in the above list_:
+
+![aws cli: Clean up volumes](/media/uploads/aws_cli_cleanup_volumes-min.png)
+
+These steps take a specified volume-id. For this volume, it:
+
+1.  Initiates the creation of a snapshot
+2.  Waits for the snapshot to complete
+3.  Detaches the snapshot from the instance
+4.  OPTIONALLY: Terminates the instance. Do not run the `terminate-instances` command if you don’t want to terminate the instance.
+5.  Finally, delete the volume. This is the step that will get you the cost savings!
+
+You can also identify and snapshot the EBS volumes in the AWS Management console using a similar process:
+
+1.  Open the EC2 management console
+2.  Filter the list by stopped instances, and then identify instances that have been stopped for more than a month.  
+    ![Find stopped instances](/media/uploads/find_stopped_instances_circled-min.png)**NOTE**: There is not a straightforward way to “filter” instances by this exact criterion. You have to go through the instances and look at the date in the “State transition reason.” This transition reason should record when the instance arrived in the _Stopped state_. You will need to select instances which have a date associated with the state transition which is more than a month ago.
+3.  For each instance, click on the ‘Volumes’ tab in the Elastic Block Store section
+4.  Right click the volume and click on Detach Volume  
+    ![Detach volume](/media/uploads/detach_volume-min.png)
+5.  Create a snapshot of the EBS volume  
+    ![Create snapshot](/media/uploads/create_snapshot-min.png)
+6.  OPTIONAL: Add tags to the snapshot to provide some information about the instance to which the snapshot was attached. This will be extremely helpful if you later plan to reattach the snapshot to the instance. In this example, we’ve used the instance ID as a tag in the snapshot.  
+    ![Tag snapshot](/media/uploads/tag_snapshot-min.png)
+7.  Finally, delete the volume.  
+    ![Delete volume](/media/uploads/delete_volume-min.png)![Confirm deletion](/media/uploads/delete_volume_confirmation-min.png)![Volume deleted](/media/uploads/volume_deleted-min.png)Once the snapshot is deleted, it no longer incurs charges.
+
+**Warning:** This process also applies to root volumes of EC2 Instances. It is perfectly fine to detach and later re-attach root volume EBS snapshots to a stopped instance. However, take care if you are changing the instance type and plan to attach the volume to a new EC2 instance.
+
+If this is your plan, follow the steps listed in [Change the instance type of an existing EBS-backed instance](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-resize.html#change-instance-type-of-ebs-backed-instance). The main things to watch out for are:
+
+-   If you are changing instance types to one which requires drivers, make sure to plan for it.
+-   Do not change the operating system. Match OS and Kernel versions as closely as possible between the previous and new instance.
+
+## Automatically clean up EBS volumes with CloudFix
+
+Is it possible to manually clean up your EBS volumes on an ongoing basis? Of course. Is it unlikely to happen because you have better things to do? Also yes. 
+
+Why? Aside from CloudFix, there is no automated way to do it. Your already-stretched engineering team would have to scope, plan, develop, test, debug, operationalize, and maintain code to make it happen – not exactly the best use of their time or the company’s money. The other option would be to devote time to manually going through the AWS Management console, following all of the steps to detach, snapshot, and delete instances every week or month. This would be incredibly tedious and error prone, plus eat up your potential savings through human effort. This really is a process that needs automation.
+
+Enter CloudFix. CloudFix automates the clean-up process explained above. No need to write code; just enable the fixer, approve the changes, and enjoy the cost savings. CloudFix even makes it easy to reassociate an EBS snapshot to its EC2 instance with tags that contain all the necessary metadata.
+
+My fellow children of the ‘90s (and our younger and older counterparts) – clean up accomplished. Barney would be proud. 
+
+Want to save even more on AWS? Browse our recent fixer blogs:
+
+-   [Pressing your luck: How to use compression to reduce Amazon CloudFront costs by 65%](/blog/compression-reduce-amazon-cloudfront-costs/)
+-   [Cutting AWS costs with EBS volume snapshot archiving: Strategies for success](/blog/cutting-aws-costs-ebs-volume-snapshot-archiving/)
+-   [Migrate from gp2 to gp3 for better performance and lower costs](/blog/migrate-gp2-to-gp3-better-performance-lower-costs/)

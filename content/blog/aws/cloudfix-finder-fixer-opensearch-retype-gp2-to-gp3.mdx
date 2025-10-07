@@ -1,0 +1,106 @@
+---
+title: "CloudFix Finder/Fixer: OpenSearch Retype GP2 to GP3"
+description: "Are you paying more than necessary for your Amazon OpenSearch Service storage? This CloudFix Finder identifies OpenSearch domains using GP2 EBS volumes and reco..."
+date: 2025-04-09 18:03:49
+modified: 2025-04-09 18:03:49
+category: "AWS"
+tags: ["AWS","cloud","migration","storage"]
+published: true
+slug: "cloudfix-finder-fixer-opensearch-retype-gp2-to-gp3"
+---
+
+Are you paying more than necessary for your Amazon OpenSearch Service storage? This CloudFix Finder identifies OpenSearch domains using GP2 EBS volumes and recommends changing to GP3 volumes, which offer better performance at a lower cost. This simple volume type change can reduce your storage costs while potentially improving your domain's performance.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+Many Amazon OpenSearch Service domains were created using GP2 (General Purpose SSD) EBS volumes as their storage option. While GP2 was the default choice for years, AWS now offers GP3 volumes, which provide better baseline performance and lower costs. Customers continuing to use GP2 volumes are missing out on both cost savings and performance improvements.
+
+### Solution
+
+CloudFix identifies OpenSearch domains using GP2 volumes and recommends migrating to GP3. When comparing the two volume types:
+
+-   GP3 volumes are approximately 20% less expensive than GP2 volumes
+-   GP3 volumes provide baseline performance of 3,000 IOPS and 125 MB/s throughput regardless of volume size
+-   GP3 allows independent scaling of IOPS and throughput, unlike GP2 where performance is tied to volume size
+
+While this feature doesn't include an automatic fixer, CloudFix provides guidance on implementing this change manually through the AWS Console, AWS CLI, or Infrastructure as Code tools.
+
+## AWS Services Affected
+
+![Amazon OpenSearch Service](/media/uploads/OpenSearch-Service.svg)
+
+[Amazon OpenSearch Service](https://aws.amazon.com/opensearch-service/)
+
+## How It Works
+
+### Finder Component
+
+The Finder scans your AWS environment for OpenSearch domains with the following characteristics:
+
+-   Currently using GP2 EBS volumes for storage
+-   Projected annual cost exceeds the configured threshold (default $100)
+-   Not tagged with exclusion tags (such as "cloudfix\_dont\_fix\_it")
+
+For each identified domain, CloudFix calculates potential annual savings based on current usage patterns and the price difference between GP2 and GP3 volumes. The recommendation includes:
+
+-   Domain identifier and region
+-   Current storage configuration
+-   Recommended GP3 configuration with equivalent or better performance
+-   Estimated annual cost savings
+
+### Fixer Component
+
+This CloudFix feature does not include an automatic Fixer. The migration from GP2 to GP3 volumes must be performed manually due to the following considerations:
+
+-   The change requires a domain configuration update that may trigger a blue/green deployment
+-   Performance characteristics should be reviewed to ensure the selected GP3 configuration meets workload requirements
+-   IOPS and throughput settings may need customization beyond the default values
+
+CloudFix provides guidance on implementing the change through:
+
+1.  AWS Management Console: Updating domain configuration in the OpenSearch Service dashboard
+2.  AWS CLI: Using update-domain-config commands
+3.  Infrastructure as Code: Modifying CloudFormation, Terraform, or CDK templates
+
+## FAQ
+
+**Will changing from GP2 to GP3 cause any downtime?**
+
+The change may trigger a blue/green deployment, which does not cause downtime but does involve a synchronization period. During this period, write operations might experience slightly higher latency as changes are propagated to the new configuration.
+
+**Is there any risk of data loss when changing volume types?**
+
+No, the change from GP2 to GP3 does not inherently risk data loss. The blue/green deployment process ensures data integrity during the migration. However, as with any significant infrastructure change, having recent snapshots is advisable.
+
+**How do I determine the right IOPS and throughput values for GP3?**
+
+When migrating from GP2 to GP3, CloudFix recommends IOPS and throughput values that match or exceed your current GP2 performance. You can also analyze CloudWatch metrics for your domain to understand actual IOPS and throughput utilization and optimize accordingly.
+
+**Can I modify IOPS and throughput settings after migrating to GP3?**
+
+Yes, one advantage of GP3 volumes is the ability to independently adjust IOPS and throughput without changing volume size. You can modify these settings after migration based on observed performance needs.
+
+**Why doesn't CloudFix automatically implement this change?**
+
+The migration requires a domain update that triggers a blue/green deployment process. Since this involves a synchronization period and potential temporary impact on write performance, CloudFix provides the recommendation but leaves the implementation to the user to schedule at an appropriate time.
+
+## Related Resources
+
+-   [Amazon OpenSearch Service](https://aws.amazon.com/opensearch-service/)
+-   [Amazon OpenSearch Service Announces Support for EBS GP3 Volumes](https://aws.amazon.com/about-aws/whats-new/2022/07/amazon-opensearch-service-support-ebs-gp3-volume-type/)
+-   [Lower Your Amazon OpenSearch Service Storage Cost with GP3 EBS Volumes](https://aws.amazon.com/blogs/big-data/lower-your-amazon-opensearch-service-storage-cost-with-gp3-amazon-ebs-volumes/)
+-   [Better Together: Graviton2 and GP3 with Amazon OpenSearch Service](https://aws.amazon.com/blogs/aws-cloud-financial-management/better-together-graviton-2-and-gp3-with-amazon-opensearch-service/)
+-   [Petabyte Scale in Amazon OpenSearch Service](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/petabyte-scale.html)
+-   [CloudFix Support: OpenSearch GP2 to GP3 Volume Type Change](https://support.cloudfix.com/article/17034-opensearch-gp2-to-gp3-volume-type-change)

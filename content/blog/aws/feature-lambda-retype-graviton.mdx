@@ -1,0 +1,117 @@
+---
+title: "CloudFix Finder/Fixer: Lambda Retype Graviton"
+description: "CloudFix's Lambda Retype Graviton feature enables automatic identification and migration of eligible AWS Lambda functions from x86 to AWS Graviton architecture,..."
+date: 2025-04-07 00:24:33
+modified: 2025-04-07 00:24:33
+category: "AWS"
+tags: ["AWS","cloud","serverless","lambda","ec2"]
+published: true
+slug: "feature-lambda-retype-graviton"
+---
+
+CloudFix's Lambda Retype Graviton feature enables automatic identification and migration of eligible AWS Lambda functions from x86 to AWS Graviton architecture, while simultaneously upgrading outdated runtimes. This dual optimization approach delivers up to 20% cost savings while maintaining or improving performance, ensuring your serverless applications stay cost-effective and future-proof.
+
+## Contents
+
+-   [What is Lambda Graviton Migration?](#what-is-lambda-graviton-migration)
+-   [How It Works](#how-it-works)
+-   [Benefits](#benefits)
+-   [AWS Services Affected](#aws-services-affected)
+-   [Frequently Asked Questions](#frequently-asked-questions)
+-   [Related Resources](#related-resources)
+
+## What is Lambda Graviton Migration?
+
+Lambda Graviton Migration is a CloudFix feature that identifies AWS Lambda functions running on x86 architectures that would benefit from migrating to AWS Graviton processors. The feature also flags Lambda functions using deprecated or outdated runtimes and recommends upgrading to newer supported versions that are compatible with Graviton architecture.
+
+Many organizations are still running Lambda functions on older runtimes that are approaching or have passed their end-of-support dates, including:
+
+-   Node.js 14.x (December 4, 2023)
+-   Python 3.7 (December 4, 2023)
+-   Java 8 (January 8, 2024)
+-   Node.js 16.x (June 12, 2024)
+
+When eligible Lambda functions are migrated to Graviton, users can expect:
+
+-   Up to 20% cost reduction
+-   Improved performance and efficiency
+-   Better price-to-performance ratio
+-   Enhanced energy efficiency
+-   Modernized runtime environments
+
+## How It Works
+
+The CloudFix Lambda Graviton Migration Finder/Fixer operates through a systematic process:
+
+1.  **Find**: CloudFix scans your Lambda functions to identify candidates for Graviton migration and runtime updates using a detailed set of evaluators to determine eligibility.
+2.  **Analyze**: The system performs detailed compatibility checks and calculates potential savings based on current usage patterns.
+3.  **Validate**: CloudFix verifies that your functions don't use x86-specific libraries or binaries, similar to how the AWS Porting Advisor for Graviton works.
+4.  **Migrate**: With your approval, CloudFix:
+
+-   Updates the runtime to the latest supported version
+-   Switches the architecture to arm64 (Graviton)
+
+5.  **Monitor**: The system tracks migration success and verifies function performance.
+
+## Benefits
+
+The CloudFix Lambda Graviton Migration feature provides several key advantages:
+
+1.  **Automated Analysis**: Scans your AWS environment to identify Lambda functions that can benefit from Graviton migration and runtime updates.
+2.  **Intelligent Validation**: Performs comprehensive checks to ensure your functions are compatible with Graviton, including:
+
+-   Runtime compatibility verification
+-   Architecture-specific dependency analysis
+-   Current resource utilization assessment
+
+3.  **Safe Migration**: The migration process is handled through AWS Systems Manager Change Manager, providing:
+
+-   Complete audit trail
+-   Rollback capabilities
+-   Minimal risk to your applications
+
+4.  **Cost Optimization**: Targets functions with significant cost impact, focusing on those with meaningful cost savings to maximize your ROI.
+5.  **Modernization**: Identifies long-forgotten Lambda functions and ensures they are using the latest runtime version, preventing potential issues from deprecated runtimes.
+
+## AWS Services Affected
+
+![AWS Lambda](/media/uploads/Lambda.svg)
+
+[AWS Lambda](https://aws.amazon.com/lambda/)
+
+## Frequently Asked Questions
+
+**What criteria are used to identify Lambda functions for Graviton migration?**
+
+CloudFix evaluates Lambda functions based on:
+
+-   Architecture validation (only x86 functions are considered)
+-   Runtime validation (identifying deprecated runtimes)
+-   Function analysis (compatibility with Graviton)
+-   Cost analysis (calculating potential savings)
+
+**What happens when the Fixer is executed?**
+
+The Fixer performs two sequential steps for eligible Lambda functions:
+
+1.  Runtime Upgrade: Update the runtime to the latest supported version compatible with Graviton
+2.  Architecture Change: Modify the architecture of the Lambda function to ARM64 (Graviton)
+
+**Is it possible to roll back once CloudFix implements the Fixer?**
+
+Yes, rollback is possible. Users can revert the runtime and architecture settings to their original configurations through the AWS Management Console or CLI.
+
+**Can CloudFix implement the fix automatically once I accept the recommendation?**
+
+Yes, CloudFix automates the migration process, handling both runtime upgrades and architecture changes.
+
+**Does the fix require downtime?**
+
+Minimal downtime may occur during the migration process, as the function configurations are updated and tested.
+
+## Related Resources
+
+-   [AWS Lambda Service](https://aws.amazon.com/lambda/)
+-   [AWS Graviton Processors](https://aws.amazon.com/ec2/graviton/)
+-   [AWS Lambda Functions Powered by Graviton2](https://aws.amazon.com/blogs/aws/aws-lambda-functions-powered-by-aws-graviton2-processor-run-your-functions-on-arm-and-get-up-to-34-better-price-performance/)
+-   [AWS Graviton Migration Guide for Lambda](https://github.com/aws/aws-graviton-getting-started/blob/main/aws-lambda/README.md)

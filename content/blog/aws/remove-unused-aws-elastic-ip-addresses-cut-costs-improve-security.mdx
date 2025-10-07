@@ -1,0 +1,92 @@
+---
+title: "Remove Unused AWS Elastic IPs to Cut Costs and Risk"
+description: "Rikki don't lose that number It's the only one you own You might use it if you feel better When you get home – Steely Dan, 1973 In 1973, the lead singer of Stee..."
+date: 2023-03-27 07:37:46
+modified: 2025-01-23 12:24:42
+category: "AWS"
+tags: ["AWS","cloud","ec2","rds","vpc"]
+published: true
+slug: "remove-unused-aws-elastic-ip-addresses-cut-costs-improve-security"
+---
+
+> Rikki don't lose that number  
+> It's the only one you own  
+> You might use it if you feel better  
+> When you get home  
+> _– Steely Dan, 1973_
+
+In 1973, the lead singer of Steely Dan, Don Fagan,  gave his number to Rikki Ducornet, a love interest, and hoped she didn’t lose it. He turned this experience into a song called _[Rikki Don’t Lose that Number](https://www.youtube.com/watch?v=UfZWp-hGCdA)_, which made it to #4 on the Billboard charts. It was popular because in addition to sounding great, the idea was so relatable. In the days before cell phones and social media, someone’s phone number was gold. 
+
+Fast forward 50 years: IP addresses are the phone numbers of the internet. They uniquely identify web servers, [NAT gateways](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html), load balancers, and any internet resource that we want to be publicly accessible. Also like phone numbers, it’s possible to accumulate too many IP addresses and end up with some that you no longer need. Getting rid of them, however, takes more than scratching them out of your little black book – and keeping them is more expensive.
+
+Let’s look at why AWS Elastic IP addresses tend to stack up, what it costs when they do, and how you can reduce those costs (and more!)  by manually or automatically removing unused Elastic IP addresses.
+
+## Table of Contents
+
+-   [Why AWS Elastic IP addresses tend to stack up](#why-elastic-ips-stack-up)
+-   [Reduce AWS Elastic IP costs by over 50% by removing unused addresses](#reduce-elastic-ip-cost)
+-   [When should you hold on to an Elastic IP address?](#when-to-hold-on)
+-   [Manually remove unused AWS Elastic IP addresses one by one](#manually-remove-ips)
+-   [Clean up unused Elastic IP addresses automatically with CloudFix](#automate-with-cloudfix)
+
+## Why AWS Elastic IP addresses tend to stack up
+
+[Amazon Elastic IPs](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html) make it easy to instantly allocate a public IP address and associate it with a cloud resource. Elastic IP addresses are extremely useful to AWS customers, as IP addresses are getting harder and harder to come by. Additionally, if you want to make a resource accessible via a URL, you need an Elastic IP address as well as a [DNS](https://en.wikipedia.org/wiki/Domain_Name_System) ([AWS’s offering is called Route 53](https://aws.amazon.com/route53/)) to map a URL to that IP address. 
+
+Why do many organizations end up with a truckload of unused Elastic IP addresses?
+
+To start, Elastic IPs tend to be allocated manually, often by developers. For instance, say a developer wants to have direct access to a resource, such as a testing server. This server is often best accessed via a NAT gateway, VPN, or some other bridging mechanism. However, in the interest of expediency or convenience, the path of least resistance is often to simply allocate an Elastic IP address directly to the resource of interest. That’s all fine and good at the time, but eventually the convenience factor catches up to you.
+
+In addition, Elastic IP addresses often get spun up alongside EC2 volumes when they’re created, similar to [unattached EBS Volumes](/blog/reduce-aws-costs-deleting-unnecessary-ebs-volumes/). But just as stopping an instance doesn’t remove the associated EBS volume, the Elastic IP address often remains in place, even after it’s no longer needed.
+
+## Reduce AWS Elastic IP costs by over 50% by removing unused addresses
+
+Ready for the mic drop: Elastic IP addresses, based on us-east-1 pricing, are $0.005/hour. That works out to $43.80 per year. BOOM. Serious savings potential, right there.
+
+It may not sound like much, but we’re actually being serious. Those little buggers add up. A study of one large organization found $54K in savings out of $81K of annualized spend when they removed unused Elastic IPs. Those numbers are particularly high in absolute terms, but the proportion is right: any organization can expect that just over half of its IPs are unused and can be deleted. In other words, **this fixer cuts your Elastic IP costs by more than 50%**.
+
+Lower costs isn’t the only reason to eliminate unused Elastic IP addresses. It’s also good cloud hygiene. (Why is that word so awful?) It’s simply best practice not to hold on to resources that you don’t need. 
+
+Too many unused Elastic IP addresses can also be a security issue. If over-using Elastic IPs becomes common, so will the process of adding those same Elastic IPs to static “allow lists” on security groups. Since AWS supports [Elastic IP address transfer](https://aws.amazon.com/about-aws/whats-new/2022/10/amazon-virtual-private-cloud-vpc-transfer-elastic-ip-addresses-between-aws-accounts/), if a privileged IP address was ever transferred to a malicious account, this could expose [a security vulnerability](https://www.darkreading.com/cloud/aws-elastic-ip-transfer-feature-cyberattackers-free-range) that would be difficult to systematically fix. The net-net: by reducing the amount of Elastic IP addresses, you are reducing your attack surface.
+
+Finally, [IPv4 addresses are a finite resource](https://www.sidn.nl/en/news-and-blogs/ipv4-address-shortage-driving-internet-designers-to-despair). Although AWS has plenty reserved (estimated to be ~2% of IP addresses), that bucket won’t stay full forever. By releasing unused IP addresses, you’re doing your part to fill it back up. 
+
+## When should you hold on to an Elastic IP address?
+
+Another reason companies often keep too many Elastic IP addresses: we’re human and we hoard things. Once you release an Elastic IP address, you can’t get it back, and that can be a scary thought. 
+
+In reality, though, there are only a couple of legitimate reasons to hold on to Elastic IP addresses once they’re no longer active. For example, you could have a memorable IP address like CloudFlare’s [1.1.1.1](https://www.cloudflare.com/learning/dns/what-is-1.1.1.1/) and Google’s [8.8.8.8](https://developers.google.com/speed/public-dns), which are popular public DNS servers. Those are fun. Feel free to keep them.
+
+It also makes sense to keep your IP address if it is trusted by some external entity. Maybe you are operating an SMTP server or have access to a network based on your IP address. Retaining the IP address keeps that trust in place.
+
+In any event, these situations shouldn’t be a reason not to automatically remove the unused ones. If you do truly **need** (or want) a particular IP address, simply make sure that your automation process exempts those addresses. 
+
+## How to manually remove unused AWS Elastic IP addresses one by one
+
+So: unused Elastic IP addresses are bad. They’re expensive, unhygienic, and a security risk. Let’s get rid of them the manual way.
+
+To do so, we need to use the AWS APIs. Our building blocks are:
+
+1.  [The Cost and Usage Report](https://docs.aws.amazon.com/cur/latest/userguide/what-is-cur.html) (CUR)
+2.  [AWS EC2 API](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Welcome.html)
+3.  [AWS Route53 API](https://docs.aws.amazon.com/Route53/latest/APIReference/Welcome.html)
+
+Here’s our algorithm:
+
+1.  Use the CUR to get all accounts associated with the **Master Payer Account**. Once you have all of these accounts, the rest of the steps are applied to each account.
+2.  Use the EC2 [DescribeAddresses](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeAddresses.html) to get a list of Elastic IPs without an `AssociationId`. This is the mapping between the Elastic IP and another resource.
+3.  Use Route53 [ListHostedZones](https://docs.aws.amazon.com/Route53/latest/APIReference/API_ListHostedZones.html) to find all hosted zones. For each hosted zone, use the [ListResourceRecordSets](https://docs.aws.amazon.com/Route53/latest/APIReference/API_ListResourceRecordSets.html) to get a list of [Record Sets](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/rrsets-working-with.html). This is to make sure that unused Elastic IP addresses are not part of a Route53 record.
+4.  For each Elastic IP found in step 2 (unassociated Elastic IPs) that is not part of step 3 (Elastic IPs associated with a Route53 record), keep track of the duration of time that a candidate Elastic IP exists without an `AssociationID`. This is done by repeating steps 1-3 _daily_ over the course of a set amount of time, like one week. Every day, check to make sure that each candidate remains unassociated. This data will need to be stored somewhere. You can use tags, a database, or [even a pen and yellow legal pad](https://science.howstuffworks.com/innovation/everyday-innovations/why-are-legal-pads-yellow.htm) (not recommended).
+5.  Once we can see that a particular Elastic IP has not had an `AssociationID` for a given amount of time, it becomes a candidate for removal. In our automated version of this process at CloudFix, we create an AWS [resource tag](https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html) called _cloudfix-unused-age_. Our automation tracks the number of observed days that this Elastic IP exists without a corresponding `AssociationID`. When we see that _cloudfix-unused-age_ is more than 7, that Elastic IP is considered unused and can be safely removed.
+
+Clearly, this process is clunky. AWS doesn’t currently offer a way to check how long an Elastic IP address has been unassociated, so you have to do it by hand – one by one, day by day. This is technically possible, but it would take a tremendous amount of time and effort. No, thank you.
+
+Enter automation. 
+
+## The easier route: Clean up unused Elastic IP addresses automatically with CloudFix
+
+This fix is particularly well suited to automation. AWS won’t let you easily check on unused Elastic IPs, and they’re so inexpensive that it doesn’t make sense to spend much manual effort to track them down. With automation, however, comes scale – and with scale, comes savings. 
+
+CloudFix automates the process above, so you can identify and release unused Elastic IP addresses with the click of a button. CloudFix analyzes all your master payer accounts, identifies all your Elastic IP addresses, flags the ones that are unused, and makes recommendations for which ones you can cut loose to maximize your savings. Like other fixers, the Unused Elastic IP Address filter runs in the background; all you need to do is approve the changes. While $43.80 per year doesn’t sound like much, it adds up fast. 
+
+CloudFix: it’s like Steely Dan, but instead of reelin’ in the years, we’re reelin’ in the savings.

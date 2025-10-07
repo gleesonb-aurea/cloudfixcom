@@ -1,0 +1,483 @@
+---
+title: "Right-size Amazon OpenSearch instances to cut costs by 50% or more"
+description: "Search me! – An idiom in English meaning “I don’t know” that first appeared in a Washington D.C. newspaper in 1898. In English, we often say “Search me!” when w..."
+date: 2023-07-10 10:00:01
+modified: 2023-09-05 06:33:18
+category: "AWS"
+tags: ["AWS","cloud","ec2","rds","cost optimization"]
+published: true
+slug: "right-size-amazon-opensearch-instances-cut-costs"
+---
+
+> Search me!
+> 
+> _– An [idiom](https://english.stackexchange.com/questions/258570/history-of-the-expression-search-me#:~:text=The%20earliest%20unmistakable%20match%20for,significantly%20more%20widespread%20by%20then.) in English meaning “I don’t know” that first appeared in a Washington D.C. newspaper in 1898.  
+> _
+
+In English, we often say “Search me!” when we don’t know the answer to a question. Its origin seems fairly intuitive: if you don’t believe that I don’t know or have something, search me to find out! Thankfully, at least these days, most people will take you at your theoretical word and leave the searching to the software.
+
+“Search me,” of course, is also the most succinct summary of why we use Amazon OpenSearch (or technically [Amazon OpenSearch Service](https://aws.amazon.com/opensearch-service/), but as we explained [here](/blog/right-size-ebs-volumes-save-on-aws-bill/), plain old “OpenSearch” usually suffices.) We’ve talked about OpenSearch before – how to [right-size EBS volumes](/blog/right-size-ebs-volumes-save-on-aws-bill/) for OpenSearch, why you should [run OpenSearch on Graviton](/blog/elasticsearch-opensearch-to-graviton/) – and for good reason: it’s one of the most powerful suites of search and analytics capabilities on the market. 
+
+\[caption id="attachment\_13736" align="alignnone" width="480"\]![The Simpsons GIF: Search me](/media/uploads/simpsons-search-me.gif) [via GIPHY](https://giphy.com/gifs/season-3-the-simpsons-3x11-l2Je4cJCdyFticGFa)\[/caption\]
+
+What’s the best way to right-size OpenSearch clusters to maximize performance and efficiency? Glad you asked. Read on for our approach to right-sizing OpenSearch clusters and to learn how CloudFix automatically optimizes instance size in just a few clicks. 
+
+## Table of contents
+
+1.  [OpenSearch pricing: Why it’s worth your while to right-size OpenSearch clusters](#opensearch-pricing-why-it-s-worth-your-while-to-right-size-opensearch-clusters)
+2.  [How to right-size Amazon OpenSearch clusters](#how-to-right-size-amazon-opensearch-clusters)
+    1.  [Find all of your OpenSearch clusters](#find-all-of-your-opensearch-clusters)
+    2.  [Analyze OpenSearch node resource utilization](#analyze-opensearch-node-resource-utilization)
+    3.  [Resize the instances](#resize-the-instances)
+3.  [Automatically right-size OpenSearch instances with CloudFix](#automatically-right-size-opensearch-instances-with-cloudfix)
+
+## 1\. OpenSearch pricing: Why it’s worth your while to right-size OpenSearch clusters
+
+OpenSearch can power both internal and external facing search applications. It’s easy to get started and [scale up (more powerful individual instances) and out (more instances)](https://repost.aws/knowledge-center/opensearch-scale-up). This multidimensional flexibility can be great for meeting your specific requirements, but also makes it very challenging to appropriately size OpenSearch clusters. 
+
+The variables don’t stop there, either. OpenSearch clusters comprise both data nodes and master nodes, which can both be resized and have different usage profiles. In addition, there are a number of different instance types to choose from, and many sizes for each type. All of these dials can be adjusted to optimize OpenSearch costs, but today we’re going to take a “first pass” approach and focus solely on right-sizing cluster instances. This is a great way to quickly reduce OpenSearch spend, and a good place to start before taking more drastic steps like changing the number of nodes in the cluster, the architecture of nodes within the cluster, or even the instance family. 
+
+Let’s kick off our right-sizing conversation by taking a look at OpenSearch pricing, which – spoiler alert – is not insignificant. First of all, every OpenSearch cluster (also referred to as a domain) requires:
+
+1.  Master nodes: control the cluster, manage the list of indexes, maintain routing information to the data nodes, etc.
+2.  Data nodes: store part of the indexes and execute the search functions
+3.  EBS volumes: attached to the data nodes to store the indexes
+
+In production workflows, Amazon recommends [a 2 + 1 dedicated master node setup](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/managedomains-dedicatedmasternodes.html). This means having two operational master nodes and a standby node, spread across at least two availability zones within the same region. (Check out the [Creating and managing domains](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/createupdatedomains.html) document for further discussion on provisioning clusters.) For testing workflows, a single-node configuration is supported.
+
+In terms of pricing, the key drivers are the instances (or nodes, in OpenSearch parlance) and the EBS volumes attached to the data nodes. The choices for OpenSearch nodes are a particular subset of EC2 instances, and they are priced with a substantial markup over vanilla EC2. Using us-east-1 in July 2023 as a reference, comparing [EC2 pricing](https://aws.amazon.com/ec2/pricing/on-demand/) and [OpenSearch pricing](https://aws.amazon.com/opensearch-service/pricing/) for the `m6g.xlarge` Graviton2 instance type, we can see a 66% markup on the same hardware.
+
+M6g.xlarge pricing for EC2 and OpenSearch, Compared
+
+**Instance type**
+
+**vCPUs**
+
+**RAM (GiB)**
+
+**Storage**
+
+**Hourly Price (us-east-1)**
+
+m6g.xlarge
+
+4
+
+16 GiB
+
+EBS Only
+
+$0.154
+
+m6g.xlarge.search
+
+4
+
+16
+
+EBS Only
+
+$0.256
+
+EBS storage pricing, when used for OpenSearch, also has a substantial markup over standard EBS.
+
+EBS Pricing for Standard and OpenSearch, Compared
+
+**Line Item**
+
+**Unit**
+
+**Standard Price**
+
+**OpenSearch Price**
+
+**Markup**
+
+EBS GP3 Storage
+
+GiB
+
+$0.08
+
+$0.122
+
+53%
+
+Provisioned IOPS
+
+IOPS
+
+$0.005
+
+$0.008
+
+60%
+
+Throughput
+
+MiB/s
+
+$0.040
+
+$0.064
+
+60%
+
+What does this mean in practice? Although there is no "standard" OpenSearch cluster size, a production cluster provisioned to Amazon's best practices would contain at least three master nodes and several data nodes with EBS volumes. Let’s look at a back-of-the-envelope calculation for a small OpenSearch Cluster based on m6g.4xlarge instances:
+
+Approximate Costs of a Small Production OpenSearch Instance, per Month
+
+**Line Item**
+
+**Monthly Price**
+
+**Qty**
+
+**Subtotal**
+
+Master node
+
+184.32
+
+3
+
+552.96
+
+Data node compute
+
+184.32
+
+7
+
+1290.24
+
+Data node EBS (1 TiB)
+
+124.93
+
+7
+
+874.50
+
+Total
+
+ 
+
+ 
+
+$2717.70
+
+This is a simplified example that doesn’t account for network traffic, IOPS, or throughput. It should illustrate, however, that OpenSearch clusters can be expensive, especially when there are multiple nodes involved.
+
+Just how expensive? Cluster sizes will vary depending on load, the amount of data to be indexed, and performance requirements. The size described above would be considered sufficient for a small production-level workload. Larger workloads can add up much more quickly. In [this article](https://aws.amazon.com/blogs/big-data/run-a-petabyte-scale-cluster-in-amazon-opensearch-service/) from the AWS Big Data blog, Amazon describes a “large” cluster composed of 200 data nodes of type [I3.16xlarge.search](https://aws.amazon.com/ec2/instance-types/i3/), with each node containing 15.2 TB of storage. These instances run $7.987 per hour. For a cluster of this size, that amounts to $1597 per hour just for the data nodes! 
+
+The net-net: OpenSearch costs can add up fast, so it’s worth right-sizing them for your current traffic. Remember – the cloud is elastic. If and when your usage goes up, you can easily scale up. For now, it’s time to stop paying for power we don’t need.
+
+## 2\. How to right-size Amazon OpenSearch clusters
+
+At the highest level, our goal is to find the best balance of performance and efficiency for each OpenSearch cluster. To do so, we want to hit 70% CPU utilization and 70% memory usage. This is our Goldilocks zone, where we still have sufficient CPU and memory to meet historical demands, and we have adequate headroom for surges, but we’re not paying for a size that we don’t need.
+
+Achieving this right-sized target involves three steps:
+
+1.  Find all of your OpenSearch clusters
+2.  Analyze OpenSearch node resource utilization
+3.  Resize the instances
+
+### 2.1. Find all of your OpenSearch clusters
+
+The first step to optimizing OpenSearch clusters is finding them. To do this, we turn to our old standby, the Amazon Cost and Usage Report (CUR). The CUR is often our starting point in achieving AWS cost savings, and today is no different.
+
+Here’s the CUR query:
+
+```sql
+SELECT line_item_usage_account_id, product_region, line_item_resource_id, line_item_usage_type, line_item_product_code
+FROM  <YOUR CUR DB>.<YOUR CUR TABLE>
+WHERE
+    line_item_usage_type LIKE '%ESInstance%'
+    AND line_item_product_code = 'AmazonES'
+    AND line_item_usage_start_date BETWEEN date_add('day', -31, current_date) AND current_date
+    AND line_item_usage_type not like '%-Storage'
+    AND line_item_usage_type not like '%-Bytes';
+```
+
+A few things to note about this particular query:
+
+1.  We are looking for entries with `line_item_product_code = 'AmazonES'`. The `AmazonES` part is a holdover from when the product was called Amazon ElasticSearch. We covered the history of the relationship between OpenSearch and ElasticSearch in our [Graviton for OpenSearch fixer blog](/blog/elasticsearch-opensearch-to-graviton/), but here’s a quick summary: the term "OpenSearch" refers to Amazon's fork of ElasticSearch, and both OpenSearch and ElasticSearch clusters can be managed by Amazon via the Amazon OpenSearch Service. In day-to-day usage, the term "OpenSearch" refers to both the service and the software, depending on the context.
+2.  Include in the query `line_item_usage_type like '%ESInstance%'`. This is a SQL regular expression.
+3.  We are excluding EBS-related charges by filtering out _Storage_ and _Bytes_ in the `line_item_usage_type`.
+4.  Use `line_item_usage_start_date` to filter on the date of the usage. Use the reserved word `current_date` to query on recent data.
+
+Output from this query will look like this:
+
+**line\_item\_usage\_account\_id**
+
+**product\_region**
+
+**line\_item\_resource\_id**
+
+**line\_item\_usage\_type**
+
+**line\_item\_product\_code**
+
+123456789012
+
+eu-west-1
+
+arn:aws:es:eu-west-1:123456789012:domain/domain-1
+
+EUW1-BoxUsage:m6g.12xlarge.search
+
+AmazonES
+
+123456789012
+
+us-west-2
+
+arn:aws:es:us-west-2:123456789012:domain/domain-2
+
+USW2-BoxUsage:m6g.12xlarge.search
+
+AmazonES
+
+The key takeaway is that this query provides a way to list all OpenSearch clusters in an AWS account. Now that we have the clusters identified, we can look at their resource utilization.
+
+### 2.2 Analyze OpenSearch node resource utilization
+
+Within an OpenSearch domain, all of the data nodes will have the same instance type and EBS volume configuration. Therefore, the savings that we can realize for the data nodes is multiplied by the number of data nodes that we have. The same is true for the master nodes, although we wouldn’t expect (and it’s not recommended) to have more than three.
+
+The two main metrics that we are looking for are CPU and memory usage. CPU usage is monitored by the standard `CPUUtilization` metric. In particular, we’re interested in maximum CPU utilization aggregated over 15 minutes. If this maximum is less than 70%, we can consider reducing the amount of vCPUs. On the contrary, if this maximum is greater than 80%, we should consider increasing the amount of vCPUs. This is in line with [AWS’s guidance](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/cloudwatch-alarms.html): that we should increase the instance size when "CPUUtilization or WarmCPUUtilization maximum is >= 80% for 15 minutes, 3 consecutive times. 100% CPU utilization might occur sometimes, but sustained high usage is problematic. Consider using larger instance types or adding instances." 
+
+The other main dimension for instance sizing is RAM. Since ElasticSearch / OpenSearch run on the [Java Virtual Machine (JVM)](https://en.wikipedia.org/wiki/Java_virtual_machine#:~:text=A%20Java%20virtual%20machine%20\(JVM,required%20in%20a%20JVM%20implementation.), we can’t simply check the amount of free memory reported by the OS. This is because the JVM pre-allocates memory for itself as a runtime, before the programs on that runtime actually need the runtime. The metric to check for actual memory usage is the JVM Memory Pressure, which is somewhat complex. If [JVM memory pressure reaches 75%, OpenSearch will begin a garbage collection procedure](https://repost.aws/knowledge-center/opensearch-high-jvm-memory-pressure) called Current Mark Sweep (CMS). If memory usage continues to grow, other errors will begin to appear. Ultimately, if JVM memory pressure reaches 92% for 30 minutes, all write operations to the cluster will be stopped, and data will begin to be lost. 
+
+Tying these together, we want to implement the following rules of thumb:
+
+1.  Exclude an instance from down-sizing if CPUUtilization is above 70%.
+2.  Exclude an instance from down-sizing if JVMMemoryPressure is above 70%.
+
+In fact, if instances have either of those metrics above 80%, you may want to increase the size of the cluster. We’ll save that side road for another day, however, since we’re focused on scaling down rather than scaling up.
+
+How do we pull these metrics? Another of our old friends, [CloudWatch](/blog/aws-foundational-skills-cloudwatch/). You can use this Python code to query CloudWatch for the `CPUUtilization`:
+
+import boto3
+import datetime
+
+def get_max_cpu_utilization(DomainName):
+    client = boto3.client('cloudwatch')
+
+    response = client.get_metric_statistics(
+        Namespace='AWS/ES',
+        MetricName='CPUUtilization',
+        Dimensions=[
+            {
+          'Name': 'DomainName',
+          'Value': DomainName
+            },
+        ],
+        StartTime=datetime.datetime.today() - datetime.timedelta(days=1),
+        EndTime=datetime.datetime.today(),
+        Period=900,
+        Statistics=[
+            'Maximum',
+        ],
+    )
+
+    return response['Datapoints'][0]['Maximum']
+
+# replace with your DomainName
+DomainName = 'YOUR_DOMAIN_NAME'
+print(get_max_cpu_utilization(DomainName))
+
+Then run the same code, replacing `CPUUtilization` with `JVMMemoryPressure`, to get the RAM metrics. 
+
+###### A quick note on additional selection criteria
+
+In this step, we began with all OpenSearch domains, then excluded the ones that have maximum `CPUUtilization` and/or `JVMMemoryPressure` above 70%. There’s one more wrinkle: we only want to consider clusters that are in a healthy state. OpenSearch uses a green/yellow/red scale. Green means "go ahead and use the cluster." Yellow means that the replica shards for at least one index are not fully distributed to the nodes, or in other words, "slow down, I'm working!" Red, as we would expect, means stop. It indicates that "at least one primary shard and its replicas are not allocated to a node,” so there is some data that is not available and there is a high probability of data loss. Visit the [red troubleshooting guide](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/handling-errors.html#handling-errors-red-cluster-status) for details on what to do if you find your cluster in this state.
+
+To check the health of the cluster, we can query the cluster itself. This is done by using the `health` endpoint:
+
+```bash
+curl -XGET 'https://<opensearch-endpoint>:<port>/_cluster/health?pretty'
+```
+
+This will return a JSON object that contains information, including the cluster health:
+
+```json
+{
+    "cluster_name" : "my-application",
+    "status" : "yellow",
+    "timed_out" : false,
+    // ...
+}
+```
+
+With this information, we can weed out any unhealthy clusters and ensure that we only optimize clusters that are in good shape.
+
+### 2.3 Resize the instances
+
+Now comes the fun part – at least if you, like us, consider saving thousands of dollars to be fun (who doesn’t?!) Let’s right-size our OpenSearch clusters so we’re no longer paying for power we don’t need.
+
+Once we’ve identified healthy clusters that are below the 70% utilization thresholds for CPU and memory, we can look at resizing the nodes. To do this, we can use the information we gathered about CPU and memory to select a new instance type. We have found the following rules of thumb to be helpful:
+
+-   Recommended #vCPUs = Minimum(Current # vCPUs, (Maximum CPU Utilization x Current # vCPUs) / 0.70)
+-   Recommended Memory (GB) = Minimum(Current Memory in GiB, (Maximum JVM Memory Pressure x Current Memory in GiB) / 0.70)
+
+Let's walk through a concrete example. Say we’re using the largest of the Graviton2 instances, the `m6g.12xlarge.search`. After querying for our metrics, we find:
+
+CPU Utilization
+
+23%
+
+JVM Memory pressure
+
+15%
+
+We want to pick an instance so that we get 70% utilization. Plugging in the formula:
+
+Recommended #vCPUs = Minimum(Current # vCPUs, (Maximum CPU Utilization x Current # vCPUs) / 0.70) = Minimum(48, (0.23 \* 48) / 0.7) = Minimum(48, 15.77143) = 15.77143.
+
+Recommended Memory (GB) = Minimum(Current Memory in GiB, (Maximum JVM Memory Pressure x Current Memory in GiB) / 0.70) = Minimum(192, (0.15 \* 192) / 0.7) = 41.14286.
+
+Rounding up, we see that we would ideally like an instance with 16 vCPUs and 42 GiB of memory. This isn't exactly available. Since we are not considering different instance types (e.g. C6g or R6g), our choices for new instances are the other sizes within the M6g family, listed in the table below. The least expensive instance that meets our requirements is the `m6g.4xlarge.search`. We can then change the nodes to this type. 
+
+**Instance type**
+
+**vCPUs**
+
+**GiB**
+
+**Storage**
+
+**Price**
+
+m6g.large.search
+
+2
+
+8
+
+EBS Only
+
+$0.128
+
+m6g.xlarge.search
+
+4
+
+16
+
+EBS Only
+
+$0.256
+
+m6g.2xlarge.search
+
+8
+
+32
+
+EBS Only
+
+$0.511
+
+m6g.4xlarge.search
+
+16
+
+64
+
+EBS Only
+
+$1.023
+
+m6g.8xlarge.search
+
+32
+
+128
+
+EBS Only
+
+$2.045
+
+m6g.12xlarge.search
+
+48
+
+192
+
+EBS Only
+
+$3.068
+
+**Prophetic aside: Peer inside Stephen’s crystal ball  
+**I predict that one day we will be able to request instance sizes with the precise amount of vCPU and memory that we need. Some future version of Nitro will be able to allocate exactly the instance sizes we would like, and a sophisticated "bin packing" algorithm will make it straightforward for AWS to make it happen.
+
+In general, you want to pick the smallest instance types that satisfy both the CPU and memory constraints. In this example, we were able to switch to a m6g.4xlarge.search. These instances are 1/3rd the cost of the `m6g.12xlarge.search` instance types that we were running before. If we had a production cluster with seven data notes, this would take our monthly spend from $5040 down to $15462.72!
+
+Once again for the folks in the back: **We just cut OpenSearch costs by two-thirds.** Not too shabby.
+
+Now that we’ve decided on the instance types, there are a couple more final checkpoints before we execute the changes:
+
+1.  Invoke the OpenSearch `DescribeDomain` operation and verify that the `Processing`, `UpgradeProcessing` and `Deleted` flags are all false. These make sure that the cluster is not currently performing some other change operation.
+2.  Save the current `InstanceType` and `DedicatedMasterType` values for the `ClusterConfig`. There are more details on these values in the section below. We find it convenient to use tags on the cluster itself to save these values.
+
+To call the [describe-domain](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/opensearch/describe-domain.html) operation, you can use the AWS CLI:
+
+```bash
+aws opensearch describe-domain --domain-name YOUR-DOMAIN-NAME
+```
+
+This will return a [DomainStatus](https://docs.aws.amazon.com/opensearch-service/latest/APIReference/API_DomainStatus.html) object. Check the `Processing`, `UpgradeProcessing`, and `Deleted` flags. To tag an OpenSearch domain, you can issue this command:
+
+```bash
+aws opensearch tag --arn "arn:aws:opensearch:us-west-1:123456789012:domain/your_domain_name" --tag-list Key="PreviousInstanceType",Value="m6g.12xlarge.search"
+```
+
+This way, if you need to revert the changes, you can check this tag for the previous instance type.
+
+**A quick note on changing instance families**
+
+The most cautious approach to OpenSearch cost optimization would be to only change sizes, not instance families. For the ambitious, however, there is room for additional optimization by switching instance families within the same architecture. For example, if the particulars of this cluster are more biased towards compute than memory, then switching from an m6g to a c6g may deliver additional savings. It’s really up to you and your risk profile. 
+
+Whatever you do, be mindful that not all versions of OpenSearch run on all architectures. Check the [OpenSearch version guide for details](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/supported-instance-types.html). For example, you should be able to freely pick from the C6g, R6g, and M6g instance types as they all run the Graviton2 processor and all support the same versions of OpenSearch.
+
+Alright – time to resize.
+
+Once you’re ready to execute the change, you want to use the `[UpdateDomainConfig](https://docs.aws.amazon.com/opensearch-service/latest/APIReference/API_UpdateDomainConfig.html)` API. This operates on the [DomainConfig](https://docs.aws.amazon.com/opensearch-service/latest/APIReference/API_DomainConfig.html) object, which contains a sub-object called [ClusterConfig](https://docs.aws.amazon.com/opensearch-service/latest/APIReference/API_ClusterConfig.html). That object has the following structure:
+
+```json
+{ 
+    "ColdStorageOptions": { 
+        "Enabled": boolean
+    },
+    "DedicatedMasterCount": number,
+    "DedicatedMasterEnabled": boolean,
+    "DedicatedMasterType": "string",
+    "InstanceCount": number,
+    "InstanceType": "string",
+    "MultiAZWithStandbyEnabled": boolean,
+    "WarmCount": number,
+    "WarmEnabled": boolean,
+    "WarmType": "string",
+    "ZoneAwarenessConfig": { 
+        "AvailabilityZoneCount": number
+    },
+    "ZoneAwarenessEnabled": boolean
+}
+```
+
+The fields we want to update are `ClusterConfig.InstanceType` for the data nodes and `DedicatedMasterType` for the master nodes. To do this using the [AWS CLI](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/opensearch/update-domain-config.html), issue the following command:
+
+```bash
+aws opensearch update-domain-config --domain-name YOUR-DOMAIN-NAME --cluster-config InstanceType=m6g.4xlarge.search
+```
+
+This command will return an updated `DomainConfig` object. The value of `ClusterConfig.Status.State` should be `Processing` initially, and will switch to `Active` when the command is complete. Congratulations: You just right-sized your OpenSearch clusters and saved a boatload of money.
+
+## 3\. Automatically right-size OpenSearch instances with CloudFix
+
+The numbers have spoken: Right-sizing OpenSearch instances is an excellent way to pay less for AWS. There is enormous potential for serious savings, especially considering the markup you pay on OpenSearch compute instances. If we look back to the pricing table, dropping each instance size by just one level will reduce the spend by 50% on those node charges. That’s some real money back in your pocket.
+
+Even if you run this fix manually, it’s definitely worth your time. But you also don’t have to. CloudFix has automated this process and made it as simple as approving a change request. Our OpenSearch right-sizing fixer, like all of our automated processes, is proven to easily reduce costs with essentially zero risk. We only propose instance resizes within an instance family, and always stick with AWS recommendations for target CPU and memory utilization. As a result, you can trust that your instances are up to the task without being overkill for the job at hand. We even take care of monitoring and automated rollback if the workload suddenly changes. All you need to do is figure out what to do with all the money that you’ll save.
+
+So, the question is, why wouldn’t you use CloudFix to right-size OpenSearch instances? Search me.

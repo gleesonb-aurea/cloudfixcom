@@ -1,0 +1,89 @@
+---
+title: "CloudFix Finder: Delete Idle Bedrock Customized Models (Manual Fix)"
+description: "Amazon Bedrock allows users to create customized foundation models, but these models incur storage costs even when not actively used for inference. CloudFix ide..."
+date: 2025-04-09 18:07:57
+modified: 2025-04-09 18:07:57
+category: "AWS"
+tags: ["AWS","cloud","monitoring","backup","storage"]
+published: true
+slug: "feature-delete-idle-bedrock-customized-models"
+---
+
+Amazon Bedrock allows users to create customized foundation models, but these models incur storage costs even when not actively used for inference. CloudFix identifies customized Bedrock models that have not received any inference requests over a significant period (typically 30 days), suggesting they might be idle and candidates for deletion to optimize storage costs.
+
+## Manual Fix Required
+
+**CloudFix identifies potentially idle Bedrock customized models but does not automatically delete them.** Deleting a customized model is irreversible. Users must manually verify that the model is no longer needed for any purpose before performing the deletion.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How CloudFix Identifies the Opportunity](#how-it-works)
+-   [Manual Fix Steps](#manual-fix-steps)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+Customized foundation models in Amazon Bedrock represent valuable assets but also contribute to ongoing storage costs. Models created for specific projects, experiments, or older versions that are no longer actively serving inference requests become idle resources, leading to unnecessary expenditure.
+
+### Solution Identification
+
+CloudFix analyzes Amazon CloudWatch logs and metrics associated with Amazon Bedrock. By monitoring inference traffic, CloudFix identifies customized models that have shown no activity (zero inference requests) for at least 30 days. This flags the model as potentially idle, allowing users to manually investigate and decide whether to delete the model to save on storage costs.
+
+## AWS Services Affected
+
+Service
+
+Icon
+
+[Amazon Bedrock](https://aws.amazon.com/bedrock/)
+
+![Amazon Bedrock](/media/uploads/Bedrock.svg)
+
+[Amazon CloudWatch](https://aws.amazon.com/cloudwatch/)
+
+![Amazon CloudWatch](/media/uploads/CloudWatch.svg)
+
+## How CloudFix Identifies the Opportunity
+
+CloudFix identifies potentially idle Bedrock customized models based on the following criteria:
+
+-   The resource is a customized model within Amazon Bedrock.
+-   Analysis of CloudWatch logs/metrics shows zero inference requests directed to the model for at least the past 30 days.
+-   The potential extrapolated annual cost saving from deleting the model storage exceeds a defined threshold (default $100).
+-   The model is not tagged with `cloudfix_dont_fix_it`.
+
+## Manual Fix Steps
+
+After CloudFix identifies a potentially idle Bedrock customized model:
+
+1.  **Verify Idleness:** Confirm that the identified customized model is genuinely not in use and is not required for any current or future applications, experiments, or development. Double-check any processes or applications that might reference it.
+2.  **Consider Backup/Archival (Optional):** If there's any chance the model might be needed later, consider exporting or backing up relevant model artifacts or training data before deletion, according to your data retention policies.
+3.  **Delete the Customized Model:** Use the AWS Management Console or the Bedrock API (e.g., potentially an operation like `DeleteCustomModel` - refer to the latest Bedrock API documentation for the exact command) to delete the specific customized model.
+
+_Note: Always refer to the latest official Amazon Bedrock documentation for the precise API calls and procedures for managing custom models._
+
+## FAQ
+
+**Q: Why doesn't CloudFix automatically delete the model?**  
+A: Deleting a customized model is irreversible. User verification is essential to prevent accidental removal of a valuable model that might be used intermittently or planned for future use.
+
+**Q: What are the potential savings?**  
+A: Savings come directly from eliminating the storage costs associated with the idle customized Bedrock model. The amount depends on the size of the model.
+
+**Q: Does deleting the model impact active inference endpoints using it?**  
+A: If a model is truly idle (no inference requests), deleting it shouldn't impact active workloads. However, ensure no provisioned throughput or endpoints are still configured to use the model before deletion, as this could cause errors.
+
+**Q: What considerations are important before deleting?**  
+A: Confirm the model is unused, check dependencies, consider backup needs, and review access policies to prevent accidental deletion.
+
+## Related Resources
+
+-   [Custom models in Amazon Bedrock (AWS Documentation)](https://docs.aws.amazon.com/bedrock/latest/userguide/custom-models.html) - (Check for specific management/deletion sections)
+-   [Monitoring Amazon Bedrock (AWS Documentation)](https://docs.aws.amazon.com/bedrock/latest/userguide/monitoring.html)
+-   [Amazon Bedrock Endpoints and Quotas (Includes API info)](https://docs.aws.amazon.com/general/latest/gr/bedrock.html)
+-   [ML Delete Idle Bedrock Models (CloudFix Support)](https://support.cloudfix.com/article/17018-ml-delete-idle-bedrock-models)

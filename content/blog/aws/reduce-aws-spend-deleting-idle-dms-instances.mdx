@@ -1,0 +1,401 @@
+---
+title: "Reduce your AWS spend by deleting idle DMS instances"
+description: "Movement is life. – Brad Pitt as Gerry Lane in World War Z Table of contents Why idle DMS instances are costing you thousands of dollars How to find and delete..."
+date: 2023-09-25 08:51:31
+modified: 2023-09-25 11:42:17
+category: "AWS"
+tags: ["AWS","cloud","serverless","ec2","security"]
+published: true
+slug: "reduce-aws-spend-deleting-idle-dms-instances"
+---
+
+> Movement is life.
+> 
+> _– Brad Pitt as Gerry Lane in World War Z_
+
+## Table of contents
+
+1.  [Why idle DMS instances are costing you thousands of dollars](#why-idle-dms-instances-are-costing-you-thousands-of-dollars)
+2.  [How to find and delete idle DMS instances](#how-to-find-and-delete-idle-dms-instances)
+    1.  [Use the CUR to identify all idle DMS instances](#use-the-cur-to-identify-all-idle-dms-instances)
+    2.  [Determine if the DMS instance is idle using service-specific APIs](#determine-if-the-dms-instance-is-idle-using-service-specific-apis)
+    3.  [Delete the idle DMS resource](#delete-the-idle-dms-resources) 
+3.  [Eliminate idle DMS instances easily and automatically with CloudFix](#eliminate-idle-dms-instances-easily-and-automatically-with-cloudfix)
+
+As a film buff, I love a good movie reference. In our [Cost and Usage report foundation blog](/blog/aws-foundational-skills-cost-and-usage-report-cur/), I used the classic Star Trek II: Wrath of Khan to introduce the importance of detailed knowledge of the CUR. Today, let's fast forward to a relatively new cult classic from 2013, [World War Z](https://www.youtube.com/watch?v=Md6Dvxdr0AQ). World War Z is a modern take on a classic zombie invasion movie, starring Brad Pitt as the hero and main character. Early in the movie, there’s a scene where Pitt and several other characters are deciding whether to hunker down or run to seek a more stable and safer place. Pitt’s character said a phrase that has always stuck with me: **_movement is life_**. 
+
+![Brad Pitt as Gerry Lane in World War Z](/media/uploads/Brad-Pitt-as-Gerry-Lane-in-World-War-Z.jpg)
+
+Although not as dramatic as a horde of zombies, moving your data from one database to another can also be scary. Without careful planning and reliable execution, your application data can become a collection of useless bits. But, **_movement is life_**. If you’re facing a situation where you want to decommission your on-prem database and move it into the cloud, you will eventually have to face the daunting task of moving the database to the safety and security of AWS. And although we will not have Brad Pitt’s help, we do have a useful tool at our disposal, the [Amazon Database Migration Service](https://aws.amazon.com/dms/). 
+
+The Amazon Database Migration Service (DMS) is a paid service from AWS that facilitates the migration of an active database to, from, or within AWS. Its key features include high availability, minimal downtime, ongoing data replication, and support for a wide variety of source and target databases. The migration work itself is done by a special-purpose EC2 instance called a replication instance. These do the heavy lifting of moving the data from A to B and, just like standard EC2 instances, they incur costs whether they are busy or idling. 
+
+The only problem: like zombies, idle DMS instances tend to add up, and there’s no reason to pay for something we’re not using. Let’s look at how much these idle resources cost and how we can successfully destroy – err, delete – them.
+
+## 1\. Why idle DMS instances are costing you thousands of dollars
+
+Idle DMS instances add up for the same reason that other idle resources do: we use them and forget about them and/or we get overly nervous about the risks of deleting them. Fortunately, it’s relatively simple to identify which DMS instances are truly idle and can therefore be safely eliminated – and it’s definitely beneficial from a cost perspective.
+
+When you use AWS DMS in the standard (non-serverless) method, the cost driver is the DMS replication instance. The DMS pricing page states, “AWS Database Migration Service currently supports the T2, T3, C4, C5, C6i, R4, R5, and R6i [instance classes](https://docs.aws.amazon.com/dms/latest/userguide/CHAP_ReplicationInstance.Types.html).” DMS replication instances are priced in proportion to their underlying instance type and size, and single vs. multi-AZ configurations.
+
+Comparing [EC2 On-Demand](https://aws.amazon.com/ec2/pricing/on-demand/) and [DMS On-Demand pricing](https://aws.amazon.com/dms/pricing/)**,** using us-east-1 in Sept 2023 as a reference, we see the following pricing:
+
+**Usage**
+
+**Instance name**
+
+**On-Demand hourly rate**
+
+**vCPU**
+
+**Memory**
+
+**Storage**
+
+**Network performance**
+
+EC2 On-Demand
+
+c6i.16xlarge
+
+$2.72
+
+64
+
+128 GiB
+
+EBS Only
+
+25000 Megabit
+
+DMS Single-AZ
+
+c6i.16xlarge
+
+$4.94
+
+64
+
+128 GiB
+
+EBS Only
+
+25000 Megabit
+
+DMS Multi-AZ
+
+c6i.16xlarge
+
+$9.88
+
+64
+
+128 GiB
+
+EBS Only
+
+25000 Megabit
+
+In simple terms, DMS Single-AZ costs double the underlying instance type, and DMS Multi-AZ costs double that. Given that DMS instances can be left running for weeks or even months, these costs can quickly become significant. A c6i.16xlarge DMS Single-AZ instance left running for 90 days (our threshold for considering the instance _idle_), will accumulate $10,670 in charges! That’s a lot of potential for wasted spend.
+
+To give some more concrete numbers, one organization that we worked with was spending ~$40K per month on DMS, with the vast majority of the cost attributable to DMS migration instances. Of this cost, 90% of the DMS instances were idle (unused for 90 days). A 90% cost reduction is always something to celebrate!
+
+> In this case, $40K of annual spend was reduced to $4K, and that is with a very cautious approach. We expect most users of DMS to see similar savings, especially in large organizations where things like idle infrastructure can easily slip through the cracks.
+
+## 2\. How to find and delete idle DMS instances
+
+To find and deactivate idle DMS instances, we’ll use the standard Cloudfix approach:
+
+1.  Use the CUR to identify all idle DMS instances
+2.  Determine if the DMS instance is idle using service-specific APIs
+3.  Delete the idle DMS resource 
+
+Quick reminder: if you haven’t read our foundation blog on the [Cost and Usage report](/blog/aws-foundational-skills-cost-and-usage-report-cur/), it’s a great place to start. Up to speed on the CUR? Let’s dig in.
+
+### 2.1 Use the CUR to identify all idle DMS instances
+
+The first step is to find all DMS replication instances, idle or not, that exist in your organization. To do this, we will query the CUR for resources that have an ARN in the DMS replication instance format. Referencing the [DMS ARN documentation](https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Introduction.AWS.ARN.html), replication instances have the form:
+
+`arn:aws:dms:us-east-1:123456789012:endpoint:D3HMZ2IGUCGFF3NTAXUXGF6S5A`
+
+Breaking this identifier into components, we see:
+
+-   #3 - DMS, the service we are interested in
+-   #4 - region
+-   #5 - AWS account
+-   #6 - resourcetype. We are looking for resources of type endpoint.
+-   #7 - identifier, an alphanumeric string identifying the particular instance.
+
+We could create a query like this:
+
+```sql
+SELECT product_region,
+      line_item_usage_account_id,
+      line_item_resource_id,
+      line_item_line_item_type,
+      line_item_usage_start_date,
+      line_item_usage_end_date,
+      line_item_usage_type,
+      sum(line_item_unblended_cost) as cost
+FROM "YOUR_CUR_DB_NAME"."YOUR_CUR_TABLE_NAME"
+WHERE line_item_resource_id LIKE 'arn:aws:dms:%:endpoint:%'
+      AND line_item_usage_start_date >= date_trunc('day', current_date - interval '10' DAY) 
+      AND line_item_usage_start_date < date_trunc('day', current_date - interval '1' DAY) 
+GROUP BY 1,2,3,4,5,6,7;
+```
+
+This uses an expression on the resource ID to find DMS endpoints and has outputs like the following:
+
+**product\_region**
+
+**line\_item\_usage\_account\_id**
+
+**line\_item\_resource\_id**
+
+**line\_item\_line\_item\_type**
+
+**line\_item\_usage\_start\_date**
+
+**line\_item\_usage\_end\_date**
+
+**line\_item\_usage\_type**
+
+**cost**
+
+us-east-1
+
+123456789012
+
+arn:aws:dms:us-east-1:123456789012:endpoint:D3HMZ2IGUCGFF3NTAXUXGF6S5A
+
+AWS Data Migration Service
+
+2022-01-20 10:00:00
+
+2022-01-21 09:59:59
+
+DMS-Hourly
+
+0.50
+
+ap-southeast-2
+
+210987654321
+
+arn:aws:dms:ap-south-1:210987654321:endpoint:E3WOZ2IVOCGWH3LOBALVES7U6Y
+
+AWS Data Migration Service
+
+2022-01-20 10:00:00
+
+2022-01-21 09:59:59
+
+DMS-Hourly
+
+0.75
+
+Alternatively, we could use this simpler query:
+
+```sql
+SELECT 
+        line_item_usage_account_id as account_id,
+        product_region as region,
+        line_item_resource_id as resource_id,
+FROM aws_cur.aws_billing_cost_cut_team
+WHERE
+        product_product_name <> 'AWS Premium Support'
+        AND line_item_resource_id <> ''
+        AND line_item_usage_start_date >= date_trunc('day', current_date - interval '31' day)
+        AND line_item_usage_start_date < date_trunc('day', current_date - interval '1' day)
+        AND line_item_product_code = 'AWSDatabaseMigrationSvc'
+GROUP BY 1, 2, 3;
+```
+
+The output from this query would look like this:
+
+**account\_id**
+
+**region**
+
+**resource\_id**
+
+123456789012
+
+us-east-1
+
+arn:aws:dms:us-east-1:123456789012:endpoint:D3HMZ2IGUCGFF3NTAXUXGF6S5A
+
+345678901234
+
+us-east-1
+
+arn:aws:dms:us-east-1:345678901234:endpoint:ABCDEFGABABABAB1231231231231
+
+234567890123
+
+ap-southeast-1
+
+arn:aws:dms:ap-south-1:210987654321:endpoint:E3WOZ2IVOCGWH3LOBALVES7U6Y
+
+In either case, we have a list of DMS replication instances and the regions that contain them. Next up: determining if they’re idle.
+
+### 2.2 Determine if the DMS instance is idle using service-specific APIs
+
+In this step, we follow our standard operating procedure of using the service-specific APIs to determine if a DMS replication node is idle. To do this, we need to use the [DescribeReplicationInstances](https://docs.aws.amazon.com/dms/latest/APIReference/API_DescribeReplicationInstances.html) API. This can be accessed by the predictably-named [describe-replication-instances](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/dms/describe-replication-instances.html) subcommand, part of the [DMS commands](https://docs.aws.amazon.com/cli/latest/reference/dms/#cli-aws-dms) within the [AWS CLI](https://aws.amazon.com/cli/).
+
+As with all AWS CLI commands, running this command assumes that credentials and a region are supplied [via environment variables](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html). For example:
+
+```bash
+export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+export AWS_DEFAULT_REGION=us-west-2
+```
+
+These credentials will be unique to a particular account. Therefore, you will need to update these variables for each account/region pair in your results set.
+
+Once you have your variables set correctly, run the following command to get information on a particular DMS instance:
+
+```bash
+aws dms describe-replication-instances –filters "Name=replication-instance-arn,Values=arn:aws:dms:us-east-1:345678901234:endpoint:ABCDEFGABABABAB1231231231231"
+```
+
+This will return a list of [ReplicationInstance](https://docs.aws.amazon.com/dms/latest/APIReference/API_ReplicationInstance.html) objects. This contains many pieces of information, but we’re interested in ReplicationInstanceStatus and InstanceCreateTime. The possible values of ReplicationInstanceStatus are: 
+
+-   `"available"`
+-   `"creating"`
+-   `"deleted"`
+-   `"deleting"`
+-   `"failed"`
+-   `"modifying"`
+-   `"upgrading"`
+-   `"rebooting"`
+-   `"resetting-master-credentials"`
+-   `"storage-full"`
+-   `"incompatible-credentials"`
+-   `"incompatible-network"`
+-   `"maintenance"`
+
+We want to work with instances that are in an “available” state, which are the instances that are functioning. 
+
+We also want to look at InstanceCreateTime. We want to exclude instances that are recently created, because they may be part of an ongoing project. Database migrations are often mission-critical, so we recommend a longer time frame here than our typical 30 days. We like to exclude any instances that have been created within the past 90 days, but you can adjust this value based on your particular preferences.
+
+Once these criteria have been applied, check the task queue for each instance. This helps us make sure that the replication instances do not have tasks that are either recently created, recently started, or in an active state.
+
+To do this, we use the [DescribeReplicationTasks API](https://docs.aws.amazon.com/dms/latest/APIReference/API_DescribeReplicationTasks.html). This is called by the [describe-replication-tasks command](https://docs.aws.amazon.com/cli/latest/reference/dms/describe-replication-tasks.html) and returns a list of [ReplicationTask](https://docs.aws.amazon.com/dms/latest/APIReference/API_ReplicationTask.html) objects. Within the replication task, we’re interested in ReplicationTaskCreationDate, ReplicationTaskStartDate, and Status. We want to exclude DMS instances that have tasks which are created or started within some threshold (as before, we use 90 days). Also, you should exclude DMS instances with tasks in any kind of _active_ status. From the ReplicationTask page:
+
+Status Name
+
+Meaning
+
+Active?
+
+moving
+
+The task is being moved in response to running the [MoveReplicationTask](https://docs.aws.amazon.com/dms/latest/APIReference/API_MoveReplicationTask.html) operation.
+
+✅
+
+creating
+
+The task is being created in response to running the [CreateReplicationTask](https://docs.aws.amazon.com/dms/latest/APIReference/API_CreateReplicationTask.html) operation.
+
+✅
+
+deleting
+
+The task is being deleted in response to running the [DeleteReplicationTask](https://docs.aws.amazon.com/dms/latest/APIReference/API_DeleteReplicationTask.html) operation.
+
+✅
+
+failed
+
+The task failed to successfully complete the database migration in response to running the [StartReplicationTask](https://docs.aws.amazon.com/dms/latest/APIReference/API_StartReplicationTask.html) operation.
+
+❌
+
+failed-move
+
+The task failed to move in response to running the [MoveReplicationTask](https://docs.aws.amazon.com/dms/latest/APIReference/API_MoveReplicationTask.html) operation.
+
+❌
+
+modifying
+
+The task definition is being modified in response to running the [ModifyReplicationTask](https://docs.aws.amazon.com/dms/latest/APIReference/API_ModifyReplicationTask.html) operation.
+
+✅
+
+ready
+
+The task is in a ready state where it can respond to other task operations, such as [StartReplicationTask](https://docs.aws.amazon.com/dms/latest/APIReference/API_StartReplicationTask.html) or [DeleteReplicationTask](https://docs.aws.amazon.com/dms/latest/APIReference/API_DeleteReplicationTask.html).
+
+❌
+
+running
+
+The task is performing a database migration in response to running the [StartReplicationTask](https://docs.aws.amazon.com/dms/latest/APIReference/API_StartReplicationTask.html) operation.
+
+✅
+
+starting
+
+The task is preparing to perform a database migration in response to running the [StartReplicationTask](https://docs.aws.amazon.com/dms/latest/APIReference/API_StartReplicationTask.html) operation.
+
+✅
+
+stopped
+
+The task has stopped in response to running the [StopReplicationTask](https://docs.aws.amazon.com/dms/latest/APIReference/API_StopReplicationTask.html) operation.
+
+❌
+
+stopping
+
+The task is preparing to stop in response to running the [StopReplicationTask](https://docs.aws.amazon.com/dms/latest/APIReference/API_StopReplicationTask.html) operation.
+
+✅
+
+testing
+
+The database migration specified for this task is being tested in response to running either the [StartReplicationTaskAssessmentRun](https://docs.aws.amazon.com/dms/latest/APIReference/API_StartReplicationTaskAssessmentRun.html) or the [StartReplicationTaskAssessment](https://docs.aws.amazon.com/dms/latest/APIReference/API_StartReplicationTaskAssessment.html) operation.
+
+✅
+
+**Note:** Save the output of this command for the next step, since we will need to delete all of the tasks before we delete the instance itself.
+
+To wrap all that up:
+
+Once you have a list of DMS replication instance ARNs and their corresponding accounts and regions, use the AWS DMS APIs to check on the status and creation date of the individual instances. Exclude recently created instances and instances that are not in the available state. For such instances, check their task lists to make sure that they do not have any recently created or started tasks and that all other tasks are not in an _active_ status.
+
+## 2.3 Delete the idle DMS resources
+
+So far, we have identified DMS instances, checked that they were created more than 90 days ago, and made sure that they do not have tasks in an active state. This provides a very cautious filter for removing DMS instances. For those resources that meet our criteria, let’s go ahead and remove them.
+
+As is often the case, this step is the simplest. We need to do two things:
+
+1.  Delete the replication tasks associated with the instance. To do this, iterate over the tasks from the previous step, using the [DeleteReplicationTask API](https://docs.aws.amazon.com/dms/latest/APIReference/API_DeleteReplicationTask.html) for the actual deletion.
+2.  Once the tasks are deleted, use the [DeleteReplicationInstance](https://docs.aws.amazon.com/dms/latest/APIReference/API_DeleteReplicationInstance.html) API to remove the instance.
+
+Deleting the replication tasks is done with the [delete-replication-task command](https://docs.aws.amazon.com/cli/latest/reference/dms/delete-replication-task.html). This takes the ARN of the task as input.
+
+```bash
+aws dms delete-replication-task --replication-task-arn <TASK_ARN_HERE>
+```
+
+Do this for each task in the ReplicationTasks list returned from in the previous step. This must be done regardless of the status of the task.
+
+Once this is done, issue the [delete-replication-instance](https://docs.aws.amazon.com/cli/latest/reference/dms/delete-replication-instance.html) command.
+
+```bash
+aws dms delete-replication-instance --replication-arn <INSTANCE_ARN_HERE>
+```
+
+And just like that, your zombie instances have been eliminated!
+
+## 3\. Eliminate idle DMS instances easily and automatically with CloudFix
+
+The process above isn’t too tedious, but it’s also not something that’s a top priority to your team. That means it tends to go undone, and THAT means that those expensive instances keep adding up. 
+
+With CloudFix, you can just set it and forget it. Our finder/fixer uses the same criteria as the manual method, including the cautious 90-day definition of idle, but deletes idle DMS instances automatically. All you need to do is approve the proposed changes and CloudFix will do the rest. That’s thousands of dollars of reclaimed budget – and thousands of fewer zombie DMS instances roaming the streets of AWS. 
+
+Curious how much you can save by deleting idle DMS instances with CloudFix? Check out our [free savings assessment](/assessment/). Quickly and securely, you’ll discover which CloudFix fixers, like this one, can be applied to your environment and exactly how much you can save.
