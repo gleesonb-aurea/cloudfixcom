@@ -1,4 +1,5 @@
 // ABOUTME: Client-side registration of service worker for offline support
+// ABOUTME: Registers /sw.js in production environments when navigator.serviceWorker is available
 'use client';
 
 import { useEffect } from 'react';
