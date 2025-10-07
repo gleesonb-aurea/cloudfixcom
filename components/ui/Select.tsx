@@ -14,14 +14,32 @@ const SelectValue = SelectPrimitive.Value;
 
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> & { error?: boolean }
+>(({ className, children, error, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      'flex h-11 w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
+      // Base styles
+      'flex h-11 w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm',
+      'placeholder:text-gray-500',
+      'transition-colors duration-200',
+      'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+      'disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500',
+      '[&>span]:line-clamp-1',
+
+      // Touch targets
+      'min-h-[44px]',
+
+      // State variants
+      error && [
+        'border-red-500 text-red-900',
+        'focus:ring-red-500/20 focus:border-red-500',
+        'placeholder:text-red-300'
+      ],
+
       className
     )}
+    aria-invalid={error}
     {...props}
   >
     {children}

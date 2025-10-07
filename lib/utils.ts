@@ -1,6 +1,22 @@
 export function cn(
-  ...classes: Array<string | false | null | undefined>
+  ...classes: Array<
+    | string
+    | false
+    | null
+    | undefined
+    | Array<string | false | null | undefined>
+  >
 ): string {
-  return classes.filter(Boolean).join(' ');
+  const out: string[] = [];
+  for (const cls of classes) {
+    if (!cls) continue;
+    if (Array.isArray(cls)) {
+      for (const c of cls) {
+        if (c) out.push(c);
+      }
+    } else {
+      out.push(cls);
+    }
+  }
+  return out.join(' ');
 }
-

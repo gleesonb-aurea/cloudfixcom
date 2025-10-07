@@ -8,14 +8,29 @@ import { cn } from '@/lib/utils';
 
 const Checkbox = React.forwardRef<
   React.ElementRef<typeof CheckboxPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
->(({ className, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root> & { error?: boolean }
+>(({ className, error, ...props }, ref) => (
   <CheckboxPrimitive.Root
     ref={ref}
     className={cn(
-      'peer h-5 w-5 shrink-0 rounded-md border-2 border-gray-300 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white',
+      // Base checkbox styling
+      'peer h-5 w-5 shrink-0 rounded-md border-2 border-gray-300 bg-white',
+      'focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 focus-visible:outline-none',
+      'transition-colors duration-200',
+      'disabled:cursor-not-allowed disabled:bg-gray-50 disabled:border-gray-200 disabled:opacity-50',
+
+      // State variants
+      error && [
+        'border-red-500 text-red-600',
+        'focus:ring-red-500/20'
+      ],
+
+      // Checked state
+      'data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-white',
+
       className
     )}
+    aria-invalid={error}
     {...props}
   >
     <CheckboxPrimitive.Indicator
