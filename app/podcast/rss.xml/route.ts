@@ -2,6 +2,8 @@
 import { NextResponse } from 'next/server';
 import { getAllEpisodes } from '@/lib/podcast';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const eps = await getAllEpisodes();
   const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudfix.com';

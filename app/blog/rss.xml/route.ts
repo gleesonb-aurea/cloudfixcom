@@ -2,6 +2,8 @@
 import { NextResponse } from 'next/server';
 import { getAllPosts } from '@/lib/blog';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const posts = await getAllPosts();
   const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudfix.com';
