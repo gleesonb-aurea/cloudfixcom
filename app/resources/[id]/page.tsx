@@ -41,7 +41,7 @@ export default async function ResourceDetailPage({ params }: ResourceDetailProps
                   href={`/resources/${r.id}`}
                   thumbnailSrc={r.thumbnail}
                   category={r.category}
-                  date={new Date(r.publishDate).toLocaleDateString()}
+                  date={new Date((r as any).publishDate || (r as any).date || new Date().toISOString()).toLocaleDateString()}
                   authorName={r.author}
                 />
               ))}

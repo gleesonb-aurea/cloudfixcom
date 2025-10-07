@@ -12,6 +12,8 @@ export default async function ResourcesPage({ searchParams }: { searchParams?: {
   const sort = typeof searchParams?.sort === 'string' ? searchParams?.sort : 'date-desc';
   const page = Number(searchParams?.page || 1) || 1;
   const resources = await getAllResources();
+  const categoriesSet = new Set(resources.map((r) => r.category));
+  const categories = Array.from(categoriesSet).sort();
   const filtered = resources.filter((r) => {
     if (type && r.type !== type) return false;
     if (category && r.category !== category) return false;
@@ -48,6 +50,10 @@ export default async function ResourcesPage({ searchParams }: { searchParams?: {
           <a href="/resources?type=video" className="rounded-full border border-gray-200 px-3 py-1">Videos</a>
           <a href="/resources?type=case-study" className="rounded-full border border-gray-200 px-3 py-1">Case Studies</a>
           <a href="/resources?type=success-story" className="rounded-full border border-gray-200 px-3 py-1">Success Stories</a>
+          <span className="ml-3 text-gray-600">Categories:</span>
+          {categories.map((c) => (
+            <a key={c} href={`/resources?category=${encodeURIComponent(c)}`} className="rounded-full border border-gray-200 px-3 py-1">{c}</a>
+          ))}
         </div>
         <form method="get" className="mb-8 flex flex-col md:flex-row gap-4 md:items-center">
           <input name="q" defaultValue={q} placeholder="Search resources" className="rounded-lg border border-gray-300 px-3 py-2 w-full md:w-80" />
@@ -78,7 +84,7 @@ export default async function ResourcesPage({ searchParams }: { searchParams?: {
               href={r.url}
               thumbnailSrc={r.thumbnail}
               category={r.category}
-              date={new Date(r.publishDate).toLocaleDateString()}
+              date={new Date((r as any).publishDate || (r as any).date || new Date().toISOString()).toLocaleDateString()}
               authorName={r.author}
             />
           ))}
