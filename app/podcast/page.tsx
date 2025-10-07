@@ -3,10 +3,29 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { getAllEpisodes } from '@/lib/podcast';
-import PodcastPlayer from '@/components/podcast/PodcastPlayer';
+import dynamic from 'next/dynamic';
+import SkeletonBlock from '@/components/ui/SkeletonBlock';
+const PodcastPlayer = dynamic(() => import('@/components/podcast/PodcastPlayer'), {
+  ssr: false,
+  loading: () => <SkeletonBlock className="h-40 w-full" />,
+});
 import PlatformBadges from '@/components/podcast/PlatformBadges';
 
-export const metadata = { title: 'Podcast | CloudFix', description: 'Tune into AWS cost optimization conversations with CloudFix and guests.' };
+export const metadata = {
+  title: 'Podcast | CloudFix',
+  description: 'Tune into AWS cost optimization conversations with CloudFix and guests.',
+  alternates: { canonical: '/podcast' },
+  openGraph: {
+    title: 'Podcast | CloudFix',
+    description: 'AWS cost optimization conversations with CloudFix and guests.',
+    type: 'website',
+    images: [{ url: '/og/podcast?title=CloudFix%20Podcast', alt: 'CloudFix Podcast' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: ['/og/podcast?title=CloudFix%20Podcast'],
+  },
+};
 export const revalidate = 21600; // 6 hours ISR
 
 export default async function PodcastPage({ searchParams }: { searchParams?: { episode?: string; tag?: string } }) {

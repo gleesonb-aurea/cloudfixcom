@@ -1,9 +1,26 @@
 // ABOUTME: Videos page displaying CloudFix video content grid
 // ABOUTME: Fetches and renders videos with modal player support
 import { getAllVideos } from '@/lib/videos';
-import VideoGrid from '@/components/videos/VideoGrid';
+import dynamic from 'next/dynamic';
+import SkeletonBlock from '@/components/ui/SkeletonBlock';
+const VideoGrid = dynamic(() => import('@/components/videos/VideoGrid'), {
+  ssr: false,
+  loading: () => <SkeletonBlock className="h-64 w-full" />,
+});
 
-export const metadata = { title: 'Videos | CloudFix' };
+export const metadata = {
+  title: 'Videos | CloudFix',
+  alternates: { canonical: '/videos' },
+  openGraph: {
+    title: 'Videos | CloudFix',
+    type: 'website',
+    images: [{ url: '/og/videos?title=CloudFix%20Videos', alt: 'CloudFix Videos' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: ['/og/videos?title=CloudFix%20Videos'],
+  },
+};
 export const revalidate = 21600; // 6 hours ISR
 
 export default async function VideosPage() {

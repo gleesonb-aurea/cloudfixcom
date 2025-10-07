@@ -8,6 +8,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
 
 const inter = Inter({ subsets: ["latin"], display: 'swap' });
 
@@ -22,12 +23,14 @@ export const metadata: Metadata = {
     siteName: "CloudFix",
     locale: "en_US",
     type: "website",
+    images: [{ url: "/og", alt: "CloudFix — Automated AWS Cost Optimization" }],
   },
   twitter: {
     card: "summary_large_image",
     site: "@cloudfix",
     title: "CloudFix - Automated AWS Cost Optimization",
     description: "CloudFix automatically finds and fixes AWS issues to reduce your cloud costs and improve efficiency.",
+    images: ["/og"],
   },
   robots: {
     index: true,
@@ -60,6 +63,7 @@ export default function RootLayout({
         <Header />
         <main>{children}</main>
         <Footer />
+        <ServiceWorkerRegistrar />
         <Analytics />
         <SpeedInsights />
       </body>
