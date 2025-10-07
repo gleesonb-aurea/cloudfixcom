@@ -19,7 +19,8 @@
       "Bash(test:*)",
       "WebFetch(domain:cloudfixcom.vercel.app)",
       "Bash(pkill:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

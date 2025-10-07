@@ -5,7 +5,8 @@
       "title": "Live: Cutting AWS Costs with Automation",
       "date": "2025-10-20T18:00:00Z",
       "description": "Join us for a live session on automating AWS savings.",
-      "registrationUrl": "https://events.cloudfix.com/register/stream-2025-10-20"
+      "registrationUrl": "https://events.cloudfix.com/register/stream-2025-10-20",
+      "embedUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ"
     }
   ],
   "past": [
@@ -17,4 +18,3 @@
     }
   ]
 }
-

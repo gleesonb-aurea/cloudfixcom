@@ -23,11 +23,17 @@ export default async function LivestreamPage() {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {upcoming.map((s) => (
-                <a key={s.id} href={s.registrationUrl} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div key={s.id} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="text-sm text-gray-500">{new Date(s.date).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}</div>
                   <h3 className="mt-1 font-semibold text-gray-900">{s.title}</h3>
                   <p className="text-gray-600 mt-1">{s.description}</p>
-                </a>
+                  {s.embedUrl && (
+                    <div className="mt-3 aspect-video w-full rounded-lg overflow-hidden">
+                      <iframe className="w-full h-full" src={s.embedUrl} title={s.title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                    </div>
+                  )}
+                  <a href={s.registrationUrl} className="mt-3 inline-block rounded-lg bg-primary px-4 py-2 text-white">Register</a>
+                </div>
               ))}
             </div>
           )}
@@ -39,10 +45,13 @@ export default async function LivestreamPage() {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {past.map((s) => (
-                <a key={s.id} href={s.recordingUrl} target="_blank" rel="noopener noreferrer" className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div key={s.id} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="text-sm text-gray-500">{new Date(s.date).toLocaleDateString('en-GB', { dateStyle: 'medium' })}</div>
                   <h3 className="mt-1 font-semibold text-gray-900">{s.title}</h3>
-                </a>
+                  <div className="mt-3">
+                    <a href={s.recordingUrl} target="_blank" rel="noopener noreferrer" className="inline-block rounded-lg bg-primary px-4 py-2 text-white">Watch recording</a>
+                  </div>
+                </div>
               ))}
             </div>
           )}

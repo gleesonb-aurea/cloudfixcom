@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getResourceById, getAllResources } from '@/lib/resources';
 import { SocialShare } from '@/components/blog/SocialShare';
+import ResourceCard from '@/components/ui/ResourceCard';
 
 interface ResourceDetailProps { params: { id: string } }
 
@@ -26,11 +27,19 @@ export default async function ResourceDetailPage({ params }: ResourceDetailProps
         {related.length > 0 && (
           <div className="mt-10">
             <h2 className="text-2xl font-bold mb-4">Related Resources</h2>
-            <ul className="list-disc pl-5 text-primary">
+            <div className="grid md:grid-cols-2 gap-6">
               {related.map((r) => (
-                <li key={r.id} className="mb-1"><a href={`/resources/${r.id}`} className="hover:underline">{r.title}</a></li>
+                <ResourceCard
+                  key={r.id}
+                  title={r.title}
+                  href={`/resources/${r.id}`}
+                  thumbnailSrc={r.thumbnail}
+                  category={r.category}
+                  date={new Date(r.publishDate).toLocaleDateString()}
+                  authorName={r.author}
+                />
               ))}
-            </ul>
+            </div>
           </div>
         )}
       </section>

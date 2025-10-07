@@ -32,7 +32,16 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     <div className="min-h-screen">
       <article className="max-w-5xl mx-auto py-12 px-4">
         <header className="mb-8">
-          <div className="text-primary font-semibold mb-2">{post.category}</div>
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <a href={`/blog/category/${encodeURIComponent(post.category)}`} className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+              {post.category}
+            </a>
+            {post.tags?.map((t) => (
+              <a key={t} href={`/blog/tag/${encodeURIComponent(t)}`} className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200">
+                #{t}
+              </a>
+            ))}
+          </div>
           <h1 className="text-4xl font-bold text-gray-900">{post.title}</h1>
           <p className="text-gray-600 mt-2">{post.description}</p>
           <div className="mt-3 text-sm text-gray-500 flex items-center gap-3">
