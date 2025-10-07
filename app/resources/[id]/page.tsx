@@ -9,7 +9,7 @@ import Link from 'next/link';
 
 interface ResourceDetailProps { params: { id: string } }
 
-export default async function ResourceDetailPage({ params }: ResourceDetailProps) {
+export default async function ResourceDetailPage({ params }: ResourceDetailProps): Promise<JSX.Element> {
   const res = await getResourceById(params.id);
   if (!res) return notFound();
   const all = await getAllResources();
