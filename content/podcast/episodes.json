@@ -1,0 +1,57 @@
+[
+  {
+    "id": "aws-insiders-50",
+    "title": "Cutting AWS Costs with Automation",
+    "description": "We explore pragmatic ways to reduce AWS spend using automation and governance.",
+    "guest": {
+      "name": "Jane Doe",
+      "title": "VP Engineering",
+      "company": "Acme Corp",
+      "bio": "Drives platform efficiency at scale.",
+      "avatar": "/images/podcast/guests/jane-doe.jpg"
+    },
+    "publishDate": "2025-09-28",
+    "duration": 42,
+    "audioUrls": {
+      "apple": "https://podcasts.apple.com/",
+      "spotify": "https://open.spotify.com/",
+      "google": "https://podcasts.google.com/",
+      "amazon": "https://music.amazon.com/",
+      "rss": "/blog/rss.xml"
+    },
+    "audio": "/audio/aws-insiders-50.mp3",
+    "showNotes": [
+      "Intro to automation",
+      "Common pitfalls",
+      "Next steps"
+    ],
+    "tags": ["Cost Optimization", "Automation"],
+    "featured": true
+  },
+  {
+    "id": "aws-insiders-49",
+    "title": "RightSizing EC2 at Scale",
+    "description": "Tactics for continuous EC2 rightsizing in large organizations.",
+    "guest": {
+      "name": "Alex Smith",
+      "title": "Cloud Architect",
+      "company": "DataCo",
+      "bio": "Specializes in compute optimization.",
+      "avatar": "/images/podcast/guests/alex-smith.jpg"
+    },
+    "publishDate": "2025-09-14",
+    "duration": 38,
+    "audioUrls": {
+      "apple": "https://podcasts.apple.com/",
+      "spotify": "https://open.spotify.com/",
+      "google": "https://podcasts.google.com/",
+      "amazon": "https://music.amazon.com/",
+      "rss": "/blog/rss.xml"
+    },
+    "audio": "/audio/aws-insiders-49.mp3",
+    "showNotes": ["Compute types", "Scheduling", "Governance"],
+    "tags": ["EC2", "RightSizing"],
+    "featured": false
+  }
+]
+

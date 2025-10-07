@@ -1,0 +1,14 @@
+[
+  {
+    "id": "cf-demo-1",
+    "title": "CloudFix Demo: Automated Savings",
+    "description": "A quick overview of how CloudFix finds and applies savings.",
+    "thumbnail": "/images/videos/cf-demo-1.jpg",
+    "publishDate": "2025-08-30",
+    "youtubeId": "dQw4w9WgXcQ",
+    "category": "Demos",
+    "tags": ["CloudFix", "Demo"],
+    "featured": true
+  }
+]
+
