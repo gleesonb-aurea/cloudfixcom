@@ -2,10 +2,12 @@
 import { getPostBySlug, getAllPosts } from '@/lib/blog';
 import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
+import MDXImage from '@/components/mdx/MDXImage';
 import Image from 'next/image';
 import Link from 'next/link';
 
 export const dynamic = 'force-static';
+export const revalidate = 3600; // 1 hour ISR for blog posts
 
 interface BlogPostPageProps {
   params: Promise<{
@@ -113,7 +115,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         </header>
 
         <div className="prose prose-lg max-w-none">
-          <MDXRemote source={post.content} />
+          <MDXRemote
+            source={post.content}
+            components={{
+              img: (props: any) => <MDXImage {...props} />,
+            }}
+          />
         </div>
 
         {post.tags && post.tags.length > 0 && (

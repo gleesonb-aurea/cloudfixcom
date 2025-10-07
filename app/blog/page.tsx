@@ -5,6 +5,7 @@ import { BlogListing } from '@/components/blog/BlogListing';
 import Link from 'next/link';
 
 export const metadata = { title: 'CloudFix Blog' };
+export const revalidate = 3600; // 1 hour ISR per Phase 5
 
 export default async function BlogIndexPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
   const category = typeof searchParams?.category === 'string' ? searchParams?.category : undefined;
