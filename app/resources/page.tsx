@@ -6,6 +6,7 @@ import { paginate } from '@/lib/blog';
 import ResourceCard from '@/components/ui/ResourceCard';
 
 export const metadata = { title: 'Resources | CloudFix', description: 'Explore CloudFix resources including blogs, podcasts, videos, and case studies.', alternates: { canonical: '/resources' } };
+export const revalidate = 1800; // 30 minutes ISR
 
 export default async function ResourcesPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
   const type = typeof searchParams?.type === 'string' ? searchParams?.type : undefined;
