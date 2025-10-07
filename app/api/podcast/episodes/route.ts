@@ -1,3 +1,5 @@
+// ABOUTME: API route returning all podcast episodes as JSON
+// ABOUTME: Implements caching headers for CDN optimization
 import { NextResponse } from 'next/server';
 import { getAllEpisodes } from '@/lib/podcast';
 
@@ -7,4 +9,3 @@ export async function GET() {
     headers: { 'Cache-Control': 's-maxage=300, stale-while-revalidate' },
   });
 }
-
