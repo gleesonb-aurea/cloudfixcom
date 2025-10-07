@@ -86,6 +86,7 @@ export default async function ResourcesPage({ searchParams }: { searchParams?: {
               category={r.category}
               date={new Date((r as any).publishDate || (r as any).date || new Date().toISOString()).toLocaleDateString()}
               authorName={r.author}
+              badge={r.type?.replace(/-/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase())}
             />
           ))}
         </div>

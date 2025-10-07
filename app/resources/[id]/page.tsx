@@ -15,7 +15,14 @@ export default async function ResourceDetailPage({ params }: ResourceDetailProps
   return (
     <div className="min-h-screen">
       <section className="max-w-3xl mx-auto py-12 px-4">
-        <h1 className="text-4xl font-bold mb-4">{res.title}</h1>
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <a href={`/resources?category=${encodeURIComponent(res.category)}`} className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">{res.category}</a>
+          {res.tags?.map((t) => (
+            <a key={t} href={`/resources?tag=${encodeURIComponent(t)}`} className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200">#{t}</a>
+          ))}
+        </div>
+        <h1 className="text-4xl font-bold mb-2">{res.title}</h1>
+        <div className="text-sm text-gray-500 mb-6">{new Date((res as any).publishDate || (res as any).date || new Date().toISOString()).toLocaleDateString()}</div>
         <div className="text-gray-600 mb-6">{res.description}</div>
         <div className="text-sm text-gray-500 mb-8 flex items-center gap-3">
           <span>{res.category}</span>

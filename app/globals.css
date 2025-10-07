@@ -103,3 +103,6 @@ code:not(pre code) {
 .hljs-title, .hljs-section { color: #fbbf24; }
 .hljs-keyword, .hljs-selector-tag { color: #c084fc; }
 .hljs { background: #0f172a; color: #e2e8f0; }
+
+/* Headings anchor offset for TOC */
+.prose h2, .prose h3 { scroll-margin-top: 6rem; }

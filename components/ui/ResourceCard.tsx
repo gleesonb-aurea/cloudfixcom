@@ -10,6 +10,7 @@ export interface ResourceCardProps {
   date?: string;
   authorName?: string;
   authorAvatarSrc?: string;
+  badge?: string;
   className?: string;
 }
 
@@ -21,6 +22,7 @@ export default function ResourceCard({
   date,
   authorName,
   authorAvatarSrc,
+  badge,
   className,
 }: ResourceCardProps) {
   return (
@@ -29,6 +31,11 @@ export default function ResourceCard({
         {thumbnailSrc && (
           <div className="relative aspect-[16/9] w-full overflow-hidden">
             <Image src={thumbnailSrc} alt="" fill sizes="(min-width: 1024px) 33vw, 100vw" className="object-cover transition-transform duration-300 group-hover:scale-105" />
+            {badge && (
+              <span className="absolute top-3 left-3 inline-flex items-center rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-white">
+                {badge}
+              </span>
+            )}
           </div>
         )}
         <div className="p-5">
@@ -52,4 +59,3 @@ export default function ResourceCard({
     </article>
   );
 }
-
