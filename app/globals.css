@@ -80,3 +80,12 @@ code:not(pre code) {
   padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
 }
+
+/* highlight.js default tweaks */
+.hljs-comment, .hljs-quote { color: #94a3b8; }
+.hljs-variable, .hljs-template-variable, .hljs-attribute, .hljs-tag, .hljs-name, .hljs-regexp, .hljs-link, .hljs-selector-id, .hljs-selector-class { color: #93c5fd; }
+.hljs-number, .hljs-meta, .hljs-built_in, .hljs-builtin-name, .hljs-literal, .hljs-type, .hljs-params { color: #fca5a5; }
+.hljs-string, .hljs-symbol, .hljs-bullet { color: #86efac; }
+.hljs-title, .hljs-section { color: #fbbf24; }
+.hljs-keyword, .hljs-selector-tag { color: #c084fc; }
+.hljs { background: #0f172a; color: #e2e8f0; }
