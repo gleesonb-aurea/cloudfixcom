@@ -26,6 +26,28 @@ class ResizeObserverMock {
 }
 (global as any).ResizeObserver = ResizeObserverMock;
 
+// IntersectionObserver stub with test trigger support
+if (!(global as any).IntersectionObserver) {
+  (global as any).__io = { instances: [] as any[] };
+  class IntersectionObserverMock {
+    _cb: any;
+    _options: any;
+    constructor(cb: any, options?: any) {
+      this._cb = cb;
+      this._options = options;
+      (global as any).__io.instances.push(this);
+    }
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    // Helper for tests
+    trigger(isIntersecting = true) {
+      this._cb([{ isIntersecting }]);
+    }
+  }
+  (global as any).IntersectionObserver = IntersectionObserverMock as any;
+}
+
 // Mock Radix Checkbox to a simple input for tests to avoid portal/DOM issues
 if (typeof jest !== 'undefined') {
   // Radix Checkbox
