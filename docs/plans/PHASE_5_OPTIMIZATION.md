@@ -1,7 +1,7 @@
 # Phase 5: Polish & Optimization Implementation Plan
 
 **Created**: October 7, 2025
-**Status**: Ready for Implementation
+**Status**: In Progress
 **Priority**: 🔴 CRITICAL (Phase 4 Complete - Launch Preparation)
 **Estimated Effort**: 40-50 hours
 **Complexity**: High
@@ -60,6 +60,47 @@ Transform the functional CloudFix Next.js site into a production-ready, high-per
 - ❌ No link integrity testing
 
 ---
+
+## ✅ Progress Update (Phase 5)
+
+This section tracks concrete implementation progress tied to this plan. The changes below are already in the codebase as of the latest work on `feat/phase5-batch-2`.
+
+Implemented so far
+- Fonts: Migrated to `next/font` Inter with `display: 'swap'` to reduce CLS.
+  - Files: `app/layout.tsx`
+- MDX images: Route MDX `<img>` to `next/image` via `MDXImage` for better perf.
+  - Files: `app/blog/[...slug]/page.tsx`, `components/mdx/MDXImage.tsx`
+- ISR windows: Configured sensible revalidate windows.
+  - Blog posts: `revalidate = 3600` (1 hour)
+  - Podcast, Videos: `revalidate = 21600` (6 hours)
+  - Files: `app/blog/[...slug]/page.tsx`, `app/podcast/page.tsx`, `app/videos/page.tsx`
+- Open Graph images: Added dynamic OG generator for blog posts and wired usage.
+  - Files: `app/og/blog/route.tsx` (Edge runtime), blog metadata references `/og/blog?slug=...`
+- Canonical URLs: Added `alternates.canonical` to blog posts to avoid dupes.
+  - Files: `app/blog/[...slug]/page.tsx`
+- Lazy loading: Deferred heavy components with `next/dynamic` and light skeletons.
+  - Files: `app/podcast/page.tsx`, `app/videos/page.tsx`, `components/ui/SkeletonBlock.tsx`
+- Build memory: Avoid prebuilding all blog posts (on-demand ISR) to reduce build RAM.
+  - Files: `app/blog/[...slug]/page.tsx` (no `generateStaticParams`)
+- PWA prep: Added client-side service worker registrar and included in layout.
+  - Files: `components/ServiceWorkerRegistrar.tsx`, `app/layout.tsx` (injected)
+- Types: Updated `next-env.d.ts` for app router navigation type compatibility.
+  - Files: `next-env.d.ts`
+
+Outstanding follow-ups
+- Service worker file: Add `public/sw.js` or remove the registrar before release.
+- Bundle analysis: Configure `@next/bundle-analyzer` and scripts.
+- Image config: Add `images.formats`, domains, and sizes in `next.config.*`.
+- SEO infra: Add `next-sitemap` and robots generation; broaden OG coverage beyond blog.
+- Structured data: Add JSON-LD components and wire on key pages.
+- A11y: Add `eslint-plugin-jsx-a11y` rules and focused improvements from the plan.
+- Testing: Add Lighthouse script, minimal Playwright smoke tests, and link checks.
+
+Quick verification
+- OG preview: `http://localhost:3000/og/blog?slug=category/example-post` renders an OG image.
+- Blog metadata: View source for a post and confirm canonical + OG image URL.
+- Lazy loading: Podcast player and Videos grid render with skeletons, defer heavy JS.
+- ISR: Edit content and confirm pages refresh within their revalidate windows.
 
 ## 🏗️ Target Architecture
 
@@ -2079,25 +2120,28 @@ test(forms): implement comprehensive form testing and validation
 
 ## 🚀 Implementation Order
 
-**Recommended sequence:**
+Status overview (live)
+- In Progress
+  1. Task 3: Lazy loading — dynamic imports + skeletons for Podcast/Videos
+  2. Task 4: Font optimization — Inter via `next/font` (resource hints pending)
+  3. Task 5: Caching strategy — ISR (SW + SWR pending)
+  4. Task 7: Social images — dynamic OG for Blog (expand to other sections)
+  5. Task 10: SEO metadata — canonical on blog, defaults in layout
+- Pending
+  6. Task 1: Bundle analysis — add analyzer + scripts
+  7. Task 2: Image optimization — global config + components sweep
+  8. Task 6: Error boundaries — app-level boundary + key routes
+  9. Task 8: Sitemap/robots — configure `next-sitemap`
+  10. Task 9: Structured data — Org/Product/FAQ JSON-LD
+  11. Task 11: Accessibility audit — rules, fixes, validations
+  12. Task 12: Lighthouse testing — script + thresholds
+  13. Task 13: Cross-browser testing — minimal Playwright matrix
+  14. Task 14: Mobile testing — iOS/Android pass
+  15. Task 15: Form testing — validation + submission paths
 
-1. ✅ **Task 1**: Bundle analysis (4 hrs) - Performance baseline
-2. ✅ **Task 2**: Image optimization (6 hrs) - Core performance
-3. ✅ **Task 3**: Lazy loading (4 hrs) - Load time optimization
-4. ✅ **Task 4**: Font optimization (3 hrs) - Resource loading
-5. ✅ **Task 5**: Caching strategy (3 hrs) - Performance enhancement
-6. ✅ **Task 6**: Error boundaries (2 hrs) - Resilience
-7. ✅ **Task 7**: Social images (4 hrs) - SEO foundation
-8. ✅ **Task 8**: Sitemap/robots (3 hrs) - SEO infrastructure
-9. ✅ **Task 9**: Structured data (5 hrs) - Rich snippets
-10. ✅ **Task 10**: SEO metadata (3 hrs) - Search optimization
-11. ✅ **Task 11**: Accessibility audit (6 hrs) - Compliance
-12. ✅ **Task 12**: Lighthouse testing (4 hrs) - Performance validation
-13. ✅ **Task 13**: Cross-browser testing (3 hrs) - Compatibility
-14. ✅ **Task 14**: Mobile testing (2 hrs) - Mobile optimization
-15. ✅ **Task 15**: Form testing (2 hrs) - Functionality validation
-
-**Total Estimated Time**: 48 hours (within 40-50 hour range)
+Notes
+- Keep incremental commits small and focused (Conventional Commits).
+- Prioritize analyzer + sitemap/robots before broad structured data and testing.
 
 ---
 

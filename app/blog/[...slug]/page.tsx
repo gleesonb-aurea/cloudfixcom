@@ -1,4 +1,5 @@
 // ABOUTME: Individual blog post page for nested slugs (categories)
+// ABOUTME: Uses ISR with on-demand generation for efficient build performance
 import { getPostBySlug, getAllPosts } from '@/lib/blog';
 import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
@@ -6,7 +7,6 @@ import MDXImage from '@/components/mdx/MDXImage';
 import Image from 'next/image';
 import Link from 'next/link';
 
-export const dynamic = 'force-static';
 export const revalidate = 3600; // 1 hour ISR for blog posts
 
 interface BlogPostPageProps {
@@ -15,12 +15,7 @@ interface BlogPostPageProps {
   };
 }
 
-export async function generateStaticParams() {
-  const posts = await getAllPosts();
-  return posts.map((post) => ({
-    slug: post.slug.split('/'),
-  }));
-}
+// ABOUTME: Posts are generated on-demand with ISR to reduce build memory usage.
 
 export async function generateMetadata({ params }: BlogPostPageProps) {
   const { slug } = params;
@@ -33,20 +28,28 @@ export async function generateMetadata({ params }: BlogPostPageProps) {
     };
   }
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudfix.com';
+
   return {
     title: post.seo?.title || post.title,
     description: post.seo?.description || post.description,
     keywords: post.seo?.keywords?.join(', ') || post.tags?.join(', '),
+    alternates: { canonical: `${siteUrl}/blog/${slugString}` },
     openGraph: {
       title: post.seo?.title || post.title,
       description: post.seo?.description || post.description,
       type: 'article',
       publishedTime: post.date,
       authors: [post.author],
-      images: post.image ? [{
-        url: post.image,
-        alt: post.title,
-      }] : [],
+      images: [
+        { url: `${siteUrl}/og/blog?slug=${encodeURIComponent(slugString)}`, alt: post.title },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.seo?.title || post.title,
+      description: post.seo?.description || post.description,
+      images: [`${siteUrl}/og/blog?slug=${encodeURIComponent(slugString)}`],
     },
   };
 }

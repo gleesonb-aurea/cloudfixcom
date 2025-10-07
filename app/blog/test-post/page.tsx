@@ -1,6 +1,7 @@
 // ABOUTME: Test blog post page to verify routing works
 // ABOUTME: Demo page used for validating blog post layout and SEO
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Test Blog Post — CloudFix',
@@ -12,9 +13,9 @@ export default function TestBlogPost() {
       <article className="max-w-4xl mx-auto py-12 px-4">
         <header className="mb-8">
           <div className="mb-4">
-            <a href="/blog" className="text-primary hover:underline text-sm">
+            <Link href="/blog" className="text-primary hover:underline text-sm">
               ← Back to Blog
-            </a>
+            </Link>
           </div>
 
           <div className="text-primary font-semibold mb-2">
