@@ -1,3 +1,4 @@
+// ABOUTME: Podcast RSS feed route generating RSS 2.0 XML
 import { NextResponse } from 'next/server';
 import { getAllEpisodes } from '@/lib/podcast';
 
@@ -35,4 +36,3 @@ export async function GET() {
     },
   });
 }
-

@@ -1,3 +1,5 @@
+// ABOUTME: Blog post detail page rendering MDX content with TOC
+// ABOUTME: Includes structured data, related posts, and social sharing
 import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { getPostBySlug, getAllPosts } from '@/lib/blog';
@@ -6,6 +8,7 @@ import { slugify } from '@/lib/utils';
 import { BlogCard } from '@/components/blog/BlogCard';
 import type { Metadata } from 'next';
 import { SocialShare } from '@/components/blog/SocialShare';
+import Link from 'next/link';
 
 interface BlogPostPageProps {
   params: { slug: string };
@@ -59,13 +62,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         />
         <header className="mb-8">
           <div className="mb-3 flex flex-wrap items-center gap-2">
-            <a href={`/blog/category/${encodeURIComponent(post.category)}`} className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+            <Link href={`/blog/category/${encodeURIComponent(post.category)}`} className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
               {post.category}
-            </a>
+            </Link>
             {post.tags?.map((t) => (
-              <a key={t} href={`/blog/tag/${encodeURIComponent(t)}`} className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200">
+              <Link key={t} href={`/blog/tag/${encodeURIComponent(t)}`} className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200">
                 #{t}
-              </a>
+              </Link>
             ))}
           </div>
           <h1 className="text-4xl font-bold text-gray-900">{post.title}</h1>
@@ -88,7 +91,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             <TableOfContents content={post.content} />
           </div>
         </div>
-        <SocialShare url={`https://cloudfix.com/blog/${post.slug}`} title={post.title} />
+        <SocialShare url={`${process.env.NEXT_PUBLIC_SITE_URL}/blog/${post.slug}`} title={post.title} />
         {related.length > 0 && (
           <div className="mt-10">
             <h2 className="text-2xl font-bold mb-4">Related Posts</h2>

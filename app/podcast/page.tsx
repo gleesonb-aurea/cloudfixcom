@@ -1,3 +1,5 @@
+// ABOUTME: Podcast listing and player page with tag filters
+// ABOUTME: Features current episode player, platform badges, and episode grid
 import Image from 'next/image';
 import Link from 'next/link';
 import { getAllEpisodes } from '@/lib/podcast';

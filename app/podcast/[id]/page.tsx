@@ -1,3 +1,5 @@
+// ABOUTME: Podcast episode detail page with player and JSON-LD
+// ABOUTME: Shows guest info, show notes, and platform badges
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getEpisodeById, getAllEpisodes } from '@/lib/podcast';

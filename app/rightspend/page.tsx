@@ -1,3 +1,5 @@
+// ABOUTME: RightSpend product page with RI calculator and pricing
+// ABOUTME: Includes features, CTA sections, and related products
 import Hero from '@/components/Hero';
 import type { Metadata } from 'next';
 import ContentBlock, { FeatureCard } from '@/components/ContentBlock';
@@ -6,6 +8,7 @@ import Container from '@/components/ui/Container';
 import PricingCard from '@/components/ui/PricingCard';
 import RICalculator from '@/components/rightspend/RICalculator';
 import RelatedProducts from '@/components/RelatedProducts';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'RightSpend – Reserved Instance Management',
@@ -49,7 +52,7 @@ export default function RightSpendPage() {
         <Container className="text-center">
           <h2 className="text-3xl font-bold mb-6">See RightSpend in Action</h2>
           <p className="text-xl mb-8">Talk to our experts about your RI strategy</p>
-          <a href="/contact" className="inline-block bg-accent text-gray-900 px-8 py-4 rounded-lg font-semibold">Schedule Demo</a>
+          <Link href="/contact" className="inline-block bg-accent text-gray-900 px-8 py-4 rounded-lg font-semibold">Schedule Demo</Link>
         </Container>
       </Section>
 

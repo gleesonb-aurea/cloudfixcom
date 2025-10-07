@@ -10,13 +10,15 @@ export interface Resource {
   type: ResourceType;
   category: string;
   tags: string[];
-  publishDate: string;
+  publishDate?: string;
+  date?: string;
   featured: boolean;
   readTime?: number;
   duration?: number;
   thumbnail: string;
   author?: string;
   url: string; // internal or external
+  downloadUrl?: string;
   metadata?: {
     views?: number;
     downloads?: number;
@@ -42,7 +44,7 @@ export async function getAllResources(): Promise<Resource[]> {
   const arr: any[] = Array.isArray(parsed) ? parsed : Array.isArray(parsed.resources) ? parsed.resources : [];
   const list: Resource[] = arr.map((it) => {
     const id = String(it.id ?? it.slug ?? cryptoRandom());
-    const publishDate = it.publishDate || it.date || new Date().toISOString();
+    const publishDate = it.publishDate ?? it.date ?? '1970-01-01';
     const thumbnail = it.thumbnail || it.featuredImage || '';
     const url = it.url || (it.slug ? `/resources/${it.slug}` : `/resources/${id}`);
     return {
@@ -59,10 +61,15 @@ export async function getAllResources(): Promise<Resource[]> {
       thumbnail,
       author: it.author,
       url,
+      downloadUrl: it.downloadUrl,
       metadata: it.metadata,
     } as Resource;
   });
-  return list.sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime());
+  return list.sort(
+    (a, b) =>
+      new Date((b.publishDate ?? b.date ?? '1970-01-01') as string).getTime() -
+      new Date((a.publishDate ?? a.date ?? '1970-01-01') as string).getTime()
+  );
 }
 
 function cryptoRandom() {

@@ -31,7 +31,7 @@ Driving from Rome to Milan to Genoa to Bergamo would take the better part of a d
 
 EC2 started with the m1.small instance type. These were powered by 2 cores of a 4 core Intel Xeon 5400 series processor. As EC2 grew in size and popularity, the number of instance options grew along with it. From the introduction of larger instances in 2007 to the compute-optimized c-series instances in 2008 and the memory optimized instances in May 2009, there has been a continuous stream of new instance types. In November 2018, the first AMD-based instances were introduced in the M5a and R5a instance types. That’s when things started to get interesting.
 
-\[caption id="attachment\_13940" align="alignnone" width="1123"\]![Evolution of AWS General Purpose Instances](/media/uploads/Evolution-of-AWS-General-Purpose-Instances.png) Evolution of the M (general purpose) instance family\[/caption\]
+<figure>\n  <img src="/media/uploads/Evolution-of-AWS-General-Purpose-Instances.png" alt="Evolution of AWS General Purpose Instances" />\n  <figcaption>Evolution of the M (general purpose) instance family</figcaption>\n</figure>
 
 For the first four generations of `M` series instances, there was only one choice: Intel-based instances. At generation 5, AMD introduced the M5a, along with the `M5n` and `M5zn` Intel-based instances. In the 6th generation, the AWS Graviton was added to the mix as the M6g, complementing the AMD-based M6a and the Intel-based M6i and M6in. And now, we can choose from 7th generation instances for the AWS Graviton (M7g) and the AMD EPYC-based M7a.
 
@@ -116,7 +116,7 @@ What does this all mean when it comes to choosing the “best” instance type? 
 
 All that being said, in many cases, switching to AMD will save you money, and often without sacrificing any performance. In [one experiment](https://www.percona.com/blog/economical-comparison-of-aws-cpus-for-mysql-arm-vs-intel-vs-amd/) comparing the costs of serving 500 million MySQL queries per hour between AMD, Intel, and Graviton instances, they found that **the AMD instance, the c5a.4xlarge, can serve the same load at a 9% cost reduction compared to the Intel-based c5.4xlarge**. A [2021 IEEE study](https://arxiv.org/pdf/2106.06242.pdf) found similar results, although in this case, the AMC processor was both faster and cheaper:
 
-\[caption id="attachment\_13941" align="alignnone" width="848"\]![](/media/uploads/Excerpt-from-Where-to-Encode.png) Excerpt from “Where to Encode: A Performance Analysis of x86 and Arm-based Amazon EC2 Instances”\[/caption\]
+<figure>\n  <img src="/media/uploads/Excerpt-from-Where-to-Encode.png" alt="" />\n  <figcaption>Excerpt from “Where to Encode: A Performance Analysis of x86 and Arm-based Amazon EC2 Instances”</figcaption>\n</figure>
 
 It’s clear that there are savings to be had. And here’s where the beauty of the cloud comes in: to find those savings, we can simply try it. Switch your infrastructure out and see what happens. If it performs just as well at a lower cost, great. If not, switch it back. Just ask this Redditer on the [Reddit r/aws thread](https://www.reddit.com/r/aws/comments/sswsdv/amazon_ec2_c6a_instances_powered_by_3rd_gen_amd/):
 
@@ -128,7 +128,7 @@ Perfect example. For that particular app, the AMD-powered instance delivered the
   
 **It’s interesting to see that AMD, Intel, and the AWS Graviton have converged on using a chiplet-based design. This means that rather than one large die, there are multiple independent components. This allows chips to be custom-designed with features like encoders and encryption units added as needed. AMD was the first to take this approach (to Intel’s disdain), but Intel and AWS recently adopted it as well. Props to AMD for innovating ways to keep its costs down so it can pass those savings on to its customers.
 
-\[caption id="attachment\_13938" align="alignnone" width="760"\]![](/media/uploads/AMD-Gen4-Chiplet-Design.jpg) AMD Gen4 Chiplet Design\[/caption\]
+<figure>\n  <img src="/media/uploads/AMD-Gen4-Chiplet-Design.jpg" alt="" />\n  <figcaption>AMD Gen4 Chiplet Design</figcaption>\n</figure>
 
 ## 3\. How to find EC2 instances and retype them to AMD 
 

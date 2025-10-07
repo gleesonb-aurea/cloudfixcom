@@ -47,7 +47,7 @@ OpenSearch’s fundamental data storage is the **_index_**. An index is a data s
 
 The performance of the OpenSearch cluster is highly dependent on the performance of its underlying storage media; the faster that OpenSearch can access the data, the faster it will run. There are [different storage tiers for indices](https://aws.amazon.com/blogs/big-data/choose-the-right-storage-tier-for-your-needs-in-amazon-opensearch-service/), and a cluster can search multiple indices simultaneously. **Hot storage** is the tier used by standard AWS OpenSearch data notes and is powered by Amazon EBS volumes. **UltraWarm,** which is less performant and less expensive than hot storage, uses AWS S3 as the underlying storage media, plus a cache to improve performance. **Cold storage** is also based on AWS S3, comparable to the [S3 Glacier Flexible Retrieval storage class](https://aws.amazon.com/s3/storage-classes/?nc=sn&loc=3).
 
-\[caption id="attachment\_12982" align="alignnone" width="1914"\]![A chart showing the storage types for OpenSearch](/media/uploads/OpenSearch-Service-Storage-Types-min.png) OpenSearch Service storage types\[/caption\]
+<figure>\n  <img src="/media/uploads/OpenSearch-Service-Storage-Types-min.png" alt="A chart showing the storage types for OpenSearch" />\n  <figcaption>OpenSearch Service storage types</figcaption>\n</figure>
 
 In general, most OpenSearch users rely primarily (or entirely) on hot storage and add some UltraWarm or cold if/when it makes sense. That balance is not the only decision you need to make, though. Within the hot storage tier, you can also decide between EBS volumes and instance storage, and within EBS, whether to use io1/io2 or gp2/gp3.
 

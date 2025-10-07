@@ -1,8 +1,11 @@
+// ABOUTME: Resource detail page rendering a single resource
+// ABOUTME: Shows category/tags chips, primary CTA, related resources, and social sharing
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getResourceById, getAllResources } from '@/lib/resources';
 import { SocialShare } from '@/components/blog/SocialShare';
 import ResourceCard from '@/components/ui/ResourceCard';
+import Link from 'next/link';
 
 interface ResourceDetailProps { params: { id: string } }
 
@@ -16,27 +19,27 @@ export default async function ResourceDetailPage({ params }: ResourceDetailProps
     <div className="min-h-screen">
       <section className="max-w-3xl mx-auto py-12 px-4">
         <div className="mb-3 flex flex-wrap items-center gap-2">
-          <a href={`/resources?category=${encodeURIComponent(res.category)}`} className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">{res.category}</a>
+          <Link href={`/resources?category=${encodeURIComponent(res.category)}`} className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">{res.category}</Link>
           {res.tags?.map((t) => (
-            <a key={t} href={`/resources?tag=${encodeURIComponent(t)}`} className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200">#{t}</a>
+            <Link key={t} href={`/resources?tag=${encodeURIComponent(t)}`} className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200">#{t}</Link>
           ))}
         </div>
         <h1 className="text-4xl font-bold mb-2">{res.title}</h1>
-        <div className="text-sm text-gray-500 mb-6">{new Date((res as any).publishDate || (res as any).date || new Date().toISOString()).toLocaleDateString()}</div>
+        <div className="text-sm text-gray-500 mb-6">{new Date(res.publishDate ?? res.date ?? '1970-01-01').toLocaleDateString()}</div>
         <div className="text-gray-600 mb-6">{res.description}</div>
         <div className="text-sm text-gray-500 mb-8 flex items-center gap-3">
           <span>{res.category}</span>
           <span>•</span>
-          <time>{new Date(res.publishDate).toLocaleDateString()}</time>
+          <time>{new Date(res.publishDate ?? res.date ?? '1970-01-01').toLocaleDateString()}</time>
         </div>
-        {('downloadUrl' in res as any) && (res as any).downloadUrl ? (
-          <a href={(res as any).downloadUrl} className="inline-block rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary-dark" download>
+        {res.downloadUrl ? (
+          <a href={res.downloadUrl} className="inline-block rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary-dark" download>
             Download {res.type === 'case-study' ? 'Case Study' : 'Resource'}
           </a>
         ) : (
-          <a href={res.url} className="inline-block rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary-dark">View Resource</a>
+          <Link href={res.url} className="inline-block rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary-dark">View Resource</Link>
         )}
-        <SocialShare url={`https://cloudfix.com/resources/${res.id}`} title={res.title} />
+        <SocialShare url={`${process.env.NEXT_PUBLIC_SITE_URL}/resources/${res.id}`} title={res.title} />
         {related.length > 0 && (
           <div className="mt-10">
             <h2 className="text-2xl font-bold mb-4">Related Resources</h2>
@@ -48,7 +51,7 @@ export default async function ResourceDetailPage({ params }: ResourceDetailProps
                   href={`/resources/${r.id}`}
                   thumbnailSrc={r.thumbnail}
                   category={r.category}
-                  date={new Date((r as any).publishDate || (r as any).date || new Date().toISOString()).toLocaleDateString()}
+                  date={new Date(r.publishDate ?? r.date ?? '1970-01-01').toLocaleDateString()}
                   authorName={r.author}
                 />
               ))}

@@ -1,7 +1,9 @@
+// ABOUTME: Success Stories hub listing case studies and success stories
+// ABOUTME: Reuses ResourceCard and links to resource details
 import ResourceCard from '@/components/ui/ResourceCard';
 import { getAllResources } from '@/lib/resources';
 
-export const metadata = { title: 'Success Stories | CloudFix' };
+export const metadata = { title: 'Success Stories | CloudFix', description: 'Customer case studies and success stories from CloudFix.', alternates: { canonical: '/success-stories' } };
 
 export default async function SuccessStoriesPage() {
   const all = await getAllResources();
@@ -18,7 +20,7 @@ export default async function SuccessStoriesPage() {
               href={`/resources/${s.id}`}
               thumbnailSrc={s.thumbnail}
               category={s.category}
-              date={new Date(s.publishDate).toLocaleDateString()}
+              date={new Date(s.publishDate ?? s.date ?? '1970-01-01').toLocaleDateString()}
               authorName={s.author}
             />
           ))}
@@ -27,4 +29,3 @@ export default async function SuccessStoriesPage() {
     </div>
   );
 }
-

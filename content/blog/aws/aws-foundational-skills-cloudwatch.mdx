@@ -590,7 +590,7 @@ Importantly, a [Lambda function](https://aws.amazon.com/pm/lambda/?trk=e0e0d4be-
 
 Here’s what that looks like visually:
 
-\[caption id="attachment\_13393" align="alignnone" width="783"\]![Diagram: CloudWatch alarm infrastructure](/media/uploads/CloudWatch-alarm-infrastructure.png) Figure 1: CloudWatch alarm infrastructure\[/caption\]
+<figure>\n  <img src="/media/uploads/CloudWatch-alarm-infrastructure.png" alt="Diagram: CloudWatch alarm infrastructure" />\n  <figcaption>Figure 1: CloudWatch alarm infrastructure</figcaption>\n</figure>
 
 You can see how this creates a feedback loop. CloudWatch monitors the memory usage and then resizes the instance as appropriate. Of course, this depends on the implementation of `resize_instance.py`. If the load changes on the instance, then CloudWatch can resize it. 
 

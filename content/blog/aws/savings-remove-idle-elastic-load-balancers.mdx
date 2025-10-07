@@ -17,7 +17,7 @@ When you think of Scotland, many references come to mind. Macbeth, Braveheart, O
 
 Turns out that ancestral Scots were wise in the ways of money. Their proverb – “Take care of your pennies and your dollars will take care of themselves” – is really the foundation of our approach to AWS cost optimization. We’ve talked about this before (unused [Elastic IP addresses](/blog/remove-unused-aws-elastic-ip-addresses-cut-costs-improve-security/), idle [QuickSight](/blog/cut-amazon-quicksight-costs-removing-idle-users/) users, unnecessary [EBS volumes](/blog/reduce-aws-costs-deleting-unnecessary-ebs-volumes/)) and today’s fix is another great example. By cleaning up idle Elastic Load Balancers, you can achieve significant AWS cost savings. Let’s dig in. (But not to [haggis](https://www.bbcgoodfood.com/howto/guide/what-haggis). Never to haggis.)
 
-\[caption id="attachment\_12483" align="alignnone" width="1024"\]![Wiliam Wallace Braveheart “Freedom” meme image.](/media/uploads/Freedom-from-paying-too-much-for-Elastic-Load-Balancers.jpg) Freedom… from paying too much for Elastic Load Balancers\[/caption\]
+<figure>\n  <img src="/media/uploads/Freedom-from-paying-too-much-for-Elastic-Load-Balancers.jpg" alt="Wiliam Wallace Braveheart “Freedom” meme image." />\n  <figcaption>Freedom… from paying too much for Elastic Load Balancers</figcaption>\n</figure>
 
 ## Table of Contents
 
@@ -34,7 +34,7 @@ Case in point: Elastic Load Balancers (ELBs). Teams typically turn to ELBs when 
 
 You can see the one-to-many relationship between ELBs and other resources, such as EC2 Instances, in the Elastic Load Balancer logo:
 
-\[caption id="attachment\_12481" align="aligncenter" width="1819"\]![An image showing an AWS Elastic Load Balancer routing a load to 3 EC2 instances](/media/uploads/Diagram-A-typical-configuration-of-an-ELB-and-EC2-instances.png) A typical configuration of an ELB and EC2 instances\[/caption\]
+<figure>\n  <img src="/media/uploads/Diagram-A-typical-configuration-of-an-ELB-and-EC2-instances.png" alt="An image showing an AWS Elastic Load Balancer routing a load to 3 EC2 instances" />\n  <figcaption>A typical configuration of an ELB and EC2 instances</figcaption>\n</figure>
 
 Idle ELBs turn up when developers turn off the EC2 instances (which, to be fair, are the lion's share of the cost) without turning off the Elastic Load Balancer. It’s easy to understand how this happens. As a developer makes an application, it can initially be hosted with one instance, but as traffic grows, the developer changes to an ELB + several EC2 configuration. Once the application has been used, the developer turns off the instances and forgets about the ELB.
 
@@ -105,7 +105,7 @@ We usually refer to most resources by their Amazon Resource Name, or ARN. For ex
 
 If you are using the AWS CLI, you can leverage the excellent [JSON filtering tool jq](https://stedolan.github.io/jq/) to make it easy to extract just the `DNSName` / `LoadBalancerArn` fields. Once you have issued the commands above, you should have a list of all of the ELBs.
 
-\[caption id="attachment\_12482" align="alignnone" width="1999"\]![A flow chart showing how to find and remove idle ELBs](/media/uploads/Diagram-How-to-find-and-remove-idle-Elastic-Load-Balancers.png) How to find and remove idle Elastic Load Balancers\[/caption\]
+<figure>\n  <img src="/media/uploads/Diagram-How-to-find-and-remove-idle-Elastic-Load-Balancers.png" alt="A flow chart showing how to find and remove idle ELBs" />\n  <figcaption>How to find and remove idle Elastic Load Balancers</figcaption>\n</figure>
 
 This process identifies _all_ of the ELBs. Next, using our handy-dandy definition of “idle,” we can figure out which ELBs have not routed traffic for more than 90 days.
 

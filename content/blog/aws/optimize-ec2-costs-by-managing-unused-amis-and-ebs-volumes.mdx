@@ -40,7 +40,7 @@ In many ways, it’s the perfect analogy for Amazon Machine Images, or AMIs. Man
 
 17 years ago, [Jeff Barr](https://aws.amazon.com/blogs/aws/author/jbarr/) of AWS wrote the [blog post announcing Amazon EC2 Beta](https://aws.amazon.com/blogs/aws/amazon_ec2_beta/) (the post is dated August 25th, 2006)! At the time the post was written, I was in my very early 20’s and unfortunately wasn’t able to attend the family vacation that year (I am Jeff’s oldest kid). Jeff, Carmen, and the rest of my siblings were in Mexico for a family vacation. It was at this quiet hotel with “pay by the half-hour” internet access where the original post for EC2 was published. In a bit of nostalgia, Jeff returned to that spot later with a commemorative EC2 sticker. 
 
-\[caption id="attachment\_14056" align="alignnone" width="600"\]![Jeff Barr holding a sticker of AWS EC2 cloud computing](/media/uploads/Fixer-Blog-EC2-Image-600x335.jpg) Jeff Barr in Mexico, celebrating the public launch of EC2\[/caption\]
+<figure>\n  <img src="/media/uploads/Fixer-Blog-EC2-Image-600x335.jpg" alt="Jeff Barr holding a sticker of AWS EC2 cloud computing" />\n  <figcaption>Jeff Barr in Mexico, celebrating the public launch of EC2</figcaption>\n</figure>
 
 In the introduction to his landmark blog post, we also learned about Amazon Machine Images, or AMIs. Quoting the blog post, "Each AMI is a pre-configured boot disk — just a packaged-up operating system stored as an Amazon S3 object." The AMI contains the operating system, as well as pre-installed software. This way, the instances can have everything they need from the moment they start.
 
@@ -74,7 +74,7 @@ As discussed, an AMI is an image of the root disk of an operating system. It is 
 2.  Encapsulating development and production environments - AMIs contain the entire operating system and software stack. In order to use EC2 effectively, custom AMIs can be created for development and production environments which contain all of the software needed to develop or run your application. This ensures consistency as many instances can be launched with identical software. In this use case, AMIs play a similar role to containers (but AMIs predate Docker by about 8 years).
 3.  Artifacts of Automation (e.g. CI/CD pipelines) - AMIs can be created as part of an automated process in order to make sure that all environments are reproducible at any time. We are big fans of automation, but you do need to be aware of the volume of artifacts it can create. I am reminded of the original [Fantasia](https://en.wikipedia.org/wiki/Fantasia_\(1940_film\)), where Mickey used sorcery to automate moving buckets of water. Spoiler alert: his _automation_ ran wild and flooded the castle. 
 
-\[caption id="attachment\_14061" align="aligncenter" width="345"\]![Mickey Mouse with his magical automated broomsticks](/media/uploads/Mickey-Fantasia.jpg) Mickey with his automated broomsticks, from Fantasia. © Disney, 1940.\[/caption\]
+<figure>\n  <img src="/media/uploads/Mickey-Fantasia.jpg" alt="Mickey Mouse with his magical automated broomsticks" />\n  <figcaption>Mickey with his automated broomsticks, from Fantasia. © Disney, 1940.</figcaption>\n</figure>
 
 ### 2.3. Example and Pricing
 

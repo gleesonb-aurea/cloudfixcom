@@ -15,7 +15,7 @@ CloudFix is an excellent tool for automating your AWS costs. To be used most eff
 
 Luckily, CloudFix brought this to our attention, and we were able to notify the function owner, who was able to make the necessary changes. They say a picture is worth 1000 words. Well, in this case a screenshot is worth $10,000. So, here’s two of them to show you what we saw.
 
-\[caption id="attachment\_16636" align="alignnone" width="2048"\]![](/media/uploads/lambda-logs-cost-analysis.png) Lambda Logs Cost Analysis\[/caption\]
+<figure>\n  <img src="/media/uploads/lambda-logs-cost-analysis.png" alt="" />\n  <figcaption>Lambda Logs Cost Analysis</figcaption>\n</figure>
 
 ![](/media/uploads/lambda-logs-breakdown.png)
 
@@ -167,7 +167,7 @@ Amazon CloudWatch Logs pricing is based on three main factors: data ingestion, s
 
 By default, CloudWatch retains all log data indefinitely. Or, as the great [Sherif Squidman Palledorous](https://thesandlot.fandom.com/wiki/Squidman_Palledorous) said, for-ev-er.
 
-\[caption id="attachment\_16634" align="alignnone" width="225"\]![For-ev-er Sandlot Gif](/media/uploads/for-ev-er.gif) Source: Giphy\[/caption\]
+<figure>\n  <img src="/media/uploads/for-ev-er.gif" alt="For-ev-er Sandlot Gif" />\n  <figcaption>Source: Giphy</figcaption>\n</figure>
 
 In other words, logs are never deleted unless you set a custom retention policy. This default setting can result in ongoing, accumulating storage charges, as you will continue to pay for every gigabyte stored for as long as the logs exist. Many AWS services, such as Lambda, create log groups with this indefinite retention by default. To avoid unnecessary long-term costs, it’s important to review and set appropriate retention periods for your log groups, deleting logs that are no longer needed. Otherwise, you risk paying for log storage forever, even for data that may no longer be relevant to your operations.CloudWatch Logs pricing is determined by three primary factors: data ingestion, data storage duration, and log analysis.
 

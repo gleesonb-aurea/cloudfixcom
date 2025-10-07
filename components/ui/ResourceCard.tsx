@@ -30,7 +30,7 @@ export default function ResourceCard({
       <Link href={href} aria-label={title} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
         {thumbnailSrc && (
           <div className="relative aspect-[16/9] w-full overflow-hidden">
-            <Image src={thumbnailSrc} alt="" fill sizes="(min-width: 1024px) 33vw, 100vw" className="object-cover transition-transform duration-300 group-hover:scale-105" />
+            <Image src={thumbnailSrc} alt={title} fill sizes="(min-width: 1024px) 33vw, 100vw" className="object-cover transition-transform duration-300 group-hover:scale-105" />
             {badge && (
               <span className="absolute top-3 left-3 inline-flex items-center rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-white">
                 {badge}
@@ -49,7 +49,7 @@ export default function ResourceCard({
           {(authorName || authorAvatarSrc) && (
             <div className="mt-4 flex items-center gap-2 text-sm text-gray-700">
               {authorAvatarSrc && (
-                <Image src={authorAvatarSrc} alt="" width={24} height={24} className="rounded-full border border-gray-200" />
+                <Image src={authorAvatarSrc} alt={`${authorName ?? 'Author'} avatar`} width={24} height={24} className="rounded-full border border-gray-200" />
               )}
               {authorName && <span>By {authorName}</span>}
             </div>

@@ -21,7 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ])
 
   posts.forEach((p) => entries.push({ url: `${baseUrl}/blog/${p.slug}`, lastModified: new Date(p.date), changeFrequency: 'weekly', priority: 0.8 }))
-  resources.forEach((r) => entries.push({ url: `${baseUrl}/resources/${r.id}`, lastModified: new Date((r as any).publishDate || (r as any).date || now), changeFrequency: 'monthly', priority: 0.6 }))
+  resources.forEach((r) => entries.push({ url: `${baseUrl}/resources/${r.id}`, lastModified: new Date(r.publishDate ?? r.date ?? '1970-01-01'), changeFrequency: 'monthly', priority: 0.6 }))
   episodes.forEach((e) => entries.push({ url: `${baseUrl}/podcast/${e.id}`, lastModified: new Date(e.publishDate), changeFrequency: 'monthly', priority: 0.6 }))
 
   return entries
