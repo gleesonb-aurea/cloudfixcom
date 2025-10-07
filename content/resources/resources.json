@@ -1,0 +1,31 @@
+[
+  {
+    "id": "case-study-acme",
+    "title": "Case Study: Acme Corp Reduces AWS Costs by 38%",
+    "description": "How Acme used CloudFix and RightSpend to cut monthly AWS bills.",
+    "type": "case-study",
+    "category": "Cost Optimization",
+    "tags": ["EC2", "RDS", "RightSizing"],
+    "publishDate": "2025-09-15",
+    "featured": true,
+    "thumbnail": "/images/resources/acme-case-study.jpg",
+    "author": "CloudFix Team",
+    "url": "/resources/case-study-acme",
+    "metadata": { "views": 1200, "downloads": 400 }
+  },
+  {
+    "id": "blog-hello-world",
+    "title": "Welcome to the CloudFix Blog",
+    "description": "Introducing our new MDX-powered blog and what to expect.",
+    "type": "blog",
+    "category": "Announcements",
+    "tags": ["CloudFix", "Announcements"],
+    "publishDate": "2025-10-07",
+    "featured": false,
+    "thumbnail": "/images/blog/hello-world.jpg",
+    "author": "CloudFix Team",
+    "url": "/blog/hello-world",
+    "metadata": { "views": 220, "downloads": 0 }
+  }
+]
+
