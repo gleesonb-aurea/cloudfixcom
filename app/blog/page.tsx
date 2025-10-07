@@ -17,6 +17,9 @@ export default async function BlogIndexPage({ searchParams }: { searchParams?: {
     <div className="min-h-screen">
       <section className="max-w-6xl mx-auto py-12 px-4">
         <h1 className="text-4xl font-bold mb-6">Blog</h1>
+        <div className="mb-4 text-sm text-gray-600">
+          <a href="/blog/rss.xml" className="text-primary hover:underline">Subscribe via RSS</a>
+        </div>
         <form method="get" className="mb-8 flex flex-col gap-4">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm text-gray-600">Category:</span>

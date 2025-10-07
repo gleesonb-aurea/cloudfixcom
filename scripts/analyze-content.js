@@ -15,30 +15,21 @@ function analyzeWordPressContent() {
   const db = new Database(wordpressDb, { readonly: true });
 
   try {
-    // Get all published posts and resources
+    // Get all posts and resources, filter by status in code
     const postsQuery = db.prepare(`
       SELECT
-        p.ID,
-        p.post_title,
-        p.post_content,
-        p.post_excerpt,
-        p.post_name,
-        p.post_date,
-        p.post_modified,
-        p.post_type,
-        p.post_status,
-        GROUP_CONCAT(t.name) as categories,
-        GROUP_CONCAT(t2.name) as tags
-      FROM wp_posts p
-      LEFT JOIN wp_term_relationships tr ON p.ID = tr.object_id
-      LEFT JOIN wp_term_taxonomy tt ON tr.term_taxonomy_id = tt.term_taxonomy_id AND tt.taxonomy = 'category'
-      LEFT JOIN wp_terms t ON tt.term_id = t.term_id
-      LEFT JOIN wp_term_relationships tr2 ON p.ID = tr2.object_id
-      LEFT JOIN wp_term_taxonomy tt2 ON tr2.term_taxonomy_id = tt2.term_taxonomy_id AND tt2.taxonomy = 'post_tag'
-      LEFT JOIN wp_terms t2 ON tt2.term_id = t2.term_id
-      WHERE p.post_status = 'publish' AND p.post_type IN ('post', 'resource')
-      GROUP BY p.ID
-      ORDER BY p.post_date DESC
+        ID,
+        post_title,
+        post_content,
+        post_excerpt,
+        post_name,
+        post_date,
+        post_modified,
+        post_type,
+        post_status
+      FROM wp_posts
+      WHERE post_type IN ('post', 'resource')
+      ORDER BY post_date DESC
     `);
 
     const posts = postsQuery.all();
@@ -66,22 +57,18 @@ function analyzeWordPressContent() {
     };
 
     posts.forEach(post => {
+      // Only include published posts
+      if (post.post_status !== 'publish') return;
+
       const wordCount = post.post_content ? post.post_content.split(/\s+/).length : 0;
-      const hasCategories = post.categories && post.categories !== '';
-      const hasTags = post.tags && post.tags !== '';
 
       stats.totalWordCount += wordCount;
       if (post.post_excerpt) stats.postsWithExcerpt++;
-      if (hasCategories) stats.postsWithCategories++;
-      if (hasTags) stats.postsWithTags++;
 
-      // Collect categories and tags
-      if (hasCategories) {
-        post.categories.split(',').forEach(cat => inventory.categories.add(cat.trim()));
-      }
-      if (hasTags) {
-        post.tags.split(',').forEach(tag => inventory.tags.add(tag.trim()));
-      }
+      // For SQLite version without term relationships, we'll extract categories from content
+      // in a more sophisticated migration script
+      const hasCategories = false; // Will analyze in migration script
+      const hasTags = false; // Will analyze in migration script
 
       const postData = {
         id: post.ID,
@@ -92,14 +79,14 @@ function analyzeWordPressContent() {
         date: post.post_date,
         modified: post.post_modified,
         wordCount,
-        categories: hasCategories ? post.categories.split(',').map(c => c.trim()) : [],
-        tags: hasTags ? post.tags.split(',').map(t => t.trim()) : [],
+        categories: [], // Will extract from content/meta in migration script
+        tags: [], // Will extract from content/meta in migration script
         hasFeaturedImage: false // Will check media later
       };
 
       if (post.post_type === 'post') {
         inventory.blogPosts.push(postData);
-      } else if (post.post_type === 'resource') {
+      } else if (post.post_type === 'resources') {
         inventory.resources.push(postData);
       }
     });

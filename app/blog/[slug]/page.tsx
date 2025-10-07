@@ -28,6 +28,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     },
   } as any;
 
+  // Related posts (same category or overlapping tags)
+  const allPosts = await getAllPosts();
+  const related = allPosts
+    .filter((p) => p.slug !== post.slug && (p.category === post.category || p.tags?.some((t) => post.tags?.includes(t))))
+    .slice(0, 3);
+
   return (
     <div className="min-h-screen">
       <article className="max-w-5xl mx-auto py-12 px-4">
@@ -63,6 +69,16 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </div>
         </div>
         <SocialShare url={`https://cloudfix.com/blog/${post.slug}`} title={post.title} />
+        {related.length > 0 && (
+          <div className="mt-10">
+            <h2 className="text-2xl font-bold mb-4">Related Posts</h2>
+            <ul className="list-disc pl-5 text-primary">
+              {related.map((r) => (
+                <li key={r.slug} className="mb-1"><a href={`/blog/${r.slug}`} className="hover:underline">{r.title}</a></li>
+              ))}
+            </ul>
+          </div>
+        )}
       </article>
     </div>
   );
