@@ -77,3 +77,45 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   } as BlogPost;
 }
 
+export async function getAllCategories(): Promise<string[]> {
+  const posts = await getAllPosts();
+  const set = new Set(posts.map((p) => p.category).filter(Boolean));
+  return Array.from(set).sort();
+}
+
+export async function getAllTags(): Promise<string[]> {
+  const posts = await getAllPosts();
+  const set = new Set<string>();
+  posts.forEach((p) => p.tags?.forEach((t) => set.add(t)));
+  return Array.from(set).sort();
+}
+
+export interface BlogQuery {
+  category?: string;
+  tag?: string;
+  q?: string;
+}
+
+export async function queryPosts(params: BlogQuery): Promise<BlogPostMeta[]> {
+  const posts = await getAllPosts();
+  const ql = params.q?.toLowerCase().trim();
+  return posts.filter((p) => {
+    if (params.category && p.category !== params.category) return false;
+    if (params.tag && !p.tags?.includes(params.tag)) return false;
+    if (ql && !(
+      p.title.toLowerCase().includes(ql) ||
+      p.description.toLowerCase().includes(ql) ||
+      p.tags.some((t) => t.toLowerCase().includes(ql))
+    )) return false;
+    return true;
+  });
+}
+
+export function paginate<T>(items: T[], page: number, perPage: number) {
+  const total = items.length;
+  const pages = Math.max(1, Math.ceil(total / perPage));
+  const current = Math.min(Math.max(1, page), pages);
+  const start = (current - 1) * perPage;
+  const slice = items.slice(start, start + perPage);
+  return { total, pages, current, perPage, items: slice };
+}
