@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudfix.com'),
   title: "CloudFix - Automated AWS Cost Optimization",
   description: "CloudFix automatically finds and fixes AWS issues to reduce your cloud costs and improve efficiency.",
   openGraph: {
