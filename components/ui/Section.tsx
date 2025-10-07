@@ -4,7 +4,6 @@ import React from 'react';
 type Padding = 'none' | 'sm' | 'md' | 'lg';
 
 export interface SectionProps extends React.HTMLAttributes<HTMLElement> {
-  as?: keyof JSX.IntrinsicElements;
   padding?: Padding;
   muted?: boolean;
 }
@@ -16,12 +15,10 @@ const padClass: Record<Padding, string> = {
   lg: 'py-24',
 };
 
-export default function Section({ as: Comp = 'section', padding = 'md', muted = false, className, ...props }: SectionProps) {
+export default function Section({ padding = 'md', muted = false, className, children, ...props }: SectionProps) {
   return (
-    <Comp
-      className={cn(padClass[padding], muted && 'bg-gray-50', className)}
-      {...props}
-    />
+    <section className={cn(padClass[padding], muted && 'bg-gray-50', className)} {...props}>
+      {children}
+    </section>
   );
 }
-
