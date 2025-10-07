@@ -20,3 +20,14 @@ export function cn(
   }
   return out.join(' ');
 }
+
+export function slugify(text: string): string {
+  // Normalize and remove diacritics
+  const normalized = text.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+  return normalized
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+}
