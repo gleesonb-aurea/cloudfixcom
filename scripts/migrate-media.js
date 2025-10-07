@@ -9,7 +9,7 @@ const crypto = require('crypto');
 
 // Install dependencies: npm install sharp
 
-const wordpressUploadsDir = path.join(__dirname, '../../../../cloudfixcom/wp-content/uploads');
+const wordpressUploadsDir = '/mnt/c/Users/bill/Studio/cloudfixcom/wp-content/uploads';
 const nextPublicDir = path.join(__dirname, '../public/media/uploads');
 const manifestPath = path.join(__dirname, '../content/media-manifest.json');
 
@@ -77,7 +77,7 @@ class MediaMigrator {
           });
       } else if (format === 'png') {
         optimizedImage = image
-          .png({ compressionLevel: 8, progressive: true });
+          .png({ compressionLevel: 9, progressive: true, palette: true });
       } else if (format === 'webp') {
         optimizedImage = image
           .webp({ quality: 85 });
