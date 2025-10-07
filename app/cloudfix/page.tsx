@@ -1,11 +1,24 @@
 import Hero from '@/components/Hero';
+import type { Metadata } from 'next';
 import ContentBlock, { FeatureCard } from '@/components/ContentBlock';
 import TestimonialCard from '@/components/ui/TestimonialCard';
 import Section from '@/components/ui/Section';
 import Container from '@/components/ui/Container';
 import RelatedProducts from '@/components/RelatedProducts';
+import PricingCard from '@/components/ui/PricingCard';
+import ComparisonTable from '@/components/ui/ComparisonTable';
 
-export const metadata = { title: 'CloudFix – Automated AWS Cost Optimization' };
+export const metadata: Metadata = {
+  title: 'CloudFix – Automated AWS Cost Optimization',
+  description: 'CloudFix continuously monitors your AWS infrastructure, identifies cost-saving opportunities, and implements optimizations automatically. Save up to 40% on your AWS bill.',
+  alternates: { canonical: '/cloudfix' },
+  openGraph: {
+    title: 'CloudFix – Automated AWS Cost Optimization',
+    description: 'Save up to 40% on AWS with CloudFix automation.',
+    url: '/cloudfix',
+    type: 'website',
+  },
+};
 
 export default function CloudFixPage() {
   return (
@@ -54,6 +67,27 @@ export default function CloudFixPage() {
       </Section>
 
       <RelatedProducts currentProduct="cloudfix" />
+
+      <Section padding="lg">
+        <Container>
+          <h2 className="text-3xl font-bold text-center mb-12">Pricing</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <PricingCard title="Starter" description="For POCs" price="$0" period="" features={["Assessment", "Savings report", "Email support"]} ctaText="Start Assessment" ctaLink="/assessment" />
+            <PricingCard title="Pro" description="Most popular" price="$1,999" features={["Automation", "Governance", "Priority support"]} ctaText="Contact Sales" ctaLink="/contact" highlight />
+            <PricingCard title="Enterprise" description="Custom" features={["SLA", "SSO/SOC2", "Dedicated CSM"]} ctaText="Request Quote" ctaLink="/contact" />
+          </div>
+          <div className="mt-12">
+            <ComparisonTable
+              headers={["CloudFix", "DIY"]}
+              rows={[
+                {label: 'Automated optimizations', values: [true, false]},
+                {label: 'Time to value', values: ['Weeks', 'Months']},
+                {label: 'Security & compliance', values: ['SOC 2', 'Varies']},
+              ]}
+            />
+          </div>
+        </Container>
+      </Section>
     </div>
   );
 }

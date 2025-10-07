@@ -1,10 +1,21 @@
 import Hero from '@/components/Hero';
+import type { Metadata } from 'next';
 import ContentBlock, { FeatureCard } from '@/components/ContentBlock';
 import Section from '@/components/ui/Section';
 import Container from '@/components/ui/Container';
 import RelatedProducts from '@/components/RelatedProducts';
 
-export const metadata = { title: 'QueryLens – Database Query Optimization' };
+export const metadata: Metadata = {
+  title: 'QueryLens – Database Query Optimization',
+  description: 'QueryLens analyzes database query patterns, provides optimization recommendations, and helps you cut query spend while improving performance.',
+  alternates: { canonical: '/querylens' },
+  openGraph: {
+    title: 'QueryLens – Database Query Optimization',
+    description: 'Reduce query costs and improve performance with QueryLens.',
+    url: '/querylens',
+    type: 'website',
+  },
+};
 
 export default function QueryLensPage() {
   return (

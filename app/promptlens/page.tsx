@@ -1,10 +1,22 @@
 import Hero from '@/components/Hero';
+import type { Metadata } from 'next';
 import ContentBlock, { FeatureCard } from '@/components/ContentBlock';
 import Section from '@/components/ui/Section';
 import Container from '@/components/ui/Container';
 import RelatedProducts from '@/components/RelatedProducts';
+import IntegrationLogo from '@/components/ui/IntegrationLogo';
 
-export const metadata = { title: 'PromptLens – LLM Optimization' };
+export const metadata: Metadata = {
+  title: 'PromptLens – LLM Optimization',
+  description: 'Optimize LLM usage and costs with prompt engineering, model selection guidance, and usage analytics across providers.',
+  alternates: { canonical: '/promptlens' },
+  openGraph: {
+    title: 'PromptLens – LLM Optimization',
+    description: 'Cut LLM costs while improving quality with PromptLens.',
+    url: '/promptlens',
+    type: 'website',
+  },
+};
 
 export default function PromptLensPage() {
   return (
@@ -26,19 +38,10 @@ export default function PromptLensPage() {
       <Section padding="lg" muted>
         <Container>
           <h2 className="text-3xl font-bold text-center mb-12">Supported Providers</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="rounded-xl border border-gray-200 p-6 bg-white text-center">
-              <div className="text-xl font-semibold mb-2">OpenAI</div>
-              <div className="text-sm text-gray-600">GPT-4, GPT-3.5 Turbo</div>
-            </div>
-            <div className="rounded-xl border border-gray-200 p-6 bg-white text-center">
-              <div className="text-xl font-semibold mb-2">Anthropic</div>
-              <div className="text-sm text-gray-600">Claude 3.5 Sonnet, Claude 3 Haiku</div>
-            </div>
-            <div className="rounded-xl border border-gray-200 p-6 bg-white text-center">
-              <div className="text-xl font-semibold mb-2">Google</div>
-              <div className="text-sm text-gray-600">Gemini Pro, Gemini Flash</div>
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 items-center justify-items-center">
+            <IntegrationLogo src="/images/providers/openai.png" alt="OpenAI" />
+            <IntegrationLogo src="/images/providers/anthropic.png" alt="Anthropic" />
+            <IntegrationLogo src="/images/providers/google.png" alt="Google" />
           </div>
         </Container>
       </Section>

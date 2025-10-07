@@ -4,6 +4,7 @@ import ContentBlock, { FeatureCard } from '@/components/ContentBlock';
 import Container from '@/components/ui/Container';
 import Section from '@/components/ui/Section';
 import { getProductData } from '@/lib/products';
+import type { Metadata } from 'next';
 import RelatedProducts from '@/components/RelatedProducts';
 
 export default function ProductPage({ params }: { params: { product: string } }) {
