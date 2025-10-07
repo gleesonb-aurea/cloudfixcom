@@ -9,6 +9,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
+import { StructuredData } from '@/components/StructuredData';
 
 const inter = Inter({ subsets: ["latin"], display: 'swap' });
 
@@ -51,6 +52,18 @@ export default function RootLayout({
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
       </head>
       <body className={`${inter.className} antialiased`}>
+        <StructuredData
+          type="Organization"
+          data={{
+            name: 'CloudFix',
+            url: process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudfix.com',
+            logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudfix.com'}/images/logo.png`,
+            sameAs: [
+              'https://twitter.com/cloudfix',
+              'https://www.linkedin.com/company/cloudfix',
+            ],
+          }}
+        />
         {GA_ID && (
           <>
             <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
