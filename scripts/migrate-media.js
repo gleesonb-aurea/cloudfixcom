@@ -9,7 +9,7 @@ const crypto = require('crypto');
 
 // Install dependencies: npm install sharp
 
-const wordpressUploadsDir = path.join(__dirname, '../../../cloudfixcom/wp-content/uploads');
+const wordpressUploadsDir = path.join(__dirname, '../../../../cloudfixcom/wp-content/uploads');
 const nextPublicDir = path.join(__dirname, '../public/media/uploads');
 const manifestPath = path.join(__dirname, '../content/media-manifest.json');
 

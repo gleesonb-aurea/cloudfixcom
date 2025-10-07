@@ -1,0 +1,105 @@
+{
+  "migrated": [
+    {
+      "originalPath": "/wp-content/uploads/01-select-resources-1200x675.png",
+      "nextjsPath": "/media/uploads/01-select-resources-1200x675.png",
+      "filename": "01-select-resources-1200x675.png",
+      "size": 41993,
+      "modified": "2025-10-03T13:20:52.598Z",
+      "hash": "42555c8802b747e2b467fa403980d6b7",
+      "optimizedSize": 88337,
+      "compression": false,
+      "originalDimensions": {
+        "width": 1200,
+        "height": 675
+      },
+      "format": "png",
+      "wasOptimized": false,
+      "sizeAfter": 88337,
+      "compressionRatio": "0%"
+    },
+    {
+      "originalPath": "/wp-content/uploads/01-select-resources-1536x864.png",
+      "nextjsPath": "/media/uploads/01-select-resources-1536x864.png",
+      "filename": "01-select-resources-1536x864.png",
+      "size": 63861,
+      "modified": "2025-10-03T13:21:03.149Z",
+      "hash": "2dd9d15bf0dd3b58549ac6621f4cc259",
+      "optimizedSize": 131266,
+      "compression": false,
+      "originalDimensions": {
+        "width": 1536,
+        "height": 864
+      },
+      "format": "png",
+      "wasOptimized": false,
+      "sizeAfter": 131266,
+      "compressionRatio": "0%"
+    },
+    {
+      "originalPath": "/wp-content/uploads/01-select-resources-300x169.png",
+      "nextjsPath": "/media/uploads/01-select-resources-300x169.png",
+      "filename": "01-select-resources-300x169.png",
+      "size": 5391,
+      "modified": "2025-10-03T13:20:18.412Z",
+      "hash": "03a2226c5a2bd3362b9a020587bcb092",
+      "optimizedSize": 9403,
+      "compression": false,
+      "originalDimensions": {
+        "width": 300,
+        "height": 169
+      },
+      "format": "png",
+      "wasOptimized": false,
+      "sizeAfter": 9403,
+      "compressionRatio": "0%"
+    },
+    {
+      "originalPath": "/wp-content/uploads/01-select-resources-600x338.png",
+      "nextjsPath": "/media/uploads/01-select-resources-600x338.png",
+      "filename": "01-select-resources-600x338.png",
+      "size": 14756,
+      "modified": "2025-10-03T13:20:12.317Z",
+      "hash": "a424f2ce4a569f93702719595e637108",
+      "optimizedSize": 28509,
+      "compression": false,
+      "originalDimensions": {
+        "width": 600,
+        "height": 338
+      },
+      "format": "png",
+      "wasOptimized": false,
+      "sizeAfter": 28509,
+      "compressionRatio": "0%"
+    },
+    {
+      "originalPath": "/wp-content/uploads/01-select-resources-768x432.png",
+      "nextjsPath": "/media/uploads/01-select-resources-768x432.png",
+      "filename": "01-select-resources-768x432.png",
+      "size": 20364,
+      "modified": "2025-10-03T13:20:49.320Z",
+      "hash": "02c13730652f8f4509445c9cd5a7204b",
+      "optimizedSize": 40193,
+      "compression": false,
+      "originalDimensions": {
+        "width": 768,
+        "height": 432
+      },
+      "format": "png",
+      "wasOptimized": false,
+      "sizeAfter": 40193,
+      "compressionRatio": "0%"
+    }
+  ],
+  "errors": [],
+  "summary": {
+    "totalFiles": 0,
+    "migratedFiles": 5,
+    "skippedFiles": 0,
+    "errorFiles": 0,
+    "totalSizeOriginal": null,
+    "totalSizeOptimized": 297708,
+    "compressionRatio": 0
+  },
+  "lastUpdated": "2025-10-07T14:33:36.371Z"
+}

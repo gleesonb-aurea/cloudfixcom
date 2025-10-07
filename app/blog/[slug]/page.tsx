@@ -3,6 +3,7 @@ import { MDXRemote } from 'next-mdx-remote/rsc';
 import { getPostBySlug, getAllPosts } from '@/lib/blog';
 import TableOfContents from '@/components/blog/TableOfContents';
 import { slugify } from '@/lib/utils';
+import { BlogCard } from '@/components/blog/BlogCard';
 import type { Metadata } from 'next';
 import { SocialShare } from '@/components/blog/SocialShare';
 
@@ -91,26 +92,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         {related.length > 0 && (
           <div className="mt-10">
             <h2 className="text-2xl font-bold mb-4">Related Posts</h2>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {related.map((r) => (
-                <a key={r.slug} href={`/blog/${r.slug}`} className="group">
-                  <article className="flex gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors">
-                    {r.image ? (
-                      <div className="relative w-20 h-20 flex-shrink-0">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={r.image} alt={r.title} className="h-20 w-20 object-cover rounded-lg" />
-                      </div>
-                    ) : null}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">{r.title}</h3>
-                      <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                        <span>{r.author}</span>
-                        <span>•</span>
-                        <time>{new Date(r.date).toLocaleDateString()}</time>
-                      </div>
-                    </div>
-                  </article>
-                </a>
+                <BlogCard key={r.slug} post={r} variant="compact" />
               ))}
             </div>
           </div>

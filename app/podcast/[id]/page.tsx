@@ -34,6 +34,20 @@ export default async function PodcastEpisodePage({ params }: PageProps) {
   return (
     <div className="min-h-screen">
       <section className="max-w-4xl mx-auto py-12 px-4">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'PodcastEpisode',
+              name: ep.title,
+              datePublished: ep.publishDate,
+              description: ep.description,
+              associatedMedia: ep.audio ? { '@type': 'AudioObject', contentUrl: ep.audio } : undefined,
+              url: `https://cloudfix.com/podcast/${ep.id}`,
+            }),
+          }}
+        />
         <Link href="/podcast" className="text-primary hover:underline">← All episodes</Link>
         <h1 className="text-4xl font-bold mt-4">{ep.title}</h1>
         <div className="text-sm text-gray-500 mt-1">{new Date(ep.publishDate).toLocaleDateString('en-GB', { dateStyle: 'medium' })} • {ep.duration} min</div>
