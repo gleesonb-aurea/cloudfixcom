@@ -1,0 +1,119 @@
+---
+title: "Get in the Zone with CloudFix’s RDS Multi-AZ Deployment Finder/Fixer"
+description: "At CloudFix, we understand that managing cloud costs effectively is crucial for businesses leveraging AWS. That's why we're excited to introduce our latest find..."
+date: 2024-02-29 15:33:25
+modified: 2024-07-11 17:02:26
+category: "AWS"
+tags: ["AWS","cloud","ec2","rds","vpc"]
+published: true
+slug: "rds-multi-az-deployment-finder-fixer"
+---
+
+At CloudFix, we understand that managing cloud costs effectively is crucial for businesses leveraging AWS. That's why we're excited to introduce our latest finder/fixer to help you keep your RDS costs under control – the RDS Multi-AZ Finder/Fixer. This Finder/Fixer is designed to ensure that your [Amazon Relational Database Service (RDS)](https://aws.amazon.com/rds/) deployments are as cost-efficient as possible, and you are only paying for expensive Multi-AZ deployments when you have explicitly decided that they are necessary.
+
+Databases can be a significant portion of your infrastructure costs, so we have been laser focused on ways to reduce their cost. Amazon RDS is one of many database services provided by AWS, and is widely used in development and production workloads.
+
+In the rest of this blog post, we are going to talk about:
+
+-   Availability Zones, RDS Multi-AZ, and Why it Matter?
+-   The Cost of Multi-AZ deployments
+-   CloudFix's **RDS Retype Single Availability Zone Finder/Fixer**
+-   Looking Ahead
+
+## Availability Zones, RDS Multi-AZ, and Why Does it Matter
+
+AWS's services are served from distinct Regions. As described on the [AWS Global Infrastructure page](https://aws.amazon.com/about-aws/global-infrastructure/regions_az/), a region is a physical location in the world, comprised of a cluster of data centers. There are currently 29 distinct regions, e.g. US East (Virginia), Asia Pacific (Sydney), Europe (Milan), Middle East Central (UAE), etc. A list of regions can be on the [AWS EC2 Regions and Zones page](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-regions). Within a region, there are multiple data centers and these data centers are clustered into Availability Zones (AZs). The AZs themselves are comprised of one or more physical data centers. Each AZ has redundant power, networking, and connectivity in an AWS region. The AZs are interconnected by multiple redundant fiber links. According to the AWS Global Infrastructure page, AZs are "physically separated by a meaningful distance from any other AZ, although all are within 100km (60miles) of each other." This physical separation provides an amount of protection from localized issues (e.g. power outages), while being close enough to other AZ's to be connected by low-latency, high-bandwidth fiber. Crucially, most traffic between AZ's within a region incur charges.
+
+RDS can be deployed to either a single AZ, or multiple AZ's within a region. Multi-AZ deployments are a high-availability option that involves running a primary database instance with a synchronous read replica in one or more AZ's which are different than the primary AZ. While this setup offers enhanced availability and data durability, it comes at a significant cost premium. Examining the [AWS Regions section of the RDS Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.html), we can see that the major US regions (`us-east-1`, `us-east-2`, `us-west-1`, `us-west-2`) have 4 AZ's per region, and most of the other regions have 2 AZ's which support Multi-AZ deployments. AZ's are typically denoted with a letter-suffix to the region name, e.g. `us-east-1a`.
+
+In many cases, Multi-AZ configurations are essential for critical production workloads where downtime or data loss cannot be afforded. However, these expensive deployments can sometimes be provisioned unnecessarily—for instance, in development or testing environments where high availability is not a priority. Such scenarios occur when configurations are copied without due consideration, leading to inflated costs that could have been avoided.
+
+It is this phenomena that we want to focus on: unnecessary Multi-AZ deployments! These can arise for any number of reasons: copy/pasted IaC (e.g. CloudFormation), databases being repurposed from production to testing usage, or simply an overenthusiastic developer or test engineer. What counts as "unnecessary" depends on your use case and risk tolerance; e.g. you may want to test the failover process by simulating an AZ failure in a Multi-AZ configuration. However, for run of the mill work, and even in non-critical production workloads, a Multi-AZ setup may not be worth the cost. Having the information which of your running RDS deployments are Single vs Multi-AZ will help you make informed cost-benefit decisions.
+
+## The Challenges and Costs of Multi-AZ Deployments
+
+Multi-AZ deployments, as described, offer a level of reliability above that of a single-AZ deployment. For example, a power outage or other natural disaster is, by design, highly unlikely to affect multiple AZs within the same region. This reliability comes with extra complexity and costs. The additional costs of Multi-AZ come from both the additional RDS instances which need to be launched, as well as the data transfer costs associated with Multi-AZ deployments.
+
+RDS On-Demand Instances are priced per hour, similar to EC2 instances. RDS uses instances prefixed with a `db`., e.g. `db.m7g.16xlarge`. These are priced at a premium compared to their standard EC2 counterparts. See the Amazon RDS pricing pages for more information, e.g. the [Amazon RDS for PostgreSQL On-Demand DB Instances costs page](https://aws.amazon.com/rds/postgresql/pricing/?pg=pr&loc=3). The image below shows the pricing page, switching between Single-AZ Deployments and Multi-AZ Deployments with one standby. Note that the instance price doubles, because what is happening is that 2 instances are being launched behind the scenes.
+
+![AZ Deployments](/media/uploads/AZ-Deployments.gif)
+
+In addition to instance costs, there are data transfer costs. There is intra-AZ traffic necessary to synchronize the primary instance and the secondary, and luckly this traffic does not incur costs. However, there are costs for transferring data between an RDS in one AZ and an EC2 instance in a different AZ. This is true even if they are in the same VPC. This cost would be incurred if, for example, there were EC2 instances in each AZ all routing requests to the primary. In this case, traffic in and out of the VPC would be billed at $0.01/GB. Data transfer costs with RDS between AZ's and between Regions can quickly become complex. For a thorough explanation, see the excellent blog post titled [Exploring Data Transfer Costs for AWS Managed Databases](https://aws.amazon.com/blogs/architecture/exploring-data-transfer-costs-for-aws-managed-databases/) on the AWS Architecture Blog.
+
+## CloudFix's Multi-AZ Finder/Fixer
+
+Our Finder/Fixer solution scans all RDS deployments within your AWS organization, identifying any Multi-AZ configurations. By bringing these to your attention, we empower you to assess whether each deployment is justifiable. For non-critical environments, such as development or test databases, switching off Multi-AZ can lead to substantial cost savings.
+
+### Finding Multi-AZ Deployments
+
+To scan for Multi-AZ RDS deployments, we go to our trusted ally, the AWS Cost and Usage Report. Luckly, there is a field in the Cost and Usage Report which can help us: `product/deploymentoption`.
+
+Looking at the CUR User Guide, we see the following definition:
+
+Eureka! We see a field that we can filter on which will tell us which RDS deployments are `Multi-AZ`.
+
+A simple CUR query would look like this
+
+```sql
+SELECT product_region,
+  line_item_usage_account_id,
+  line_item_resource_id,
+  line_item_line_item_type,
+  line_item_usage_start_date, 
+  line_item_usage_end_date, 
+  line_item_usage_type,
+  sum(line_item_unblended_cost) as cost
+FROM "YOUR_CUR_DB_NAME"."YOUR_CUR_TABLE_NAME" 
+WHERE line_item_line_item_type = 'Usage' 
+  AND line_item_usage_start_date >= date_trunc('day', current_date - interval '31' DAY) 
+  AND line_item_usage_start_date < date_trunc('day', current_date - interval '1' DAY) 
+  AND product_product_family IN ('Database Storage', 'Provisioned IOPS')
+  AND product_product_deploymentoption ='Multi-AZ'
+GROUP BY 1,2,3,4,5,6,7;
+```
+
+Note that your column names may vary, depending on how you have set up your Cost and Usage Report.
+
+**Resource:**  
+If you are new to CUR queries, be sure to check out our [AWS Foundational Skills: Cost and Usage Report](/blog/aws-foundational-skills-cost-and-usage-report-cur/) resource.
+
+### Changing to Single-AZ Deployments
+
+Changing to a single AZ deployment requires planning. Here is a list of the configurations and considerations:
+
+-   Modify cdk/CloudFormation/Terraform scripts to utilize Single-AZ
+-   Analyze existing code and redirect traffic away from read replicas
+-   Decide in which AZ the RDS Instance should be in
+-   Modify VPCs, Security Groups, and other network infrastructure
+-   **Most importantly,** determine if the deployment _should_ be a Multi-AZ deployment. Is this a production workload?
+
+Once this has been decided, the actual process is quite straightforward. It can be accomplished via the AWS Console or the CLI. If you are using the CLI, the following command can be used:
+
+```bash
+aws rds modify-db-instance \
+    --db-instance-identifier your-db-instance-identifier \
+    --no-multi-az \
+    --apply-immediately
+```
+
+See the [modify-db-instance documentation](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/rds/modify-db-instance.html) for details. The `--no-multi-az` flag does not require downtime. If you do not include the `--apply-imediately` flag, the change will occur during the next maintenance window.
+
+### Using CloudFix
+
+With CloudFix, finding Multi-AZ deployments is as easy as navigating to the **RDS Retype Single Availability Zone** panel, located in the Advanced tab.
+
+![Selecting fixer in CloudFix](/media/uploads/Selecting-fixer-in-CloudFix.gif)
+
+Within this panel, you will see all of the Multi-AZ deployments located within your AWS Organization. For each of these deployments, the amount of potential savings is calculated.
+
+![Potential savings](/media/uploads/Potential-savings.gif)
+
+This is the exciting part: the savings are **at least 50%** because at minimum you are eliminating half of the running RDS instances! And, since "knowledge is power", running this finder gives you the visibility into which RDS deployments are Multi-AZ. If you aren't sure what to do, reach out to us and let us help!
+
+## Looking Ahead
+
+Analyzing and, where appropriate, creating single AZ deployments for your RDS instances is a great cost saving technique. To complement this, we recommend setting up internal policies and procedures to control the creation of Multi-AZ deployments, ensuring they are reserved exclusively for scenarios where they add value.
+
+By integrating CloudFix into your AWS cost optimization strategy, you're not just saving money today — you're investing in a more sustainable and efficient cloud infrastructure for the future.
+
+Stay ahead of unnecessary costs and optimize your AWS investment with CloudFix. Experience the difference with our RDS Multi-AZ Finder/Fixer and take control of your cloud spending!

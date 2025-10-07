@@ -1,0 +1,105 @@
+---
+title: "CloudFix Finder/Fixer: Enable Compute Optimizer"
+description: "AWS Compute Optimizer uses machine learning to analyze historical utilization metrics and identify optimal resource configurations for your AWS workloads. Enabl..."
+date: 2025-04-08 18:28:31
+modified: 2025-04-08 18:28:31
+category: "AWS"
+tags: ["AWS","cloud","lambda","ec2","compute"]
+published: true
+slug: "feature-enable-compute-optimizer"
+---
+
+AWS Compute Optimizer uses machine learning to analyze historical utilization metrics and identify optimal resource configurations for your AWS workloads. Enabling Compute Optimizer is a prerequisite for unlocking significant cost-saving opportunities across your AWS infrastructure. CloudFix's Enable Compute Optimizer feature identifies accounts where this service is not yet activated and enables it automatically, unlocking the potential for substantial cost savings through better resource utilization.
+
+## Contents
+
+-   [What is AWS Compute Optimizer?](#what-is-compute-optimizer)
+-   [Why It Matters](#why-it-matters)
+-   [How It Works](#how-it-works)
+-   [Benefits](#benefits)
+-   [AWS Services Affected](#aws-services-affected)
+-   [Related Resources](#related-resources)
+-   [Frequently Asked Questions](#faq)
+
+## What is AWS Compute Optimizer?
+
+AWS Compute Optimizer is a service that analyzes the configuration and utilization metrics of your AWS resources to provide recommendations for optimizing performance and reducing costs. Using machine learning algorithms, it identifies idle and underutilized resources, recommending right-sized configurations that can significantly cut your AWS spending without compromising performance.
+
+Compute Optimizer supports several AWS resource types, including:
+
+-   Amazon EC2 instances
+-   Amazon EBS volumes
+-   AWS Lambda functions
+-   Amazon ECS services on AWS Fargate
+-   Auto Scaling groups
+
+While Compute Optimizer itself is a free service, it requires activation before it can begin analyzing your resources and providing recommendations. Many AWS users are unaware of this service or forget to enable it, missing out on substantial cost-saving opportunities.
+
+## Why It Matters
+
+Enabling AWS Compute Optimizer is a critical first step in optimizing your AWS infrastructure costs. Without it, you might be paying significantly more than necessary for your AWS resources. Here's why enabling Compute Optimizer matters:
+
+-   **Identify oversized resources**: Many organizations over-provision their AWS resources "just to be safe," resulting in wasted capacity and unnecessary costs.
+-   **Gain visibility into optimization opportunities**: Compute Optimizer provides a dashboard showing potential savings across your entire infrastructure.
+-   **Data-driven recommendations**: Receive specific, actionable recommendations based on your actual usage patterns rather than guesswork.
+-   **Prerequisite for other optimizations**: Many CloudFix fixers rely on Compute Optimizer data to identify and implement cost-saving opportunities.
+
+Without Compute Optimizer enabled, you're essentially flying blind when it comes to resource optimization, likely paying for unused or underutilized capacity across your AWS account.
+
+## How It Works
+
+CloudFix's Enable Compute Optimizer feature works in a simple, non-intrusive manner:
+
+1.  **Discovery**: CloudFix scans your AWS accounts to identify those where Compute Optimizer is not yet enabled.
+2.  **Assessment**: For each account without Compute Optimizer, CloudFix calculates the annual cost based on the past 31 days of usage to determine if it exceeds the threshold (default $100).
+3.  **Recommendation**: If an account meets the criteria, CloudFix presents the opportunity to enable Compute Optimizer.
+4.  **Implementation**: Once approved, CloudFix uses the AWS API to enable Compute Optimizer for your account.
+
+The process is entirely non-disruptive—it doesn't affect any running workloads or require downtime. Once enabled, Compute Optimizer begins analyzing your resources and provides recommendations within 24 hours.
+
+## Benefits
+
+-   **Unlock cost savings**: Access detailed rightsizing recommendations that can reduce your AWS compute costs by up to 50% in some cases.
+-   **Zero-risk implementation**: Enabling Compute Optimizer is completely non-disruptive with no impact on existing workloads.
+-   **Enhanced visibility**: Gain insights into resource utilization across your AWS environment.
+-   **Performance optimization**: Identify underprovisioned resources that might be affecting application performance.
+-   **Foundation for further savings**: Enable additional CloudFix fixers that leverage Compute Optimizer data to implement cost-saving changes automatically.
+
+## AWS Services Affected
+
+![AWS Compute Optimizer](/media/uploads/Compute-Optimizer.svg)
+
+[AWS Compute Optimizer](https://aws.amazon.com/compute-optimizer/)
+
+## Related Resources
+
+-   [AWS Documentation: What is AWS Compute Optimizer?](https://docs.aws.amazon.com/compute-optimizer/latest/ug/what-is-compute-optimizer.html)
+-   [AWS Documentation: Getting Started with AWS Compute Optimizer](https://docs.aws.amazon.com/compute-optimizer/latest/ug/getting-started.html)
+-   [AWS Compute Optimizer FAQs](https://aws.amazon.com/compute-optimizer/faqs/)
+-   [CloudFix Blog: Cut costs in half by right-sizing AWS EC2 instances](/blog/cut-costs-right-sizing-aws-ec2-instances/)
+
+## Frequently Asked Questions
+
+**Q: Does enabling Compute Optimizer affect my running workloads?**
+
+A: No. Enabling Compute Optimizer has no impact on your running resources or applications. It only gives you access to the service's recommendations—no changes are made to your infrastructure until you decide to implement them.
+
+**Q: Is there a cost for enabling AWS Compute Optimizer?**
+
+A: No. AWS Compute Optimizer is a free service. There's no additional cost for enabling or using the basic service. AWS does offer an enhanced metrics option for a fee, but that's not required to get value from the service.
+
+**Q: How long does it take for Compute Optimizer to provide recommendations?**
+
+A: AWS Compute Optimizer typically provides initial recommendations within 24 hours of being enabled. These recommendations become more accurate over time as more usage data is collected.
+
+**Q: Do I need to implement all recommendations provided by Compute Optimizer?**
+
+A: No. You have complete control over which recommendations to implement. AWS Compute Optimizer simply provides suggestions—you decide which ones make sense for your specific workloads and requirements.
+
+**Q: What permissions does CloudFix need to enable Compute Optimizer?**
+
+A: CloudFix requires the `compute-optimizer:UpdateEnrollmentStatus` permission to enable Compute Optimizer on your behalf. This permission is included in the standard CloudFix IAM role.
+
+**Q: If I enable Compute Optimizer, am I obligated to make the recommended changes?**
+
+A: No. Enabling Compute Optimizer is purely informational. You can review the recommendations at your convenience and implement them manually or use CloudFix's other fixers to automate the implementation of selected recommendations.

@@ -1,0 +1,77 @@
+---
+title: "CloudFix Finder/Fixer: DynamoDB Delete Idle Tables"
+description: "The DynamoDB Delete Idle Tables tool helps optimize your AWS costs by identifying and safely removing unused and idle Amazon DynamoDB tables that continue to in..."
+date: 2025-04-07 00:22:13
+modified: 2025-04-07 00:22:13
+category: "AWS"
+tags: ["AWS","cloud","s3","monitoring","backup"]
+published: true
+slug: "feature-dynamodb-delete-idle-tables"
+---
+
+The **DynamoDB Delete Idle Tables** tool helps optimize your AWS costs by identifying and safely removing unused and idle Amazon DynamoDB tables that continue to incur charges but provide no business value.
+
+![Amazon DynamoDB](/media/uploads/DynamoDB.svg)
+
+**AWS Service:** Amazon DynamoDB
+
+## What It Does
+
+This Finder identifies DynamoDB tables in your AWS environment that have had no read or write activity for an extended period (90 days or more), indicating they may be unused resources that can be safely removed to reduce costs.
+
+## How It Works
+
+The DynamoDB Delete Idle Tables Finder:
+
+-   Analyzes AWS Cost and Usage Reports to identify tables with consistent billing but no utilization
+-   Verifies inactivity through CloudWatch metrics, checking for the absence of read and write operations
+-   Reviews the table's metadata, creation date, and tags to ensure it's not part of critical infrastructure
+-   Applies safety checks to ensure the table is not part of active applications or resources
+-   Creates a remediation plan for each identified idle table, including backup options prior to deletion
+
+## AWS Services Affected
+
+This Finder specifically targets resources in the Amazon DynamoDB service.
+
+## Benefits
+
+1.  **Cost Savings:** Eliminate ongoing charges for unused tables that provide no business value
+2.  **Environment Cleanup:** Reduce clutter and improve organization of your DynamoDB resources
+3.  **Resource Management:** Maintain a better inventory of active vs. inactive resources
+4.  **Safety Through Validation:** Multiple verification checks ensure only truly unused tables are considered
+5.  **Simplified Monitoring:** Fewer unused resources means more focused monitoring of critical infrastructure
+
+## Implementation Details
+
+When executing this Fixer, CloudFix will:
+
+1.  Archive the table's schema and metadata to an S3 bucket for future reference
+2.  Create a final backup of the table data if needed (optional)
+3.  Execute the DeleteTable API call to remove the idle table
+4.  Log all actions taken for audit purposes
+5.  Provide a detailed report of the tables removed and the estimated monthly cost savings
+
+## Frequently Asked Questions
+
+### Is this implemented automatically?
+
+No. CloudFix will only implement this change when you explicitly approve the suggested action. You maintain full control over which tables are deleted.
+
+### Can I roll back if I delete a table by mistake?
+
+Amazon DynamoDB table deletion is not readily reversible. However, CloudFix creates backups before deletion, allowing you to restore the table if needed, though with a new name.
+
+### Will this cause downtime?
+
+No. Since the tables identified are confirmed to be idle (no read/write activity for 90+ days), there should be no impact on running applications or services.
+
+### What about tables with deletion protection enabled?
+
+CloudFix will identify tables with deletion protection enabled but will require you to manually disable this protection before proceeding with the deletion process.
+
+## Related Resources
+
+-   [Amazon DynamoDB Developer Guide](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html)
+-   [DynamoDB DeleteTable API Reference](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DeleteTable.html)
+-   [DynamoDB Backup and Restore](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/backuprestore_HowItWorks.html)
+-   [AWS Blog: Implementing Resource Tagging Strategies with DynamoDB](https://aws.amazon.com/blogs/database/implement-resource-tagging-strategies-with-amazon-dynamodb/)

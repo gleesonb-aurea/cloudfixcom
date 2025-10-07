@@ -1,0 +1,554 @@
+---
+title: "New! How to automatically right-size pricey GPU instances"
+description: "We’re really hoping to make a dent in customers’ GPU expenditure so they can allocate that to more innovation, more AI and ML workloads, and more higher order s..."
+date: 2023-10-27 16:08:11
+modified: 2023-10-27 16:08:11
+category: "AWS"
+tags: ["AWS","cloud","ec2","rds","monitoring"]
+published: true
+slug: "how-to-automatically-right-size-pricey-gpu-instances"
+---
+
+> We’re really hoping to make a dent in customers’ GPU expenditure so they can allocate that to more innovation, more AI and ML workloads, and more higher order services that provide so much value.
+> 
+> _– Rahul Subramaniam, CloudFix CEO and founder, on the new GPU right-sizing fixer_
+
+Choosing a GPU has always been about trade-offs: you want to make sure it meets your requirements, that it complements the rest of the system, and that it’s a good value. This is slightly cringe worthy (check out that shirt), but here is me in 1999 showing the GPU in my computer build. That GPU was the last of the [infamous Voodoo graphics cards](https://en.wikipedia.org/wiki/Voodoo_5). I remember comparing these to the NVIDIA GeForce cards using an Excel sheet. Looking back, that was a real turning point for GPUs, as NVIDIA soon became dominant in that space. 
+
+![Stephen in a totally fashionable shirt](/media/uploads/Stephen-in-a-totally-fashionable-shirt.jpg) ![Stephen presenting his new GPU](/media/uploads/Stephen-presenting-his-new-GPU.jpg)
+
+As the expression goes, some things don’t change… here we are, 25 years later, still worried about the price/performance of GPUs! These days, however, we have some awesome tools to help us make the choice (sorry, Excel.) Plus, because we’re now dealing with the cloud, we aren’t locked into that choice, but can change our instance type on demand. 
+
+With that introduction, drumroll please…
+
+**We are very excited to announce a brand-new CloudFix fixer: right-sizing GPU instances**. If you have a G4dn or P3 instance, these instances can now be automatically resized in a way that still maintains performance guarantees. Here’s our CEO and founder [Rahul Subramaniam](mailto:rahul.subramaniam@devfactory.com) on this powerful new feature:
+
+https://www.youtube.com/watch?v=MiGgXwqjKhQ
+
+Why did we prioritize adding this fixer? In our current age of generative AI, there’s more demand than ever for GPU instances. [The industry is consuming GPUs as fast as they can be produced](https://www.ft.com/content/c7e9cfa9-3f68-47d3-92fc-7cf85bcb73b3). GPUs are an exciting tool to add to the toolbox – but they’re also pricey. As more businesses start to use them, we want to make sure that you’re controlling costs while taking advantage of these instances’ power. 
+
+Let’s look at how GPU costs add up, what you can do about it manually, and of course, how to right-size GPU instances easily and automatically with CloudFix. 
+
+## Table of Contents
+
+1.  [GPUs: Powerful, performant, and pricey](#gpus-powerful-performant-and-pricey)
+2.  [Meet the Compute Optimizer optimization engine](#meet-the-compute-optimizer-optimization-engine)
+3.  [Four prerequisites for right-sizing GPU instances](#four-prerequisites-for-right-sizing-gpu-instances)
+    1.  [Enable Compute Optimizer](#enable-compute-optimizer)
+    2.  [Install the CloudWatch agent](#install-the-cloudwatch-agent)
+    3.  [Confirm the NVIDIA driver is installed and configure the CloudWatch agent](#confirm-the-nvidia-driver-is-installed-and-configure-the-cloudwatch-agent)
+    4.  [Validate that the metrics are being monitored](#validate-that-the-metrics-are-being-monitored)
+4.  [How to right-size GPU instances](#how-to-right-size-gpu-instances)
+    1.   [Use the CUR to find GPU instances](#use-the-cur-to-find-gpu-instances)
+    2.  [Right-size GPU instances with low risk and high reward](#right-size-gpu-instances-with-low-risk-and-high-reward)
+5.  [Right-size GPU instances automatically with CloudFix](#right-size-gpu-instances-automatically-with-cloudfix)
+
+## 1\. GPUs: Powerful, performant, and pricey
+
+First, some context. GPUs are “Graphics Processing Units” and were originally designed to do exactly that. Gamers, video editors, and 3D artists drove the demand for these processors for their graphics capabilities. Young me (pictured above) got that GPU to play Descent 3 and Age of Empires II. 
+
+However, folks soon discovered that GPUs are extremely efficient at working through huge amounts of numerical calculations very quickly, and large-scale financial, chemical, and aerospace calculations began to leverage them. When the machine learning / AI revolution hit, it kickstarted the current run on GPUs, and they found another role powering the large calculations necessary in machine learning and AI.
+
+GPU instances are on the higher end of the price spectrum. (Their cost, combined with their current popularity, is one of the reasons we’re so excited about this fixer.) With G4dn and P4 instances, there are a variety of sizes, and therefore prices, available.
+
+Table 1 – G4dn and P3 Instance Pricing, Based on us-east-1 in Sept 2023        
+
+**Instance family**
+
+**Instance size**
+
+**On-Demand hourly rate**
+
+**vCPU**
+
+**GPU**
+
+**Memory**
+
+**Storage**
+
+**Network performance**
+
+**g4dn**
+
+xlarge
+
+$0.53
+
+4
+
+1x NVIDIA T4
+
+16 GiB
+
+125 GB NVMe SSD
+
+Up to 25 Gigabit
+
+ 
+
+2xlarge
+
+$0.75
+
+8
+
+1x NVIDIA T4
+
+32 GiB
+
+225 GB NVMe SSD
+
+Up to 25 Gigabit
+
+ 
+
+4xlarge
+
+$1.20
+
+16
+
+1x NVIDIA T4
+
+64 GiB
+
+225 GB NVMe SSD
+
+Up to 25 Gigabit
+
+ 
+
+8xlarge
+
+$2.18
+
+32
+
+1x NVIDIA T4
+
+128 GiB
+
+900 GB NVMe SSD
+
+50 Gigabit
+
+ 
+
+12xlarge
+
+$3.91
+
+48
+
+4x NVIDIA T4
+
+192 GiB
+
+900 GB NVMe SSD
+
+50 Gigabit
+
+ 
+
+16xlarge
+
+$4.35
+
+64
+
+1x NVIDIA T4
+
+256 GiB
+
+900 GB NVMe SSD
+
+50 Gigabit
+
+ 
+
+metal
+
+$7.82
+
+96
+
+8x NVIDIA T4
+
+384 GiB
+
+2 x 900 GB NVMe SSD
+
+100 Gigabit
+
+**p3**
+
+2xlarge
+
+$3.06
+
+8
+
+1x NVIDIA V100
+
+61 GiB
+
+EBS Only
+
+Up to 10 Gigabit
+
+ 
+
+8xlarge
+
+$12.24
+
+32
+
+4x NVIDIA V100
+
+244 GiB
+
+EBS Only
+
+10 Gigabit
+
+ 
+
+16xlarge
+
+$24.48
+
+64
+
+8x NVIDIA V100
+
+488 GiB
+
+EBS Only
+
+25 Gigabit
+
+As you can see, there are only 3 P3 instance sizes: 2xlarge, 8xlarge, and 16xlarge, with the largest containing [8x NVIDIA V100 GPUs](https://www.nvidia.com/en-us/data-center/v100/). With the P3, vCPU, GPU, memory, and network performance all increase with instance size and price. 
+
+**In contrast**, g4dns are a [more complex offering](https://instances.vantage.sh/aws/ec2/g4dn.xlarge). Most sizes have a single GPU, but the 12xlarge has four and the metal has eight! This makes the price/performance decision for the g4dn more complicated. 
+
+If the GPU portion of the workload is perfectly suited to a single T4 GPU, you (or, as we go into below, Compute Optimizer) still have to consider other factors like CPU, memory, and network performance. For example, look at the xlarge, 2xlarge, 4xlarge, and 8xlarge variants of the g4dn. In terms of GPU, they have the same hardware: a single NVIDIA T4. Where they differ is in vCPU and RAM. With GPU workloads, the rest of the system is responsible for orchestrating data into and out of the GPU, essentially “feeding” the GPU. These factors are where right-sizing can typically take place – it’s not necessarily about resizing the GPU itself, but the GPU-enabled EC2 instance as a whole.
+
+But that’s not all! To further complicate the optimization issue, the ideal workload profile of GPUs is very different to CPUs. With CPUs, we would like a steady-state utilization of 30-40% with occasional bursts past 70%. GPUs, on the other hand, are built for sustained 100% usage. Here’s Rick Ochs, Senior Manager of Cloud Optimization at AWS, on how GPU utilization differs from its counterparts:
+
+https://www.youtube.com/watch?v=07SCTOuYCp4
+
+As Rick said, “100% utilization is a happy place to be in.” It means we can get full value from our GPU investment – but we also want to make sure that as always, we’re only paying for what we need.
+
+## 2\. Meet the Compute Optimizer optimization engine
+
+Fortunately, the good folks at AWS recently made it much easier for us to do exactly that (pay for only the GPU that we need, that is.) 
+
+The heavy lifting is done by our old friend Compute Optimizer, specifically the new [GPU Instance Resizing](https://aws.amazon.com/about-aws/whats-new/2023/09/aws-compute-optimizer-rightsizing-g4dn-p3-instances/) feature. In CloudFix, it works similarly to the [EC2 Low-Risk Right-Sizing Finder-Fixer](/blog/cut-costs-right-sizing-aws-ec2-instances/), which makes sense since that fixer is also powered by Compute Optimizer. Here’s Rick again, with a bit more info on this exciting new capability:
+
+https://www.youtube.com/watch?v=X59kewMqZT8
+
+As Rick mentions, the Compute Optimizer optimization engine can now make use of data supplied by the NVIDIA driver for the CloudWatch agent to make right-sizing recommendations. The GPU optimizer starts with the G4dn and P3 instances, for very intentional reasons. Here’s why:
+
+https://www.youtube.com/watch?v=DZt451zF8pI
+
+## 3\. Four prerequisites for right-sizing GPU instances
+
+Let’s recap: We know that GPU pricing is hefty and complex, with a number of variables. We know in general that it’s easy to just choose a big instance so you’re confident that you have plenty of power, and then keep paying for it as workloads change over time, which results in overprovisioning and overpaying. And we know that Compute Optimizer now has an awesome tool that simplifies right-sizing GPU instances. 
+
+Now we just need to know how to go about it.
+
+As with all CloudFix fixes, there’s no “secret formula” to what we’re doing. We just look at what AWS recommends and make it straightforward to implement. This fix is no different. The most important thing here is getting the prerequisites installed, which are:
+
+1.  Enable Compute Optimizer
+2.  Install the CloudWatch agent
+3.  Make sure NVIDIA driver is installed, and configure [CloudWatch agent to collect NVIDIA metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Agent-NVIDIA-GPU.html)
+4.  Use the ListMetrics API to validate that the required metrics are monitored
+
+### 3.1 Enable Compute Optimizer
+
+To enable Compute Optimizer, head straight to the [Getting Started with AWS Compute Optimizer guide](https://docs.aws.amazon.com/compute-optimizer/latest/ug/getting-started.html). This is your starting point. 
+
+If you’re using a management account of an organization, then in the majority of cases you should enable Compute Optimizer for all member accounts of the organization. This can be done via the [Compute Optimizer Console](https://console.aws.amazon.com/compute-optimizer/home) or using the command line. For an individual account, use this command:
+
+```bash
+aws compute-optimizer update-enrollment-status --status Active
+```
+
+For a management account, use this command: 
+
+```bash
+aws compute-optimizer update-enrollment-status --status Active \
+    --include-member-accounts
+```
+
+Once you’ve done this, it may take 24 hours before you start to receive recommendations. 
+
+### 3.2 Install the CloudWatch agent
+
+The next step is to install the CloudWatch agent. There are some metrics available to Compute Optimizer without CloudWatch agent, but by far the most important thing you can do for Compute Optimizer is to install the CloudWatch agent and enable memory metrics for all instances. Additionally, GPU instances will need the NVIDIA driver to be configured to collect NVIDIA metrics.
+
+To learn more about CloudWatch and for detailed instructions on installing the CloudWatch agent, see our [AWS Foundational Skills: CloudWatch blog post](/blog/aws-foundational-skills-cloudwatch/#installing-cloudwatch-agent). Once the agent is installed, the mem\_used\_percent metric will automatically be monitored, and this will drastically improve the recommendation quality of Compute Optimizer. See [this section](https://docs.aws.amazon.com/compute-optimizer/latest/ug/metrics.html#cw-agent) of the CloudWatch agent documentation for details.
+
+### 3.3 Confirm the NVIDIA driver is installed and configure the CloudWatch agent
+
+For Compute Optimizer to work with GPU instances, it needs to have detailed information about how the GPU is operating. Compute Optimizer gets this detailed information from the GPU via the [NVIDIA GPU metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Agent-NVIDIA-GPU.html). These include quantities such as memory usage, GPU kernel usage, power draw, memory clock speed, and more. In order to extract this information from the GPU, the NVIDIA driver must be installed. 
+
+If you’ve already been using the GPU, such as for CUDA-powered calculations, then it is highly likely that the NVIDIA driver is already installed. Otherwise, you wouldn’t be able to utilize the GPU. For starting a new project, you can use an AMI that already [has the NVIDIA driver installed](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/install-nvidia-driver.html#preinstalled-nvidia-driver) or, if you want to start with a from-scratch custom AMI, you will have to [download and install the driver from NVIDIA itself](https://docs.nvidia.com/datacenter/tesla/tesla-installation-notes/index.html). 
+
+Once you have both the CloudWatch agent and the NVIDIA driver installed and running, update the CloudWatch agent configuration to include the [required GPU metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Agent-NVIDIA-GPU.html). A CloudWatch agent configuration file may look something like this:
+
+{
+  "agent": {
+    "metrics_collection_interval": 60,
+    "run_as_user": "cwagent"
+  },
+  "metrics": {
+    "metrics_collected": {
+      "cpu": {
+        "measurement": [
+          "cpu_usage_idle",
+          "cpu_usage_iowait",
+          "cpu_usage_user",
+          "cpu_usage_system"
+        ],
+        "metrics_collection_interval": 60,
+        "resources": [
+          "*"
+        ],
+        "totalcpu": false
+      },
+      "disk": {
+        "measurement": [
+          "used_percent",
+          "inodes_free"
+        ],
+        "metrics_collection_interval": 60,
+        "resources": [
+          "*"
+        ]
+      },
+      "mem": {
+        "measurement": [
+          "mem_used_percent"
+        ],
+        "metrics_collection_interval": 60
+      },
+      "swap": {
+        "measurement": [
+          "swap_used_percent"
+        ],
+        "metrics_collection_interval": 60
+      }
+    }
+  }
+}
+
+Looking at the instructions in the [_Collect NVIDIA GPU Metrics_](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Agent-NVIDIA-GPU.html) AWS documentation, we need to add a `nvidia_gpu` subsection in the `metrics_collected` section. At a basic level, this nvida\_gpu subsection can look like this:
+
+      "nvidia_gpu": {
+        "measurement": [
+          "nvidia_smi_utilization_gpu",
+          "nvidia_smi_temperature_gpu",
+          "nvidia_smi_power_draw",
+          "nvidia_smi_utilization_memory",
+          "nvidia_smi_fan_speed",
+          "nvidia_smi_memory_total",
+          "nvidia_smi_memory_used",
+          "nvidia_smi_pcie_link_gen_current",
+          "nvidia_smi_pcie_link_width_current",
+          "nvidia_smi_encoder_stats_session_count",
+          "nvidia_smi_encoder_stats_average_fps",
+          "nvidia_smi_encoder_stats_average_latency",
+          "nvidia_smi_clocks_current_graphics",
+          "nvidia_smi_clocks_current_sm",
+          "nvidia_smi_clocks_current_memory",
+          "nvidia_smi_clocks_current_video"
+        ],
+        "metrics_collection_interval": 60,
+        "resources": ["*"]
+      }
+
+To update the CloudWatch agent configuration, use the SSM agent, which is part of AWS Systems Manager. See our [AWS Foundational Skills: Systems Manager](/blog/aws-foundational-skills-aws-systems-manager/) guide for details. 
+
+### 3.4 Validate that the metrics are being monitored
+
+Here at CloudFix, we’re big fans of validation. In this case, we want to make sure that the proper metrics are being monitored. To do this, we can use the ListMetrics API. This tells us all of the metrics that are being monitored for a given namespace. 
+
+To check the metrics, we can use this command:
+
+```bash
+aws cloudwatch list-metrics \
+    --namespace "AWS/EC2"
+```
+
+This will output a list of metrics which are being monitored:
+
+{
+    "Metrics": [
+        {
+            "Namespace": "AWS/SNS",
+            "Dimensions": [
+                {
+                    "Name": "TopicName",
+                    "Value": "NotifyMe"
+                }
+            ],
+            "MetricName": "PublishSize"
+        },
+	# ....
+}
+
+Make sure that every instance is in the list, and you’ll be in good shape.
+
+## 4\. How to right-size GPU instances
+
+Now that we have all of our ducks in a row, let’s get down to business and right-size some GPU instances.
+
+The currently supported instance types are the p3 and g4dn. We can use the CUR to identify those instances and then call Compute Optimizer for the eligible instances. The full guide for how to do this is found in our [EC2 Right-Sizing finder/fixer blog post](/blog/cut-costs-right-sizing-aws-ec2-instances/).
+
+### 4.1 Use the CUR to find GPU instances
+
+The Cost and Usage Report (CUR) is the best way to find resources on an AWS account, especially at an organization level. A full guide to the Cost and Usage Report can be found here in our [AWS Foundations: Cost and Usage Report guide](/blog/aws-foundational-skills-cost-and-usage-report-cur/). Today, we want to query for all EC2 instances in our organization that are of type g4dn or p3. 
+
+The query we want to run is:
+
+```sql
+SELECT product_region,
+	  line_item_usage_account_id,
+	  line_item_resource_id,
+	  line_item_line_item_type,
+	  line_item_usage_type, 
+	  sum(line_item_unblended_cost) as cost,
+	  product_instance_type
+FROM "YOUR_CUR_DB_NAME"."YOUR_CUR_TABLE_NAME"
+WHERE line_item_resource_id LIKE 'i-%'
+     AND line_item_usage_start_date >= date_trunc('day', current_date - interval '10' DAY) 
+     AND line_item_usage_start_date < date_trunc('day', current_date - interval '1' DAY) 
+     AND line_item_line_item_type LIKE 'Usage'
+     AND line_item_usage_type LIKE '%BoxUsage%'
+     AND product_instance_type_family in ('g4dn', 'p3')
+     AND line_item_line_item_type LIKE 'Usage'
+GROUP BY 1,2,3,4,5
+HAVING sum(line_item_unblended_cost) > 0;
+```
+
+This query will return a table like the following:
+
+**product\_region**
+
+**line\_item\_usage\_account\_id**
+
+**line\_item\_resource\_id**
+
+**line\_item\_line\_item\_type**
+
+**line\_item\_usage\_type**
+
+**cost**
+
+**product\_instance\_type**
+
+us-east-1
+
+490225330710
+
+i-949eaad5fa1773053
+
+Usage
+
+BoxUsage:g4dn.16xlarge
+
+850.23
+
+g4dn.16xlarge
+
+us-east-1
+
+617445163533
+
+i-b2a78935b95b33139
+
+Usage
+
+BoxUsage:g4dn.16xlarge
+
+814.2
+
+g4dn.16xlarge
+
+us-east-1
+
+543637436151
+
+i-2d48dc40
+
+Usage
+
+BoxUsage:p3.8xlarge
+
+140.5969732
+
+p3.8xlarge
+
+us-east-1
+
+143734952414
+
+i-93ab2849ef93a81a4
+
+Usage
+
+BoxUsage:p3.2xlarge
+
+353.6209333
+
+p3.2xlarge
+
+### 4.2 Right-size GPU instances with low risk and high reward
+
+From here, we can simply iterate over the instance IDs, calling Compute Optimizer for each one and checking to see if there are any recommendations. If the recommendations are rated as _low_ or _very low_ risk, you should go for it! You will save money, and the Compute Optimizer team has worked very hard to ensure that you do not sacrifice performance in the process.
+
+The command to get an instance recommendation from compute optimizer is:
+
+```bash
+aws compute-optimizer get-ec2-instance-recommendations \
+    --instance-arns  \   
+    arn:aws:ec2:us-west-2:123456789012:instance/i-0abcdefgh1234567
+```
+
+This uses the [get-ec2-instnace-recommendations](https://docs.aws.amazon.com/cli/latest/reference/compute-optimizer/get-ec2-instance-recommendations.html) command and will produce an array of [InstanceRecommendation](https://docs.aws.amazon.com/compute-optimizer/latest/APIReference/API_InstanceRecommendation.html) objects. The most important field in this structure is the finding, and findingReasonCodes. The finding is whether or not the instance is `Overprovisioned`, `Underprovisioned`, `Optimized`, or `NotOptimized`. The `findingReasonCodes` are the reason behind the finding, and include `CPUOverprovisioned`, `MemoryOverprovisioned`, `GPUOverProvisioned`, `GPUMemoryOverprovisioned`, etc. The full list is available in the documentation. 
+
+As we covered in the [EC2 RIghtSizing blog post](/blog/cut-costs-right-sizing-aws-ec2-instances/), look for instance recommendations where the `finding` is Overprovisioned, and the risk associated with the recommendation (performanceRisk) is less than 2.0. Given these conditions, choose the recommendation with the highest `estimatedMonthlySavings` value. You may want to have a process in place for retyping instances (how to properly stop running jobs). The following set of commands will be a good starting point.
+
+```bash
+#!/bin/bash
+
+# Set the instance ID
+INSTANCE_ID=""
+ 
+# Stop the instance
+aws ec2 stop-instances --instance-ids $INSTANCE_ID
+ 
+# Wait for the instance to be in a stopped state
+aws ec2 wait instance-stopped --instance-ids $INSTANCE_ID
+ 
+# Modify the instance type to t3.xlarge
+aws ec2 modify-instance-attribute \
+    --instance-id $INSTANCE_ID    \ 
+    --instance-type "{\"Value\": \"t3.xlarge\"}"
+ 
+# Start the instance again
+aws ec2 start-instances --instance-ids $INSTANCE_ID
+```
+
+## 5\. Right-size GPU instances automatically with CloudFix
+
+Huge shoutout to Compute Optimizer – it’s such a powerful tool that makes it relatively easy to right-size GPU instances. But who doesn’t like to make things _even easier_? That’s where CloudFix comes in.
+
+With CloudFix, all of these automations show up in the CloudFix UI as the _EC2 GPU Optimize Manually_ finder/fixer. CloudFix identifies all of the g4dn and P3 instances across your organization, alerts you if CloudWatch is not properly configured, and continuously queries Compute Optimizer for recommendations. If there are _low_ or _very low_ risk recommendations, we surface those recommendations for your review. You don’t need to write any code to take advantage of this new feature – it’s just there, ready to help you reduce AWS costs in just a few clicks.
+
+While the quest for optimizing the price/performance of GPUs may not have changed since 1999, accomplishing it has definitely gotten easier. Whether you do it yourself or rely on CloudFix, run those recommendations and get ready to start saving.
+
+To see how much you can save with CloudFix, including with the new right-sizing GPU fixer, check out our [free, secure savings assessment](/assessment/).

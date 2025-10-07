@@ -1,0 +1,140 @@
+---
+title: "Optimize Amazon EFS storage costs with Intelligent-Tiering"
+description: "There once was a file system named EFS Which Amazon did offer with ease It scaled and was fast For data that would last And with EC2, it worked like a breeze. -..."
+date: 2023-02-07 13:07:04
+modified: 2025-01-23 11:22:19
+category: "AWS"
+tags: ["AWS","cloud","lambda","ec2","s3"]
+published: true
+slug: "optimize-amazon-efs-storage-costs-intelligent-tiering"
+---
+
+> _There once was a file system named EFS_  
+> _Which Amazon did offer with ease_  
+> _It scaled and was fast_  
+> _For data that would last_  
+> _And with EC2, it worked like a breeze.  
+> _\- ChatGPT, Jan 2023._  
+> _
+
+ChatGPT is not wrong (although its limerick-writing skills could use a bit of work). Amazon Elastic File System (EFS) is indeed scalable, fast, and designed to work seamlessly with EC2. What ChatGPT didn’t mention, however, is that it can be tricky to balance EFS convenience and cost.
+
+Fortunately, by using lifecycle management policies to take advantage of the Infrequent Access storage classes of EFS, you can achieve much better per-GB average rates. It’s similar to [S3 Intelligent-Tiering](/blog/aws-s3-intelligent-tiering-default-storage-class/), and it’s a great way to optimize and reduce AWS costs.
+
+## Amazon EFS: The go-to for high availability storage
+
+Amazon Elastic File System (EFS) is a scalable file storage service. Unlike S3 Intelligent-Tiering, EFS works at the file system level. It’s designed to be attached to an EC2 instance, or to a Lambda function, and is treated as a standard file system storage device.
+
+The major advantage of EFS is that it can be used like any other file system. This makes development on EFS very straightforward, since there is no operational difference between a local and EFS-mounted file system. EFS excels for workloads that require high throughput, low latency, and a file-based data model. S3 Intelligent-Tiering, on the other hand, is a good choice for object-based storage that requires high durability, unlimited scalability, and low-cost infrequent access.
+
+So why wouldn’t you use EFS? Like other cloud storage options, EFS requires balancing convenience with cost. Using us-east-1 as a reference, S3 Standard costs $0.023 per GB / month, whereas EFS in the same region runs $0.30 per GB per month (for the first TB). That’s a significant difference that can add up quickly.
+
+## Optimizing EFS costs: Amazon keeps making it easier to save
+
+It’s worth noting that prices have come down significantly since Amazon launched EFS in 2016. They’ve introduced several refinements that make EFS more flexible and affordable.
+
+The first was EFS One Zone. One Zone cut prices by about half, providing a good option for users willing to sacrifice data redundancy.
+
+There still, however, was no price differentiation for frequently vs. infrequently accessed objects. This feature was added in 2018 with the introduction of the Infrequent Access (IA) storage class. With it, data stored in the IA storage class costs less per GB than Standard, has less available data throughput, is accessed with a higher latency, and incurs a per-GB retrieval fee. For infrequently accessed objects, the benefits of the lower storage cost exceed the downside of reduced performance.
+
+Later in 2018, Amazon added lifecycle management (LM) policies to EFS. With LM policies, users can make transition rules based on data access patterns. There are two types of rules available: **Transition into IA** and **Transition out of IA**. The **Transition into IA** rule can be customized to put files into the IA storage class after 1, 7, 14, 30, 60, or 90 days after last access. The **Transition out of IA** rule can either be disabled, or set to **On First Access**.
+
+The **Transition into IA** rule generates savings by allowing you to automatically move data to an Infrequent Access tier, which has a much lower cost per GB. The **Transition out of IA** rule helps you save by moving data in IA back to the Standard tier as soon as it’s accessed again, eliminating Infrequent Access Request surcharges.
+
+For example, let’s say the assets for a blog post were stored in EFS. If the blog wasn’t accessed for a month, the assets would be moved to the IA tier by the Transition into IA rule. Then, if the blog post was shared on Hacker News and surged in popularity, the Transition out of IA rule would move the assets back to the Standard tier on first access. As a result, the surge in readership wouldn’t translate to a surge of Infrequent Access Request surcharges.
+
+![](/media/uploads/efs-tiering-min.png)
+
+## EFS Intelligent-Tiering: The simple and effective way to reduce EFS costs
+
+Finally, we arrive at [EFS Intelligent-Tiering](/blog/aws-efs-tiering/) — in our view, the best way to save on EFS to date. It’s very similar to its [S3 counterpart](/blog/aws-s3-intelligent-tiering-default-storage-class/), but with fewer storage classes to choose from. It combines two lifecycle management rules: one rule to transition objects to the corresponding IA class after a set period of time in the Frequent Access class, and a second rule to transition objects from IA to Frequent Access upon first access. In this way, EFS Intelligent-Tiering strikes a balance between storage cost and performance.
+
+Here’s a recent price table, so you can compare the cost between Standard Storage and Infrequent Access:
+
+### EFS pricing, us-east-1, as of Jan 2023
+
+Standard Storage (GB-Month)
+
+$0.30
+
+Standard-Infrequent Access Storage (GB-Month)
+
+$0.025
+
+One Zone Storage (GB-Month)
+
+$0.16
+
+One Zone-Infrequent Access Storage (GB-Month)
+
+$0.0133
+
+Infrequent Access Requests (per GB transferred)
+
+$0.01
+
+Elastic Throughput Requests - Data and Metadata Reads (per GB transferred)
+
+$0.03
+
+Elastic Throughput Requests - Data and Metadata Writes (per GB transferred)
+
+$0.06
+
+Provisioned Throughput (MB/s-Month)
+
+$6.00
+
+AWS Backup - Warm Storage / Cold Storage (GB-Month)
+
+$0.05 / $0.01
+
+As you can see, the Infrequent Access tier is **less than a tenth** of the cost of the Standard Tier — savings absolutely worth pursuing. Note that for data accessed from the Infrequent Access tier, the Infrequent Access Requests surcharge applies. However, with Intelligent-Tiering, the file is transferred back to the Standard Tier on first access, minimizing the impact of this surcharge.
+
+One word of caution around EFS in general: there is some complexity surrounding throughput modes. There are 3 modes: Bursting, Elastic, and Provisioned Throughput. Bursting Throughput takes into account “burst credits,” which accumulate at a rate proportional to the size of the EFS filesystem. **Importantly**, only EFS Standard or EFS One Zone accumulate burst credits. The IA storage classes do not accrue burst credits.
+
+## How to manually enable EFS Intelligent-Tiering
+
+Ready to get started? Enabling EFS Intelligent-Tiering is relatively straightforward and can be done in either the management console or the CLI. The main prerequisite for enabling it is that you do not have an existing LM policy in place. For example, if a **Transition into IA** rule exists with a time parameter of None, this rule must be removed. If there is one LM rule in place, the second rule can be added to form the Intelligent-Tiering policy.
+
+Also note that, as seen in the diagram above, you can only transition objects to-from the corresponding AZ configuration: Standard ⇔ Standard-IA, and One Zone ⇔ One Zone IA. Switching from one to the other will require creating a new EFS volume and copying the data.
+
+To remove an existing lifecycle management policy on a particular EFS file system (identified by its `file-system-id`), with the CLI, execute the following command:
+
+```
+aws efs update-file-system-configuration --file-system-id <file-system-id> --lifecycle-configuration ''
+```
+
+The empty string given as the input to lifecycle-configuration represents a “null policy”, effectively deleting the policy.
+
+To add a set of lifecycle rules for EFS Intelligent Tiering, issue the following command:
+
+aws efs put-lifecycle-configuration \
+--file-system-id <File-System-ID> \
+--lifecycle-policies 
+"[{\"TransitionToIA\":\"AFTER_30_DAYS\"},{\"TransitionToPrimaryStorageClass\":\"AFTER_1_ACCESS\"}]"
+
+This sets up the pair of lifecycle rules as described earlier in the document: the **Transition to IA** and **Transition from IA** (in this case named **TransitionToPrimaryStorageClass**).
+
+To do this using the AWS Management Console, the process is similar.
+
+1.  Navigate to the “Amazon EFS” section of the management console.
+2.  Click on the particular `file-system-id`, an identifier prefixed by `fs-`.
+3.  Within the “Lifecycle management” section, set the Transition into IA rule to something other than None, e.g. “30 days since last access.” Set the Transition out of IA rule to “On first access.” The combination of these two rules is Intelligent-Tiering.
+4.  OPTIONAL: Double check your throughput mode. The particular throughput mode that is best for your application will depend on your application’s requirements. The cheapest mode is Bursting. Note again that files in the -IA class do not accrue Bursting credits. If you are unsure of your throughput requirements, use Bursting Mode and monitor your average amount of burst credit utilization over a set period of time.  
+    ![](/media/uploads/efs-lifecycle-management-min.png)
+
+## Enable EFS Intelligent-Tiering quickly and easily with CloudFix
+
+Want to optimize your EFS costs even more easily? Use CloudFix to quickly and automatically enable EFS Intelligent-Tiering for you. CloudFix will find eligible volumes and generate the [EFS Intelligent-Tiering fixer](https://support.cloudfix.com/hc/en-us/articles/10879175100818-EFS-Intelligent-Tiering). No manual configurations, no more tasks added to your plate – just fast, easy savings.
+
+There are a couple prerequisites. In order for the fixer to be enabled, make sure that:
+
+-   The file system does not have a lifecycle policy to Transition to IA
+-   For file systems with Bursting throughput, the average IO for past 30 days should be less than:
+    -   90% of baseline throughput for Standard storage class
+    -   40% of baseline throughput for One Zone storage class
+
+Note that for some file systems which **do** have a “Transition to IA” policy, it makes sense to manually evaluate if Intelligent-Tiering is a better fit. This will be the case if you are paying a large amount for “Infrequent Access Requests” for those file systems. If the charges are starting to add up, switching the FS to Intelligent-Tiering may be appropriate. To do this, simply delete the **Transition to IA** lifecycle policy and let CloudFix do the rest.
+
+Enabling EFS Intelligent-Tiering isn’t the only way that CloudFix optimizes and reduces AWS spend. Check out our [other blogs](/blog/) for details on additional fixers or find out how much you could save with our free, secure, [personalized savings assessment](/assessment/).

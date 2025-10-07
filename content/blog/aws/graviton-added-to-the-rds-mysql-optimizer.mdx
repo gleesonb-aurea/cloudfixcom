@@ -1,0 +1,74 @@
+---
+title: "Graviton added to the RDS MySQL Optimizer"
+description: "At CloudFix, we're continually innovating to ensure our customers enjoy the best possible performance at the lowest possible cost on AWS. That's why we're excit..."
+date: 2024-02-13 16:19:21
+modified: 2024-07-11 20:22:28
+category: "AWS"
+tags: ["AWS","cloud","ec2","rds","compute"]
+published: true
+slug: "graviton-added-to-the-rds-mysql-optimizer"
+---
+
+At CloudFix, we're continually innovating to ensure our customers enjoy the best possible performance at the lowest possible cost on AWS. That's why we're excited to announce an upgrade to one of our most popular tools: the RDS Optimize MySQL Instances Finder/Fixer.
+
+With this announcement, we have added the Graviton 3 (C6g, M6g, R6g instance types) to the list of possible instances returned by the MySQL Optimize Instances Finder/Fixer. In other words, we now make it easier to switch your RDS MySQL instances to Graviton. By doing this, you can realize savings of 15-40%, depending on current utilization.
+
+In this blog post, read about how you can reduce your RDS spend by leveraging CloudFix and the AWS Graviton.
+
+## What is the RDS Optimize MySQL Instances Finder/Fixer?
+
+Our Finder/Fixer solutions are designed to do precisely what their names suggest: find opportunities for cost savings and then implement fixes to capitalize on those opportunities. This Finder/Fixer operates on RDS MySQL instances. Databases are often a large proportion of an application's total cost, and with RDS MySQL, a large portion of this cost is driven by the type and size of the instance. This presents an opportunity for right-sizing.
+
+## Why Graviton?
+
+The AWS Graviton is Amazon's custom processor. It is based on the ARM, rather than x86, set of instructions. The Graviton was designed and built by [Annapurna Labs](https://www.aboutamazon.com/news/aws/take-a-look-inside-the-lab-where-aws-makes-custom-chips), a subsidiary of AWS responsible for not only the Graviton but also the famous [Nitro cards](https://aws.amazon.com/ec2/nitro/), which control the EC2 instances themselves. The Graviton processor was designed to be highly performant and power efficient on real customer workloads. What does this all mean? Graviton processors show a 20-40% price/performance improvement.
+
+To learn more about the development of the Graviton processors, watch/listen to our two-part interview series with AWS' Arthur Petitepierre.
+
+Part 1:
+
+https://www.youtube.com/watch?v=AzlOCUkFoIQ
+
+Part 2:
+
+https://www.youtube.com/watch?v=U6jFxHTh1PQ
+
+To stay updated on the latest Graviton announcements, subscribe to the excellent [AWS Graviton Weekly](https://awsgravitonweekly.com/) newsletter by our friend Marcos Ortiz.
+
+## How Does It Work?
+
+Achieving precise instance recommendations is not easy. Many dimensions of performance need to be analyzed - CPU, memory, IOPS, network bandwidth, etc. The analysis must take into account workloads over the past several weeks and make sure that any instance recommendations would both save money and maintain an adequate amount of computational headroom.
+
+This is exactly what [AWS Compute Optimizer](https://aws.amazon.com/compute-optimizer/) does - it takes into account historical performance data and makes instance recommendations. Our Finder/Fixer queries Compute Optimizer and presents to the user recommendations which are ranked by Compute Optimizer as "low risk" or "very low risk." With this update, Graviton3 instances are now included in this set of allowed recommendations.
+
+To learn more about Compute Optimizer, watch/listen to Episode 66 of the AWS Made Easy livestream with AWS guest Rick Ochs.
+
+https://www.youtube.com/watch?v=-1s7DE18mLU
+
+## Ready to Optimize Your RDS MySQL Instances?
+
+If you're a CloudFix user, these new recommendations are found in the Advanced panel, under RDS Optimize Instances.
+
+![Select recommendation](/media/uploads/Select-recommendation-600x415.png)
+
+This will present the familiar set of resources. Click on the "Options" button to see more information on a particular RDS cluster.
+
+![Click Options button](/media/uploads/Click-Options-button.gif)
+
+See in this suggestion that a Graviton3 instance, a `db.m6g.xlarge`, is being recommended as a replacement for a `db.m5.xlarge`. Clicking on the Show button will give more information.
+
+![Click Show button](/media/uploads/Click-Show-button-600x448.png)
+
+Click the Show button to get more details. This will bring up a "Fix Parameters" screen with all of the information necessary to implement the fix.
+
+![Fix Parameters](/media/uploads/Fix-Parameters-1-600x556.png)
+
+Issue the RDS `modify-db-instance` command with the Instance ID and target instance type, and you will realize the savings! Documentation for modifying the DB instance by either CLI or the Management Console is [available here](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html).
+
+## Use CloudFix for Automated Savings!
+
+If you are a current user of CloudFix, go have a look at the RDS Optimize Instances panel and check for recommendations for the Graviton instance type. Please reach out to us if you have any questions!
+
+To learn how much you can save, sign up for a [free CloudFix Savings Assessment](/assessment/)!
+
+Check back next week for another CloudFix Finder/Fixer!

@@ -1,0 +1,105 @@
+---
+title: "CloudFix Finder/Fixer: EFS Enable Intelligent Tiering"
+description: "Amazon Elastic File System (EFS) is a powerful and scalable file storage service, but its Standard storage class can be costly at $0.30 per GB per month. CloudF..."
+date: 2025-04-07 00:15:34
+modified: 2025-04-07 00:15:34
+category: "AWS"
+tags: ["AWS","cloud","storage"]
+published: true
+slug: "feature-efs-enable-intelligent-tiering"
+---
+
+Amazon Elastic File System (EFS) is a powerful and scalable file storage service, but its Standard storage class can be costly at $0.30 per GB per month. CloudFix can help you optimize these costs by automatically enabling EFS Intelligent-Tiering, which can save up to 92% on storage costs for infrequently accessed files.
+
+## Contents
+
+-   [Overview](#overview)
+-   [How It Works](#how-it-works)
+-   [AWS Services Affected](#aws-services-affected)
+-   [Benefits](#benefits)
+-   [Prerequisites](#prerequisites)
+-   [Implementation Details](#implementation)
+-   [Important Considerations](#considerations)
+-   [Rollback Process](#rollback)
+-   [Frequently Asked Questions](#faq)
+-   [Related Resources](#resources)
+
+## Overview
+
+EFS Intelligent-Tiering is a feature that automatically moves infrequently accessed files to a lower-cost storage tier while maintaining immediate access when needed. This CloudFix fixer identifies eligible EFS file systems and enables Intelligent-Tiering to optimize your storage costs without impacting performance.
+
+## How It Works
+
+The fixer implements a two-part lifecycle management policy:
+
+-   Transition to Infrequent Access (IA): Files not accessed for 30 days are automatically moved to the IA storage class
+-   Transition from IA: Files are automatically moved back to the Standard storage class upon first access
+
+## AWS Services Affected
+
+![Amazon EFS](/media/uploads/Amazon-EFS.svg)
+
+[Amazon EFS](https://aws.amazon.com/efs/)
+
+## Benefits
+
+-   Up to 92% cost savings on infrequently accessed files
+-   Automatic optimization with no manual intervention required
+-   No impact on file accessibility or performance for frequently accessed data
+-   Zero downtime during implementation
+
+## Prerequisites
+
+Your EFS file system must meet these criteria:
+
+-   No existing lifecycle policy for Transition to IA
+-   For Bursting throughput mode:
+    -   Average IO for past 30 days < 90% of baseline throughput (Standard storage class)
+    -   Average IO for past 30 days < 40% of baseline throughput (One Zone storage class)
+
+## Implementation Details
+
+When executed, the fixer performs these actions:
+
+1.  For file systems with bursting throughput mode:
+    -   Changes mode to Provisioned
+    -   Sets Provisioned Throughput to match minimum required throughput
+2.  Configures Lifecycle Management rules:
+    -   Enables transition to IA after 30 days of inactivity
+    -   Enables transition from IA on first access
+3.  Monitors throughput via CloudWatch and increases provisioned throughput by 10% when needed
+
+## Important Considerations
+
+-   Files in IA storage class do not accrue burst credits
+-   IA access incurs a per-GB retrieval fee
+-   Throughput requirements should be monitored after implementation
+-   Storage class transitions only occur between corresponding tiers (Standard ↔ Standard-IA, One Zone ↔ One Zone-IA)
+
+## Rollback Process
+
+While automatic rollback is not available, you can manually reverse the changes by:
+
+-   Disabling IA to prevent new files from moving to IA storage class
+-   Accessing files to trigger their transition out of IA storage class
+-   Reverting to Bursting throughput mode if that was the original configuration
+
+## Frequently Asked Questions
+
+**Q: Does enabling Intelligent-Tiering require downtime?**
+
+No, the implementation can be done without any system downtime.
+
+**Q: Can CloudFix implement this automatically?**
+
+Yes, once you accept the recommendation, CloudFix can automatically implement the changes.
+
+**Q: What happens to my existing files?**
+
+Existing files will be evaluated based on their access patterns and moved to IA storage if they haven't been accessed for 30 days.
+
+## Related Resources
+
+-   [AWS EFS Lifecycle Management Documentation](https://docs.aws.amazon.com/efs/latest/ug/lifecycle-management-efs.html)
+-   [AWS Blog: Lifecycle Management for EFS Infrequent Access](https://aws.amazon.com/blogs/aws/new-lifecycle-management-for-amazon-efs-infrequent-access/)
+-   [AWS EFS Storage Classes Documentation](https://docs.aws.amazon.com/efs/latest/ug/storage-classes.html)

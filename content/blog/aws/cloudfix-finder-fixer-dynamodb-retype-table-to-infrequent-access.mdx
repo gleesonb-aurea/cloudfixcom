@@ -1,0 +1,64 @@
+---
+title: "CloudFix Finder/Fixer: DynamoDB Retype Table to Infrequent Access"
+description: "Reduce your DynamoDB costs by up to 60% by automatically identifying and transitioning eligible tables to the Standard-Infrequent Access (Standard-IA) table class, with zero impact on performance or availability."
+date: 2025-04-07 00:15:29
+modified: 2025-08-17 11:38:05
+category: "AWS"
+tags: ["AWS","cloud","monitoring","storage"]
+published: true
+slug: "cloudfix-finder-fixer-dynamodb-retype-table-to-infrequent-access"
+---
+
+Optimize your DynamoDB costs by automatically identifying and transitioning eligible tables to the Standard-Infrequent Access (Standard-IA) table class, reducing storage costs by up to 60% with no impact on performance or availability.
+
+## Table of Contents
+
+-   [AWS Services Affected](#aws-services)
+-   [Opportunity Description](#opportunity)
+-   [How It Works](#how-it-works)
+-   [Key Benefits](#key-benefits)
+-   [Important Considerations](#important-considerations)
+
+## AWS Services Affected
+
+![Amazon DynamoDB icon](/media/uploads/DynamoDB.svg)
+
+[Amazon DynamoDB](https://aws.amazon.com/dynamodb/)
+
+## Opportunity Description
+
+DynamoDB offers two table classes: Standard and Standard-Infrequent Access (Standard-IA). The Standard-IA table class provides significant cost savings for tables where storage costs are the primary expense rather than read/write operations. By analyzing your table’s usage patterns, CloudFix can identify opportunities to transition tables to Standard-IA, potentially reducing storage costs by up to 60%.
+
+## How It Works
+
+CloudFix’s DynamoDB Table Class Optimizer works in two phases:
+
+### Finder Phase
+
+-   Discovers all DynamoDB tables across your AWS accounts and regions
+-   Analyzes 30-day historical usage patterns for each table
+-   Calculates potential cost savings by comparing storage and access costs between Standard and Standard-IA classes
+-   Identifies tables where transitioning to Standard-IA would result in cost savings
+
+### Fixer Phase
+
+-   Automatically transitions eligible tables to the Standard-IA class
+-   Monitors table performance and usage patterns continuously
+-   Can switch tables back to Standard class if usage patterns change
+-   Respects AWS’s limit of two table class changes per 30 days
+
+## Key Benefits
+
+-   **Significant Cost Savings:** Reduce storage costs by up to 60% for eligible tables
+-   **Zero Performance Impact:** No changes to table performance, durability, or availability
+-   **Automated Optimization:** Continuous monitoring and automatic transitions based on usage patterns
+-   **No Code Changes:** Works with existing applications without requiring any code modifications
+-   **Bidirectional Optimization:** Can switch tables between Standard and Standard-IA classes based on cost-effectiveness
+
+## Important Considerations
+
+-   **Table Class Changes:** Limited to two changes per table within a 30-day period
+-   **Cost Analysis:** Takes into account both storage and access costs to determine optimal table class
+-   **Reserved Capacity:** Considers existing reserved capacity commitments when evaluating potential savings
+-   **Access Patterns:** Standard-IA has higher costs for read/write operations but lower storage costs
+-   **Continuous Evaluation:** CloudFix monitors usage patterns and adjusts table classes accordingly within AWS limits

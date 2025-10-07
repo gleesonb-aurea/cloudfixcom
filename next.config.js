@@ -2,10 +2,11 @@ const remarkGfm = require('remark-gfm');
 const rehypeHighlight = require('rehype-highlight');
 const rehypeSlug = require('rehype-slug');
 const path = require('path');
+const remarkDemoteH1 = require('./scripts/remark-demote-h1');
 const withMDX = require('@next/mdx')({
   extension: /\.mdx?$/,
   options: {
-    remarkPlugins: [remarkGfm],
+    remarkPlugins: [remarkGfm, remarkDemoteH1],
     rehypePlugins: [rehypeSlug, rehypeHighlight],
   },
 });

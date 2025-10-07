@@ -1,0 +1,105 @@
+---
+title: "CloudFix Finder/Fixer: Kinesis Analytics Optimize Logs"
+description: "Amazon Kinesis Data Streams provide real-time processing of streaming data, but their logging configurations can incur unnecessary costs. This CloudFix Finder i..."
+date: 2025-04-09 18:04:39
+modified: 2025-04-09 18:04:39
+category: "AWS"
+tags: ["AWS","cloud","rds","cost optimization","monitoring"]
+published: true
+slug: "feature-kinesis-analytics-optimize-logs"
+---
+
+Amazon Kinesis Data Streams provide real-time processing of streaming data, but their logging configurations can incur unnecessary costs. This CloudFix Finder identifies Kinesis Data Streams with excessive or redundant logging configurations, specifically those logging every read and write action through CloudWatch. By optimizing these settings, you can significantly reduce costs while maintaining essential monitoring capabilities.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+Kinesis Data Streams often have enhanced monitoring enabled with detailed CloudWatch logging configurations that record every operation such as PutRecord, PutRecords, GetRecords, and GetShardIterator at high granularity levels (per second/per shard). While these logs are valuable during setup, debugging, or troubleshooting phases, they often remain enabled in stable production environments where their utility diminishes but costs continue to accumulate rapidly.
+
+For high-throughput Kinesis streams, these detailed logs can generate considerable CloudWatch costs—potentially hundreds to thousands of dollars annually per stream—with minimal operational benefit in stable environments.
+
+### Solution
+
+CloudFix identifies Kinesis Data Streams with excessive logging configurations and provides recommendations for optimizing or disabling specific metrics that aren't critical for ongoing monitoring. By selectively adjusting monitoring settings, you can reduce CloudWatch logging costs by 30-70%, depending on the size and activity level of the stream, without compromising essential observability.
+
+## AWS Services Affected
+
+![Amazon Kinesis](/media/uploads/Kinesis.svg)
+
+[Amazon Kinesis](https://docs.aws.amazon.com/streams/latest/dev/introduction.html)
+
+![Amazon Kinesis Data Analytics](/media/uploads/Kinesis-Data-Analytics.svg)
+
+[Amazon Kinesis Data Analytics](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/what-is.html)
+
+![Amazon Kinesis Data Streams](/media/uploads/Kinesis-Data-Streams.svg)
+
+[Amazon Kinesis Data Streams](https://docs.aws.amazon.com/streams/latest/dev/introduction.html)
+
+![Amazon CloudWatch](/media/uploads/CloudWatch.svg)
+
+[Amazon CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html)
+
+## How It Works
+
+### Finder Component
+
+The Finder analyzes your Kinesis Data Streams configurations and identifies streams with potentially unnecessary logging settings based on the following criteria:
+
+-   The Kinesis stream has Enhanced Monitoring enabled for all shard-level metrics
+-   The CloudWatch logging configuration includes detailed metrics such as PutRecord, PutRecords, GetRecords, and GetShardIterator at high granularity levels (per second/per shard)
+-   Logs are being pushed continuously to CloudWatch but show limited diagnostic utility (low volume of alerts, no downstream consumers using them)
+-   The stream operates in a stable production environment with no recent troubleshooting activity or major incident history
+
+For each identified stream, the Finder calculates potential savings based on current logging volume and costs, then presents optimization opportunities with specific recommendations.
+
+### Fixer Component
+
+This Finder does not currently have an automatic Fixer component. Customers must manually modify logging configurations using the AWS Console or AWS CLI. CloudFix provides detailed recommendations for which metrics to disable and why, along with guidance for maintaining essential monitoring coverage.
+
+The manual implementation process involves:
+
+1.  Navigating to the Kinesis stream in the AWS Console
+2.  Selecting "Enhanced Monitoring"
+3.  Disabling specific shard-level metrics that are not critical for ongoing monitoring
+
+## FAQ
+
+**Is it possible to roll back once logging settings are modified?**
+
+Yes. Monitoring settings can be re-enabled at any time with no disruption to stream operations. This change is fully reversible.
+
+**Can CloudFix implement the fix automatically once I accept the recommendation?**
+
+No. Customers need to apply the change manually or engage CloudFix Professional Services for implementation.
+
+**Does this fix require downtime?**
+
+No. Adjusting Kinesis monitoring settings is a live operation that does not affect stream performance or data ingestion.
+
+**What are the potential savings from optimizing Kinesis logging?**
+
+While savings vary by volume and region, CloudWatch logs for high-throughput Kinesis streams can cost hundreds to thousands of dollars annually per stream. Disabling unnecessary shard-level logs can cut those costs significantly—often by 30-70%, depending on the size and activity level of the stream.
+
+**Which metrics should I keep enabled for essential monitoring?**
+
+We recommend maintaining stream-level metrics like IncomingBytes, OutgoingBytes, and ReadProvisionedThroughputExceeded, while reducing or eliminating detailed per-shard metrics for stable production streams. The exact configuration should be tailored to your operational requirements.
+
+## Related Resources
+
+-   [Monitoring Kinesis Data Streams Using CloudWatch](https://docs.aws.amazon.com/streams/latest/dev/monitoring-with-cloudwatch.html)
+-   [Amazon Kinesis Data Analytics Developer Guide](https://docs.aws.amazon.com/kinesisanalytics/latest/dev/what-is.html)
+-   [Cost Optimization in Analytics Services](https://docs.aws.amazon.com/whitepapers/latest/cost-modeling-data-lakes/cost-optimization-in-analytics-services.html)
+-   [Advanced Retry/Rate Limiting for Kinesis Producer Library](https://docs.aws.amazon.com/streams/latest/dev/kinesis-producer-adv-retries-rate-limiting.html)
+-   [Kinesis Optimize Logging - Support Article](https://support.cloudfix.com/article/123386-kinesis-optimize-logging)

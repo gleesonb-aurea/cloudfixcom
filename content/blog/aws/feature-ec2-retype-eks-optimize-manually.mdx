@@ -1,0 +1,103 @@
+---
+title: "CloudFix Finder: EC2 Retype EKS Optimize Manually (Manual Fix)"
+description: "Optimize the cost and performance of your Amazon EKS clusters by strategically retyping the underlying EC2 worker nodes. CloudFix identifies opportunities to mo..."
+date: 2025-04-09 18:07:10
+modified: 2025-04-09 18:07:10
+category: "AWS"
+tags: ["AWS","cloud","ec2","rds","migration"]
+published: true
+slug: "feature-ec2-retype-eks-optimize-manually"
+---
+
+Optimize the cost and performance of your Amazon EKS clusters by strategically retyping the underlying EC2 worker nodes. CloudFix identifies opportunities to modernize your EKS compute fleet by recommending migration to newer generation instance types, or switching to different architectures like AWS Graviton (ARM) or AMD-based instances. Additionally, CloudFix checks if Karpenter, an efficient open-source cluster autoscaler, is installed and suggests its adoption for further optimization if not present.
+
+## Manual Fix Required
+
+**CloudFix identifies these optimization opportunities but requires manual action to implement them.** Retyping EC2 instances within an EKS cluster involves modifying node group configurations (like ASG launch templates or Karpenter provisioners) and managing the replacement of existing nodes. Installing and configuring Karpenter also requires manual setup. Users must carefully plan and execute these changes.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How CloudFix Identifies the Opportunity](#how-it-works)
+-   [Manual Fix Steps](#manual-fix-steps)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+EKS clusters often utilize EC2 worker nodes that may not be the most cost-effective or performant options available. Older generation instances or architectures (like x86) might have higher costs compared to newer generations or alternatives like AWS Graviton (ARM). Furthermore, inefficient scaling mechanisms can lead to overprovisioning. Adopting modern instance types and efficient autoscalers like Karpenter can significantly reduce costs and improve performance.
+
+### Solution Identification
+
+CloudFix identifies non-Spot EC2 instances currently running as worker nodes in an active EKS cluster. It recommends retyping these instances to newer generations or more cost-effective architectures (Graviton, AMD) based on potential price/performance benefits. Separately, it checks for the presence of Karpenter within the cluster and suggests installing it if it's missing, as Karpenter can further optimize node provisioning and consolidation.
+
+## AWS Services Affected
+
+Service
+
+Icon
+
+[Amazon EKS](https://aws.amazon.com/eks/)
+
+![Amazon EKS](/media/uploads/Elastic-Kubernetes-Service.svg)
+
+[Amazon EC2](https://aws.amazon.com/ec2/)
+
+![Amazon EC2](/media/uploads/EC2.svg)
+
+## How CloudFix Identifies the Opportunity
+
+CloudFix identifies potential EKS EC2 optimization opportunities by:
+
+-   Identifying active EKS clusters and their associated non-Spot EC2 worker nodes.
+-   Recommending retyping to newer instance generations or architectures (Graviton/AMD) based on known price/performance advantages.
+-   Checking if Karpenter is deployed in the cluster via Kubernetes API inspection or other means.
+-   Suggesting Karpenter installation if not detected.
+
+## Manual Fix Steps
+
+After CloudFix identifies EKS EC2 optimization opportunities:
+
+### Retyping Instances:
+
+1.  **Review Recommendation:** Assess the recommended instance types (newer generation, Graviton, AMD). Verify compatibility with your workloads (e.g., application dependencies, container image architecture for Graviton).
+2.  **Update Node Group Configuration:**
+    -   **Managed Node Groups / ASGs:** Update the Launch Template associated with the Node Group / ASG to specify the new instance type(s).
+    -   **Karpenter:** Update the Provisioner CRD(s) to include the desired new instance types in the requirements or instance type lists.
+3.  **Implement Node Replacement:** Roll out the changes by replacing existing nodes with new ones based on the updated configuration. This can be done using:
+    -   EKS Managed Node Group version updates (if changing AMI and instance type).
+    -   EC2 ASG Instance Refresh.
+    -   Karpenter's natural node rotation/consolidation or by manually cordoning and draining old nodes.
+4.  **Monitor Cluster Health:** Observe pod scheduling, application performance, and node health after the changes.
+
+### Installing Karpenter (If Recommended):
+
+1.  **Follow Karpenter Documentation:** Refer to the official [Karpenter Getting Started Guide](https://karpenter.sh/docs/getting-started/) for detailed installation steps specific to EKS.
+2.  **Configure Provisioners:** Define Karpenter Provisioner CRDs specifying the desired instance types, zones, architectures, capacity types (Spot/On-Demand), and other constraints.
+3.  **Migrate Workloads (Optional):** Gradually migrate workloads from existing node groups (like ASG-based ones) to Karpenter-managed nodes by adjusting schedulers or taints/tolerations, eventually scaling down or removing old node groups.
+4.  **Monitor Karpenter:** Observe Karpenter logs and metrics to ensure it provisions nodes correctly based on workload demands.
+
+## FAQ
+
+**Q: Why are these manual fixes?**  
+A: Retyping instances requires careful validation of workload compatibility and managing node replacement, which can involve downtime or performance considerations. Installing and configuring Karpenter is a setup process requiring specific cluster configuration.
+
+**Q: What are the benefits of Graviton/AMD instances?**  
+A: AWS Graviton (ARM) instances often offer significantly better price/performance compared to equivalent x86 instances for many workloads. AMD instances can also provide cost-effective alternatives.
+
+**Q: What are the benefits of Karpenter?**  
+A: Karpenter can provision nodes more efficiently based on actual pod requests, often leading to better instance selection, faster scaling, and improved cluster utilization compared to traditional cluster autoscalers.
+
+**Q: Is downtime required?**  
+A: Installing Karpenter itself typically does not require downtime. Retyping existing EC2 instances \*does\* require replacing them, which involves potential downtime or careful management of node rotation and workload draining.
+
+## Related Resources
+
+-   [Karpenter Documentation](https://karpenter.sh/docs/)
+-   [Optimizing Kubernetes compute costs with Karpenter consolidation (AWS Blog)](https://aws.amazon.com/blogs/containers/optimizing-your-kubernetes-compute-costs-with-karpenter-consolidation/)
+-   [Amazon EKS](https://aws.amazon.com/eks/)
+-   [AWS Graviton](https://aws.amazon.com/ec2/graviton/)
+-   [EKS EC2 Manual Retyping (CloudFix Support)](https://support.cloudfix.com/article/16916-eks-ec2-manual-retyping)

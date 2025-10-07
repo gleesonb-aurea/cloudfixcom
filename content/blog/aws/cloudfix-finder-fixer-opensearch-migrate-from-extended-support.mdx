@@ -1,0 +1,104 @@
+---
+title: "CloudFix Finder/Fixer: OpenSearch Migrate from Extended Support"
+description: "AWS OpenSearch extended support incurs additional costs for maintaining older versions of OpenSearch or Elasticsearch. CloudFix identifies clusters running on e..."
+date: 2025-04-09 18:03:24
+modified: 2025-04-09 18:03:24
+category: "AWS"
+tags: ["AWS","cloud","security","migration","storage"]
+published: true
+slug: "cloudfix-finder-fixer-opensearch-migrate-from-extended-support"
+---
+
+AWS OpenSearch extended support incurs additional costs for maintaining older versions of OpenSearch or Elasticsearch. CloudFix identifies clusters running on extended support versions and helps migrate them to newer, fully-supported versions to eliminate these additional charges while maintaining service availability.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+OpenSearch and Elasticsearch domains that run on versions that have reached their end of standard support date incur additional charges for extended support. AWS charges an additional percentage of your monthly bill for these domains, which can significantly increase your AWS costs without providing any additional functionality.
+
+### How CloudFix Helps
+
+CloudFix identifies OpenSearch domains running on versions under extended support and facilitates migrating them to newer, fully-supported versions. This eliminates the additional extended support charges while maintaining service availability through AWS's blue/green deployment process.
+
+### Business Impact
+
+By migrating from extended support versions, organizations can:
+
+-   Eliminate extended support fees (which can be 10% or more of your OpenSearch costs)
+-   Maintain service availability during migration through blue/green deployment
+-   Gain access to newer features and improvements in the latest OpenSearch versions
+-   Reduce security risks associated with running older software versions
+
+## AWS Services Affected
+
+![Amazon OpenSearch Service](/media/uploads/OpenSearch-Service.svg)
+
+[Amazon OpenSearch Service](https://aws.amazon.com/opensearch-service/)
+
+## How It Works
+
+### Finder Component
+
+CloudFix identifies OpenSearch domains that can be migrated from extended support versions by:
+
+1.  Scanning your AWS environment for all OpenSearch domains
+2.  Checking the engine version of each domain against AWS's extended support version list
+3.  Identifying domains running on versions that incur extended support charges
+4.  Verifying that the domain is eligible for upgrade (in a green state, not using ultrawarm/cold storage)
+5.  Calculating potential savings based on current extended support fees
+
+### Fixer Component
+
+When you approve a fix, CloudFix:
+
+1.  Retrieves the target cluster attributes and verifies the Processing, UpgradeProcessing, and Deleted flags are all false
+2.  Determines the appropriate target version to upgrade to (typically the latest compatible version)
+3.  Initiates the upgrade process using AWS's blue/green deployment methodology to minimize disruption
+4.  Monitors the upgrade process for completion
+5.  Verifies the successful migration and confirms the elimination of extended support charges
+
+The blue/green deployment process minimizes the chances of disruption to the service during the version upgrade.
+
+## FAQ
+
+**What extended support versions does this fix target?**
+
+This fix targets OpenSearch domains running on Elasticsearch versions earlier than 7.10 and OpenSearch versions that have reached their end of standard support date according to AWS's timeline.
+
+**Will this fix cause downtime?**
+
+No. AWS uses a blue/green deployment process for OpenSearch version upgrades, which minimizes service disruption. The process creates a new environment with the upgraded version, syncs data, and then switches traffic over, maintaining availability throughout.
+
+**Are all OpenSearch domains eligible for this upgrade?**
+
+No. CloudFix excludes domains that are not in a green state or that use ultrawarm/cold storage, as these may require special handling during version upgrades.
+
+**How does CloudFix ensure the upgraded domain works correctly?**
+
+CloudFix leverages AWS's built-in upgrade validation processes. However, it's recommended that customers perform their own application-level testing after the upgrade to ensure all custom functionality remains intact.
+
+**Is it possible to rollback once CloudFix implements the fix?**
+
+While AWS doesn't provide a direct rollback mechanism for version upgrades, CloudFix monitors the process and can help address any issues that arise. In case of problems, a new upgrade may be required to resolve specific issues.
+
+**Can CloudFix implement the fix automatically once I accept the recommendation?**
+
+Yes, CloudFix can implement the fix automatically once you accept the recommendation.
+
+## Related Resources
+
+-   [AWS Developer Guide: Upgrading Amazon OpenSearch Service Domains](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/version-migration.html)
+-   [AWS Blog: OpenSearch Service Standard and Extended Support Dates](https://aws.amazon.com/blogs/big-data/amazon-opensearch-service-announces-standard-and-extended-support-dates-for-elasticsearch-and-opensearch-versions/)
+-   [CloudFix Support: Right Size ElasticSearch Clusters](https://support.cloudfix.com/article/17037-right-size-elasticsearch-clusters)
+-   [AWS Prescriptive Guidance: Migrating to Amazon OpenSearch Service](https://docs.aws.amazon.com/pdfs/prescriptive-guidance/latest/opensearch-service-migration/opensearch-service-migration.pdf)

@@ -1,0 +1,22 @@
+---
+title: "Reduce cloud costs by safely deleting AWS EBS snapshots"
+description: "Learn how to safely delete orphaned AWS EBS snapshots to reduce cloud costs"
+date: 2022-06-09 12:53:40
+modified: 2022-11-17 14:01:56
+category: "AWS"
+tags: ["AWS","cloud","ec2","cost optimization","monitoring"]
+published: true
+slug: "reduce-aws-ebs-costs-orphaned-snapshots"
+---
+
+## Finding savings: What are orphaned snapshots?
+
+When you delete an EBS volume, any existing snapshots of the volume remain. These are called “orphaned” snapshots. As long as these orphaned snapshots are not used for other purposes, they can safely be deleted to cut costs. When deleting EC2 instances or EBS volumes, it is easy to forget about their backups. EBS snapshots cost **$0.05/GB per month**, so maintaining orphaned snapshots can accrue unnecessary costs.
+
+## Realizing savings: How deleting orphaned snapshots lowers your costs
+
+Orphaned snapshots can be removed if you use EC2 Data Lifecycle Manager (DLM) to create backups of your EC2 instances. DLM will not automatically delete orphaned snapshots for you. You can read [more information here](https://awsmadeeasy.com/blog/reduce-aws-ebs-costs-orphaned-snapshots/) on how to identify and remove orphaned EBS snapshots. With this fix in place, you can be sure that you are never paying for orphaned EBS snapshots that do not serve any development or archival purposes.
+
+## Optimizing savings: Deleting unnecessary EBS snapshots
+
+Realistically, modern businesses need cost optimization across their entire AWS environment. That’s why we created CloudFix. CloudFix optimizes your AWS safely by regularly monitoring usage and cost, searching for opportunities to realize risk-free savings. Not only does CloudFix monitor for these opportunities, but it will also fix them for you. This means that you can now be efficient as well as effective. CloudFix not only monitors EBS snapshots, but it also monitors for numerous other optimizations. Pulling from AWS’s own advisory blog for risk-free solutions, CloudFix filters through potential savings opportunities to find and present the right ones for your business. Introducing CloudFix to your business will optimize your AWS space to be more efficient, have better performance, and save you money.

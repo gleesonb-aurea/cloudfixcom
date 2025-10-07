@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
+import Link from 'next/link';
 
 export default function Newsletter() {
   const [email, setEmail] = useState('');
@@ -72,6 +73,7 @@ export default function Newsletter() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
+                aria-label="Email address"
                 className="flex-1 px-6 py-4 rounded-lg text-gray-900 focus:outline-none focus:ring-4 focus:ring-white/30"
                 disabled={status === 'loading'}
               />
@@ -101,9 +103,9 @@ export default function Newsletter() {
 
           <p className="text-sm opacity-80 mt-6">
             We respect your privacy. Unsubscribe at any time.{' '}
-            <a href="/privacy-policy" className="underline hover:opacity-100">
+            <Link href="/privacy-policy" className="underline hover:opacity-100">
               Privacy Policy
-            </a>
+            </Link>
           </p>
         </div>
       </div>

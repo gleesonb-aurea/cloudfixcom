@@ -1,0 +1,83 @@
+---
+title: "Start small, save big: 3 steps to ongoing AWS cost savings"
+description: "Overview: It’s challenging to control AWS costs, but by starting small and building on your wins, you can spend less today and in the future. Step one: Identify..."
+date: 2023-08-14 21:44:04
+modified: 2023-12-01 09:32:15
+category: "AWS"
+tags: ["AWS","cloud","ec2","s3","rds"]
+published: true
+slug: "start-small-save-big-3-steps-to-ongoing-aws-cost-savings"
+---
+
+Overview:
+
+-   It’s challenging to control AWS costs, but by starting small and building on your wins, you can spend less today and in the future.
+-   Step one: Identify and implement simple, non-disruptive fixes to save 10-15% with zero downtime.
+-   Step two: Invest in deleting your old code and replacing it with AWS managed services that deliver improved cost savings, innovation, and performance. 
+-   Step three: Save 50% or more by rewriting products to be truly cloud native.
+
+If your organization is anything like ours, your AWS bills continue to rise. There’s a good reason for that: AWS offers tremendous opportunities for innovation, modernization, and transformation, so we continue to expand how we take advantage of their services. Increased usage, however, comes with increased cost, and controlling AWS spend isn’t easy or intuitive. With such a dynamic ecosystem that grows more complex every day, it’s incredibly challenging to stay ahead of every chance to operate more efficiently and cost-effectively. 
+
+That doesn’t mean, however, that you can write off the effort – or that it’s impossible. As CTO of ESW Capital, I have relied on AWS since 2008. My team manages 40,000 AWS accounts across 150 enterprise software companies. We’ve been through the trenches of AWS cost optimization for 15 years and, with time and trial, have put systematic processes in place that control AWS costs consistently and reliably. 
+
+Our strategy: start small and build on your wins. By strategically reinvesting your savings at each stage, you can put in place an ongoing FinOps practice that reduces costs today and sets your business up for future success. Here’s how we did it – and why it worked.
+
+## Step 1: Save 10% with easy, AWS-recommended fixes
+
+Every week, AWS releases 50-60 advisories in the form of [blog posts](https://aws.amazon.com/pt/blogs/aws/category/management-tools/aws-trusted-advisor/). These include recommendations for how to optimize AWS services for both performance and cost. AWS is generous with its knowledge, communication, and advice, but trying to keep up with every advisory is like standing in front of a firehose. It’s a lot to take in at once. 
+
+> _The key here is to filter through this stream of information and identify the simple fixes that are non-disruptive to both the deployment environments and developer workflows.  
+> _
+
+Subscribe to the RSS feed to see what’s relevant to your environment as well as easy and impactful. Alternately, look for a tool (like the one we built, called CloudFix) that keeps up with the advisories and implements the fixes automatically.
+
+Examples of these quick and easy projects include:
+
+-   [Switching from gp2 to gp3](/blog/migrate-gp2-to-gp3-better-performance-lower-costs/). AWS is completely upfront about the fact that gp3 is as performant as gp2 and, as a rule, 20% cheaper. They also make it seamless to switch from one type to the other. They don’t, however, do it for you… and they do make gp2 the default volume type for most new EC2 instances. When you take the time to transition all of your volumes, though, you save 20% instantly on EBS. 
+-   [Making AWS S3 Intelligent-Tiering your default storage class](/blog/aws-s3-intelligent-tiering-default-storage-class/). Over 90% of objects in S3 are accessed only once. That’s an incredible amount of wasted spend, and surely a reason that S3 is often in our customers’ top three AWS expenses. Simply switching to Intelligent-Tiering dramatically reduces those costs, even if you only use the first two layers of infrequent access. With S3 Intelligent-Tiering, there are no latency penalties, no retrieval charges, no minimum storage duration, and you can save 30-40%. The only catch: as with migrating to gp3, you have to physically go into every bucket and turn it on.
+-   [Archiving EBS snapshots](/blog/cutting-aws-costs-ebs-volume-snapshot-archiving/). EBS snapshots pile up quickly and are complicated to delete thanks to their incremental nature. To solve this challenge, AWS introduced a low-cost storage tier called EBS Snapshots Archive. They also published very lengthy and dense documentation about how to ensure that you have picked the right snapshot candidates to archive, which is not particularly fun to parse, but can reduce EBS costs by up to 75%. If you don’t pick the right candidates, you can pay as much as double your current costs. (This was one of the most complicated CloudFix fixers to build and I’m particularly proud of it. [Read this blog](/blog/cutting-aws-costs-ebs-volume-snapshot-archiving/) for a relatively simple explanation of how to go about archiving EBS snapshots manually or with CloudFix.) 
+-   Turning off unused EC2 volumes. Some efforts are even simpler. For example, by turning off only six M4.xl instances, you can save $10k. Spend an hour, get $10,000 to invest in additional changes to your application (see step 2) to save even more.
+
+Each of these fixes requires either some time and elbow grease or an automated way to securely make the changes. In either case, executing them will save you 10-15% on your overall AWS bill with zero risk or downtime. AWS has done the hard work, you just have to flip all the switches.
+
+## Step 2: Save 30% by leveraging AWS managed services
+
+Every company has a variety of home-grown solutions running in the background that they’ve built over the last 10-20 years. Originally, these tools met some specific use case, but today, most of this functionality is available as commodity services in the AWS catalog and are more reliable, scalable and performant than any homegrown solution. With the savings you achieved by running the quick-and-easy wins, you can invest in deleting your old code and replacing it with AWS managed services that deliver improved cost savings, innovation, and performance. . 
+
+While back-of-the-envelope math may make it seem as if managed services are more expensive, that’s almost never the case. AWS managed services are highly scalable, reliable, and cost less to manage. All operational metrics are provided out of the box and all patching, bug fixing, maintenance, scaling, etc. is taken care of for you. That not only saves your team a huge amount of time and effort, it ensures that you’re always running the most up-to-date and secure version of that functionality. For higher order services too, like Amazon Rekognition, Personalize, and Forecast, it saves you the challenges of creating your own models and solutions for today’s increasingly sophisticated requirements. 
+
+When it comes to managed services, you unlock real value when you identify patterns that allow you to stitch these services together to achieve outcomes that are 100x better than the old on-prem way of doing things.  
+
+Amazon Aurora is a great example of this. Across our 150 companies at ESW Capital, we used to have thousands of databases distributed across our accounts. Managing them and keeping track of them became an absolute nightmare. When we discovered Aurora, we decided to test it to its limits. We set up the largest Aurora cluster we could get and put all of our schemas on that cluster to see how well it would scale. 
+
+Most of our dev and staging instances barely clocked 1% in utilization, so a “bin-packing” solution seemed like a smart way to consolidate these schemas on a single instance. We now have over 2,000 schemas on a cluster with four Db.R7g.16xl instances. By packing the schemas into a large database, each one gets significantly more resources to operate. The IOPS is fantastic, each schema has access to huge amounts of RAM, and every performance characteristic is better than using an individual tiny database. Plus, we no longer have 2,000 databases to maintain across all of our accounts. The marginal cost of adding a new database schema to our Aurora clusters: zero. 
+
+Another pattern that we have found incredibly valuable is our approach to BI solutions. Every enterprise product has some version of a dashboard/BI tool that allows its users to slice and dice their data. Using AWS managed services, we standardized our BI solution set across our product suite. We put data into an S3 data lake, use Athena to query the data as standard SQL, then use QuickSight dashboards that can be embedded into the applications. If the database requires more real-time querying capabilities, not a problem; we replace S3 with Spectrum or Redshift. This standard pattern saves every application hundreds of thousands of lines of code and takes just days for our team to implement into a new product. 
+
+The net-net:
+
+> _There is no value in owning code that performs commodity operations. Using the managed service is not only more cost effective, but it is also more reliable, scalable, and performant.  
+> _
+
+## Step 3: Save 50%+ with true product rewrites
+
+At ESW Capital, we frequently acquire products that were written 20-40 years ago. We decided that we would rebuild each of these products to be entirely cloud native. Then we went about it in entirely the wrong way. 
+
+Initially, we attempted to create feature parity between the old and new solutions. We spent over a million dollars at minimum each time, and we did not succeed even once. It just doesn’t work to migrate old-school applications feature for feature to the cloud. These applications were created for a different paradigm and so much detritus builds up over the decades, it’s ridiculously hard to replicate, even if you wanted to. 
+
+We then changed our approach to creating a completely new cloud native solution based on the product’s true value proposition. We asked ourselves what core features made the customers love it and how we could recreate that using cloud-native solutions. Just like our approach to BI, there are patterns to be discovered here. In this case, we standardized on an OLTP stack based on Amazon DynamoDB, Cognito, AppSync, and Amplify to streamline and simplify operations.
+
+> _The result: we reduced millions of lines of code to about 10,000 lines.  
+> _
+
+We only had to write schemas and permission policies. We ended up with all the standard CRUD operations with native support for custom fields in a more scalable, reliable, and elastic package – for about 1/10 the cost to deploy and run.
+
+Of course, rewriting products is the final step for a reason. Even when you rely on managed services and repeatable processes, it takes time and resources. When you start small, however, and use your incremental savings to invest in more cost- and time-intensive projects like product rewrites, you ensure that you continue reducing costs while improving your business outcomes.
+
+## Start small. Build momentum. Keep going. Save millions.
+
+Using these steps, you can start gradually. Instead of going all-in with a brand new FinOps practice that promises to save 50% right out of the gate, you can get some easy wins. This creates momentum, gets leadership on board, and demonstrates measurable and incremental progress. It keeps everyone invested in the program, emotionally and financially, and prevents friction with dev teams that are asked to boil the ocean. AWS likes to say internally that teams should get 1% better every week. This approach is our version of that philosophy. 
+
+One last word: AWS cost optimization can never be a once-and-done activity. To succeed, it must be continuous, designed to build on itself and keep up with that firehose. Your teams are deploying new instances and tearing down old ones every day. AWS services, and the best practices around them, are constantly changing. The only way to stay on pace is by using repeatable processes and proven automation that can keep cost optimization running, day in and day out.
+
+Is controlling AWS costs easy? No. Is it possible? 100%. Forget the ad hoc, open-heart-surgery projects and focus on ways to save today. Before you know it, that first $10k in savings will turn into millions.

@@ -1,0 +1,309 @@
+---
+title: "Eliminating idle VPC endpoints: How to achieve greater AWS cost savings"
+description: "Warp pipes – the technical term for the green tubes/tunnels in the Super Mario world. I recently saw the Super Mario Brothers movie with my family. We loved it!..."
+date: 2023-05-15 11:56:43
+modified: 2023-09-05 06:35:18
+category: "AWS"
+tags: ["AWS","cloud","lambda","ec2","s3"]
+published: true
+slug: "eliminating-idle-vpc-endpoints-achieve-aws-cost-savings"
+---
+
+**Warp pipes**  
+_– the technical term for the green tubes/tunnels in the Super Mario world.  
+_
+
+I recently saw the Super Mario Brothers movie with my family. We loved it! It was really fun seeing the iconic characters take on a whole new depth. At the beginning, Mario and Luigi’s adventures start when they’re sucked into a warp pipe. The warp pipe, one of the green teleportation tubes that connect different worlds, separates the intrepid brothers and kicks off their journeys in the Mushroom Kingdom and beyond.
+
+\[caption id="attachment\_13153" align="alignnone" width="256"\]![A still image from the mario games, showing the warp pipes. We are using the warp pipes as a metaphor for VPCs which can connect bits of of virtual infrastructure](/media/uploads/Mario-Warp-Pipes.png) Welcome to the [warp zone](https://mario.fandom.com/wiki/Warp_Zone)\[/caption\]
+
+If we think about AWS like the Mario Brothers universe, Virtual Private Clouds (VPCs) would be the warp pipes and their endpoints would be the ends of the pipe, where you pop out or drop in. VPCs and their endpoints are an important part of the behind-the-scenes infrastructure that keeps bits and bytes flowing to the right places. They also, however, come with the potential to overspend. When we don’t keep track of idle endpoints – the ones we no longer use – the costs add up. 
+
+Let’s take a closer look at why we end up with idle VPC endpoints, what it’s costing us, and how to save thousands of dollars every year by getting rid of them.
+
+## Table of Contents
+
+1.  [The warp pipes of AWS: A quick overview of Amazon Virtual Public Clouds (VPCs)](#warp-pipes-of-aws)
+2.  [3 reasons why idle VPC endpoints pile up](#why-idle-vpc-endpoints-pile-up)
+3.  [How much are idle VPC endpoints costing you?](#idle-vpc-endpoints-cost)
+4.  [How to manually eliminate idle VPC endpoints](#manually-eliminate-idle-vpc-endpoints)
+5.  [So long, human error: Eliminate idle VPC endpoints automatically with CloudFix](#automate-with-cloudfix)
+
+## The warp pipes of AWS: A quick overview of Amazon Virtual Public Clouds (VPCs)
+
+Let’s start with the basics. With [Amazon VPC](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html), you can define logically isolated virtual networks that contain your AWS infrastructure. Much like configuring routers, VPCs let you build and configure networks to your exact needs. This includes specifying IP address ranges, creating subnets, and configuring routing tables and network gateways. VPCs can span AWS availability zones within a region. With AWS PrivateLink, you can also connect directly to particular AWS services, on-prem networks via a VPN connection, or to other VPCs via a private IP address.
+
+A VPC can contain EC2 instances, RDS instances, Lambda functions, and more. In addition, VPC _endpoints_ allow code running within the VPC to connect to the APIs for particular AWS services without using public IP addresses. There are three types of VPC endpoints:
+
+1.  [_Gateway endpoints_](https://docs.aws.amazon.com/vpc/latest/privatelink/gateway-endpoints.html). Gateway endpoints allow the VPC to extend to include S3 and DynamoDB. They allow private traffic between these services and your VPC without any other infrastructure, keeping that traffic off of the public internet. There are no charges associated with gateway endpoints, so we can set them aside for the purposes of this conversation.
+2.  [_Gateway Load Balancer endpoints_](https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/getting-started.html). Gateway Load Balancers route traffic within the VPC to/from virtual appliances. Gateway Load Balancer endpoints (GWLBEs) connect Gateway Load Balancers to the rest of the VPC. In [AWS’s own words](https://aws.amazon.com/elasticloadbalancing/gateway-load-balancer/), GWLBEs “connect Internet Gateways, VPCs, and other network resources over a private connection. Your traffic flows over the AWS network, and data is never exposed to the internet." These endpoint types incur an hourly charge regardless of usage, so we will be looking at these carefully. 
+3.  [_Interface endpoints_](https://docs.aws.amazon.com/vpc/latest/privatelink/create-interface-endpoint.html). Interface VPC endpoints connect to services powered by AWS PrivateLink. For example, with Interface endpoints, you can access Amazon S3 directly from a VPC, without your traffic going over the public internet. Other powerful use cases include accessing RDS, Secrets Manager, or Lambda from a VPC. (You can see the full list of services that support Interface endpoints [here.](https://aws.amazon.com/blogs/architecture/choosing-your-vpc-endpoint-strategy-for-amazon-s3/)) Similar to GWLBEs, Interface endpoints incur an hourly charge, so we have to pay attention to their usage.
+
+While each of these types of VPC endpoints supports a unique type of connection, they have one thing in common: it’s easy to rack up too many of them and spend too much on endpoints that you don’t need.
+
+## 3 reasons why idle VPC endpoints pile up
+
+There are a few different ways that we end up with idle endpoints:
+
+1.  _Incomplete configurations_. During the development and testing process, it’s simple to create new resources. In fact, you often see infrastructure labeled `test-12-i-hope-this-works`, `test-13-delete-this`, `test-14-almost-got-it`, etc. Ideally, once the configuration stabilizes, it’s captured in a CloudFormation template or some other IAC solution. IAC creates resources as a logical group, and when the service isn’t needed, it deactivates and deletes all of the associated resources at once. However, during testing, when you are creating resources on an ad-hoc basis, there is no mechanism to remind you to delete the associated resources. As a result, we end up with idle VPC endpoints.
+2.  _Retired services_. Services become deprecated over time. While we’re usually good at remembering to delete the more expensive resources associated with those services, like EC2 instances and RDS databases, we often forget the bits and pieces. (This happens with [Elastic Load Balancers](/blog/savings-remove-idle-elastic-load-balancers/) and [Elastic IP addresses](/blog/remove-unused-aws-elastic-ip-addresses-cut-costs-improve-security/), too.) It’s just like in Mario Brothers. We make sure to get all of the ![Super Mario mushroom](/media/uploads/super_mario_mushroom.png)s, but if we’re in a hurry, we skip some of the ![Super Mario coin](/media/uploads/super_mario_coin.png)s. If only Mario had access to an automated tool like CloudFix… we’d be 1up-ing all day long. 
+3.  _Orphaned resources / scaling down_. It’s possible to delete VPCs and security groups without deleting the endpoints. This results in orphaned VPC endpoints that no longer serve a purpose.
+
+It often happens during the scaling down process, when some of the infrastructure such as VPC endpoints remain. We don’t need these endpoints, so there’s no point in maintaining and paying for them.
+
+All of these scenarios are becoming more common. As app deployments grow increasingly complex, the use of VPCs grows too. The result: more endpoints in general, more idle endpoints, and more opportunity to overspend. 
+
+## How much are idle VPC endpoints costing you?
+
+Why does it matter if we have idle VPC endpoints floating around? Because we’re paying for something that we don’t need, and that’s never good business.
+
+Let’s look at some numbers. GWLBEs and Interface endpoints are charged at a fixed hourly rate, as well as cost per petabyte. Here’s the current pricing, as of May 2023 in `us-east-1`:
+
+**Category**
+
+**Element**
+
+**Cost**
+
+Interface Endpoint
+
+Fixed hourly
+
+$0.01/hr
+
+Interface Endpoint
+
+First 1 PB
+
+$0.01/GiB
+
+Interface Endpoint
+
+Next 4 PB
+
+$0.006/GiB
+
+Interface Endpoint
+
+Anything over 5 PB
+
+$0.004/GiB
+
+Gateway Load Balancer Endpoint
+
+Fixed hourly
+
+$0.01/hr
+
+Gateway Load Balancer Endpoint
+
+Data charges
+
+$0.0035/GiB
+
+This doesn’t look like much at first glance, but over time and at scale, it adds up. Your idle VPC endpoints don’t incur the data charges, but you are still paying the hourly charge. That amounts to approximately $90/year, per endpoint. That sounds like crumbs… but enough crumbs can create a serious mess (fellow parents will feel me here deeply.) 
+
+Think about it this way: if you got rid of 30 idle VPC endpoints every year, that’s $2,700 back in your pocket. That’s almost three grand that you could reinvest into something far more valuable than idle endpoints, from additional AWS services to a retro arcade machine for the office (I vote for [Teenage Mutant Ninja Turtles](https://www.youtube.com/watch?v=QMm6NIhJFJ4).)
+
+How much can your organization save by eliminating idle VPC endpoints? We typically find that between 5-10% of a company’s average AWS spend comes from VPCs. Of that, about 5% (of the 5-10%) can be attributed to idle VPC endpoints. For 1M of annual AWS spend, that’s $5K annually – more than enough for the Ninja Turtles.
+
+## How to manually eliminate idle VPC endpoints
+
+So, it’s clear how we end up with idle VPC endpoints and how much we’re paying for them (too much!) Now let’s see how to get rid of them. This process has three steps:
+
+1.  List all the VPC endpoints
+2.  Determine if the endpoints are idle
+3.  Delete idle VPC endpoints 
+
+### 1\. List all the VPC endpoints
+
+The easiest way to list all of your VPC endpoints is to use the AWS Cost and Usage Report (CUR). To find them, we can use this query:
+
+```sql
+SELECT
+  line_item_usage_account_id AS account_id,
+  SUBSTRING(line_item_resource_id, POSITION('/' IN line_item_resource_id)+1) AS endpoint_id,
+  line_item_product_code AS endpoint_product_code,
+  line_item_operation AS endpoint_operation,
+  SUM(line_item_unblended_cost)  AS data_charges
+FROM <YOUR CUR DB>.<YOUR CUR TABLE>
+WHERE 
+  product_region = 'us-east-1' -- replace with the region where your endpoints are located
+  AND line_item_line_item_type LIKE  'Usage'
+  AND line_item_product_code = 'AmazonVPC'
+  AND line_item_operation LIKE 'VpcEndpoint'
+  AND line_item_usage_start_date >= date_trunc('day', current_date - interval '31' day)
+GROUP BY
+  line_item_line_item_type,
+  line_item_usage_account_id,
+  line_item_resource_id,
+  line_item_product_code,
+  line_item_line_item_type,
+  line_item_operation;
+```
+
+Notice that we’re searching the product code for `AmazonVPC` and for the operation `VPCEndpoint`. We can also look for the `CreateVPCEndpoint` or `CreateVPCEndpoints` operations if we want to drill down to exactly when the changes happened. This query will produce output which looks like the following table:
+
+**account\_id**
+
+**endpoint\_id**
+
+**endpoint\_product\_code**
+
+**endpoint\_operation**
+
+**data\_charges**
+
+1234567890
+
+vpce-0123456789abcdef
+
+AmazonVPC
+
+VpcEndpoint
+
+12.34
+
+2345678901
+
+vpce-abcdef0123456789
+
+AmazonVPC
+
+VpcEndpoint
+
+23.45
+
+2345678901
+
+vpce-eff9310123456789
+
+AmazonVPC
+
+VpcEndpoint
+
+0.0
+
+The VPC endpoint list that we’re looking for is in the endpoint\_id column in this table, with each identifier representing one endpoint. Now that we have those identifiers, we can figure out if they’re idle.
+
+### 2\. Determine if the endpoints are idle
+
+We’ll continue to use the CUR to determine if the VPC endpoints are idle. Looking at the table, we already have the data we need. Remember from the pricing table that there is both a fixed hourly charge as well as a per/GiB charge. If there’s no data going through, then there will be no data charges, and we can infer that the endpoint is idle. 
+
+### 3\. Delete idle VPC endpoints 
+
+We now have a list of endpoint\_id's that aren't moving any data, so are almost certainly idle. Let's use the [DescribeVpcEndpoints API](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVpcEndpoints.html) to check on the state of the endpoint. We can use the following command to query the VPC endpoints:
+
+```bash
+aws ec2 describe-vpc-endpoints \
+    --vpc-endpoint-ids vpce-0123456789abcdef
+```
+
+The output of the command is given by this JSON response:
+
+{
+    "VpcEndpoints": [
+        {
+            "VpcEndpointId": "vpce-0725b5d5bc12ac9ca",
+            "VpcEndpointType": "Interface",
+            "VpcId": "vpc-0d6ffa7d6cdd9dae9",
+            "ServiceName": "com.amazonaws.us-west-2.s3",
+            "State": "Available",
+            "PolicyDocument": "{\"Version\":\"2008-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":[\"s3:*\"],\"Resource\":[\"*\"]}]}",
+            "RouteTableIds": [],
+            "SubnetIds": [
+                "subnet-008085f956ef73dce",
+                "subnet-036c2b0227caea192",
+                "subnet-0f96d995b15cce2bf"
+            ],
+            "Groups": [],
+            "PrivateDnsEnabled": false,
+            "RequesterManaged": false,
+            "NetworkInterfaceIds": [
+                "eni-0f11a0b936dcfdf06",
+                "eni-08503bc0137bab266",
+                "eni-03e86c9bbc8b7de1d"
+            ],
+            "DnsEntries": [],
+            "CreationTimestamp": "2021-09-10T12:34:56.000Z",
+            "Tags": [
+                {
+                    "Key": "Name",
+                    "Value": "MyVPC-Endpoint"
+                }
+            ],
+            "OwnerId": "123456789012"
+        }
+    ]
+}
+
+Look at the state object.
+
+Note that the `State` value is `Available`. The possible values of `state` are `PendingAcceptance`, `Pending`, `Available`, `Deleting`, `Deleted`, `Rejected`, `Failed`, and `Expired`. Those translate to:
+
+**State**
+
+**Meaning**
+
+PendingAcceptance
+
+The VPC endpoint is waiting for the owner of the service to accept the new VPC endpoint.
+
+Pending
+
+The VPC endpoint creation is in progress and it is not yet available for use.
+
+Available
+
+The VPC endpoint has been successfully created and it is now available and operational for use.
+
+Deleting
+
+The VPC endpoint is in the process of being deleted, but the deletion is not yet complete.
+
+Deleted
+
+The VPC endpoint has been deleted and is no longer available for use.
+
+Rejected
+
+The VPC endpoint was rejected by the service owner during the PendingAcceptance state and will not be created.
+
+Failed
+
+The VPC endpoint creation failed due to an error or issue, and it will not become available for use.
+
+Expired
+
+The VPC endpoint reached its expiration time and is no longer available for use.
+
+We can see that `Available` applies to VPC endpoints that are in use. There is no `InUse` state (although that would make things easier). We only use endpoints in the `Available` state because the other states imply that some sort of transition is taking place that we don’t want to interrupt. Endpoints that are stuck in one of the other states should be cleaned up in the long term, but that’s a task for another day.
+
+Once we have a list of VPC endpoint identifiers, have validated that they have no traffic, and have used the `DescribeVpcEndpoints` to make sure that they are in an active state, we can delete them. To do this, use this command:
+
+```bash
+aws ec2 delete-vpc-endpoints --vpc-endpoint-ids vpce-0725b5d5bc12ac9ca
+```
+
+The command will produce the following output:
+
+{
+    "Unsuccessful": [],
+    "Successful": [
+        {
+            "VpcEndpointId": "vpce-0725b5d5bc12ac9ca"
+        }
+    ]
+}
+
+Endpoints that are successfully deleted will appear in the `Successful` array. Congratulations: you’re no longer paying for idle VPC endpoints. 
+
+## So long, human error: Eliminate idle VPC endpoints automatically with CloudFix
+
+You could go through this very tedious process every month or so, but (a) it’s extraordinarily boring, (b) your engineers have more valuable ways to spend their time, especially given the relatively modest amount of savings, and (c) it’s extremely error prone. Looking through all those identifiers in the command line, running the commands, combing through the outputs, copying down all the VPC IDs, on and on… there are lots of opportunities to miss something or make a mistake. We are, after all, human.
+
+You could also write your own automation. You have to use the command line tools to get the data, so while you’re in there, you might as well put a program together. That too, however, is far from foolproof. Your program would need to understand how to deal with errors at each step. You’d need to retry something if it fails, report it back, surface the findings, and keep track of how often you did it. This is a classic case of what we call “undifferentiated heavy lift.” It’s monotonous work that’s prime to be outsourced.
+
+Enter CloudFix. CloudFix makes it simple to get rid of idle VPC endpoints and reclaim that spend. We thoroughly developed and tested the _Cleanup Idle VPC Endpoints_ finder/fixer to minimize any risk. We prioritize not disrupting services that are in use by making sure that the VPC endpoints targeted for deletion haven’t transferred any data in the past 31 days. We also built the automation to account for any errors and all the steps along the way. All you have to do is enable the fixer, evaluate and approve the changes, and start saving.
+
+Take human error – and human effort – out of the equation. With CloudFix, you’ll save just as many gold coins as Mario and Luigi, with a whole lot less effort. We call that a new high score in the game of AWS cost savings.

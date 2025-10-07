@@ -7,6 +7,7 @@ export interface LiveStreamUpcoming {
   date: string;
   description: string;
   registrationUrl: string;
+  embedUrl?: string;
 }
 
 export interface LiveStreamPast {
@@ -14,6 +15,7 @@ export interface LiveStreamPast {
   title: string;
   date: string;
   recordingUrl: string;
+  embedUrl?: string;
 }
 
 export interface LiveStreamData {

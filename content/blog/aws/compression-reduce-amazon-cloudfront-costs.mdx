@@ -1,0 +1,130 @@
+---
+title: "Reduce Amazon CloudFront Costs by 65% with Compression"
+description: "Table of contents Compressing data with CloudFront How compression works Benefits of compression: Reduced costs, increased performance How to manually enable au..."
+date: 2023-03-06 08:57:30
+modified: 2025-01-23 11:21:07
+category: "AWS"
+tags: ["AWS","cloud","ec2","s3","rds"]
+published: true
+slug: "compression-reduce-amazon-cloudfront-costs"
+---
+
+### Table of contents
+
+-   [Compressing data with CloudFront](#compressing-data)
+-   [How compression works](#how-compression-works)
+-   [Benefits of compression: Reduced costs, increased performance](#benefits-of-compression)
+-   [How to manually enable automatic compression in Amazon CloudFront](#how-to-enable-compression)
+-   [Even easier: Enable compression with CloudFix](#enable-compression-with-cloudfix)
+
+## Compressing data with CloudFront
+
+Picture this: it’s 1994. Dressed in your favorite flannel, you sit down at the family computer to download a shareware demo of the hottest new game – [Jazz Jackrabbit](https://www.youtube.com/watch?v=b16upFloYak), maybe, or Unreal, or Tyrian. The modem makes its signature chirps and beeps as it connects to your ISP. You start the download, then check back in several hours. It’s almost done. You’re so close. And then… your mom needs to make a phone call. Game over.
+
+![](/media/uploads/download_dialog.gif)
+
+_[Waiting with bated breath](https://gifer.com/en/7rFB)_
+
+This painful scenario, familiar to many of us of a certain age, demonstrates how compression has been part of daily computer life for decades. Back then, you hoped that the data you were downloading was as compressed as possible, so you could access it sooner with less chance of interruption (thanks a lot, Mom.) Today, the days of waiting hours to download something are behind us, but compression is just as important – especially when it comes to reducing your costs on Amazon CloudFront. 
+
+In this fixer blog, we’re going to squeeze (see what we did there) the most value we can out of compressing data with CloudFront. We’ll cover how compression works, when and how to turn it on, and how to enable compression quickly and easily with CloudFix.
+
+## “There’s no excuse for serving uncompressed HTML”: Save 65% or more by enabling automatic compression
+
+CloudFront is Amazon’s content distribution network (CDN). Many AWS-based web applications use it to serve data quickly and efficiently to internet users. CloudFront charges based on “data egress,” meaning the amount of data transferred from CloudFront to the client. 
+
+Since 2015, CloudFront has supported compression. This feature is a game-changer: it can automatically compress many types of files, [reducing data egress costs by 65%](https://quixdb.github.io/squash-benchmark/) (and that’s a conservative estimate). In fact, [according to Amazon](https://aws.amazon.com/blogs/aws/new-gzip-compression-support-for-amazon-cloudfront/), _“For a typical web page composed of a mix of text, scripts, and images, the overall payload reduction can approach 80%.”_ We’ll take it.
+
+Before we dig into the benefits of compression, let's review how it works.
+
+![Request and response](/media/uploads/request-response.png)
+
+In a very simplified client-server model, the client (“End User”) makes a request and the server (the “Origin”) responds. In the old days of the internet, the origin was a physical server, either at home, the office, or a colocation facility. As cloud computing grew, the “origin” could be an EC2 instance or even an S3 bucket hosting static content. 
+
+The setup of this model is straightforward, but if the end user happens to be located far away from the origin, connection latency becomes an issue. Plus, as the number of users grows, all of the requests need to be served by the origin server.
+
+![CloudFront cache miss](/media/uploads/cache_miss.png)
+
+The CloudFront CDN addresses these challenges. Using CloudFront, the client sends the initial request (1). Notice that the end user’s request contains an `Accept-Encoding: gzip` header. This means if the client receives compressed data, it will be able to decompress it. The request is for a file called `new.js`. CloudFront checks to see if it has a cached copy of this file (2), and since it does not, it forwards the request to the origin (3). 
+
+The origin responds (4) with the file, but note the lack of a `Content-Encoding` header. This means that the origin is responding with the uncompressed file. CloudFront will (5) compress the file and add it to its cache. It will then (6) respond to the end user, adding a `Content-Encoding: gzip` header to let the end user know that the response is compressed with gzip.
+
+The next time a request comes through for `new.js`, the process is a lot simpler and faster.
+
+![Cached request](/media/uploads/cached_request.png)
+
+CloudFront already has a copy of `new.js` and its compressed counterpart, `new.js.gz`. Since the end user has included the `Accept-Encoding: gzip` header, it can send back a compressed response and let the client know with the Content-Encoding: gzip response header. 
+
+## This is where the cost savings come in
+
+The average “compression ratio” for a JavaScript file is 77% – which means compression can yield a 77% reduction in data egress charges. The reduced data transfer time is a nice advantage as well (our 1994 selves would be jealous). 
+
+Some folks worry that there is additional overhead on the client side to decompress the file. False! Studies have actually shown that [gzip decompression is orders of magnitude faster than data transfer time](http://henry.precheur.org/web/http_compression). That article concludes by definitively stating:
+
+_There’s no excuse for serving uncompressed HTML._
+
+We agree. Compression is a fantastic win-win situation: reduced costs for the hosts and increased performance for the end user.
+
+Quick disclaimer: it’s not quite as simple as enabling CloudFront compression and suddenly saving 77% everywhere, every time. Sometimes compression isn’t the right solution. For some file types (mostly ones that are already compressed by nature, like JPG and video) compression doesn’t apply. But for text-based files like Javascript, XML, and HTML, it's an easy win.
+
+## How to enable automatic compression in Amazon CloudFront
+
+So compression is (usually) a very good thing that can significantly reduce your data egress charges and improve transfer speeds. It’s no wonder that [88% of websites use compression](https://w3techs.com/technologies/details/ce-compression#:~:text=Compression%20is%20used%20by%2088.1%25%20of%20all%20the%20websites.) and experts consider it a best practice. Let’s look at how to enable it in your environment.
+
+You can turn CloudFront compression on and off by simply setting `Compress` to `true` in AWS CloudFormation (assuming the distribution is controlled by CloudFormation), or by using the CloudFront API. It can also be done using the AWS Management Console. To do this, open the CloudFront console and toggle the Compress Objects Automatically setting to Yes.
+
+![Edit cache behavior settings](/media/uploads/cache_behavior_settings.png)
+
+For compression to happen, compatible cache policy settings must be in place. The critical settings in the cache policy are:
+
+1.  `EnableAcceptEncodingGzip` and `EnableAcceptEncodingBrotli` to `true` 
+2.  Have a TTL (Time to Live) value greater than 0. Time To Live controls how quickly objects in the cache expire. A TTL of zero means that objects are never cached, and CloudFront will not compress them.
+
+Once automatic compression is enabled and a compatible cache policy is set, CloudFront will begin to cache and compress new objects fetched from the origin.
+
+To create a caching policy for a CloudFront distribution, run the following steps:
+
+1.  Create a JSON file called cache-policy.json, which has contents similar to the following:  
+      
+    ![cache-policy.json](/media/uploads/cache_policy_json.png)Note that we have a MinTTL greater than zero (10 hours in this case), we have enabled Brotli and Gzip compression, and have Compress set to true.  
+      
+    
+2.  Using the AWS CLI, create the cache policy from this JSON file.  
+    ![Create cache policy](/media/uploads/create_cache_policy.png)
+3.  Update your CloudFront distribution to use the new cache policy. For example, if your distribution ID is E1A2B3C4D5E6F7, you can use the update-distribution command to set the cache policy:  
+    ![Update CloudFront](/media/uploads/update_cloudfront.png)
+
+The ETag is specified to match the most recent version of the CloudFront distribution. You can get the information about the CloudFront distribution, including the ETag, with the following command:
+
+![Get CloudFront distribution and  ETag](/media/uploads/cloudfront_get_etag.png)
+
+Important: CloudFront will only compress files that have `Content-Type` headers that are part of a predetermined list (check out [File types that CloudFront compresses](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/ServingCompressedFiles.html).) Note that these image types are NOT in the list:  
+  
+
+-   `image/avif`
+-   `image/apng`
+-   `image/gif`
+-   `image/jpeg`
+-   `image/png`
+-   `image/webp`
+
+The only image type that is in the list is `image/svg+xml`. This makes sense, since SVG is an XML-based format and is highly compressible. The other formats are binary and highly compressed. Additionally, there are no `audio/*` or `video/*` types in the list. So don’t worry: 
+
+you won’t be asking CloudFront to compress binary files. AWS and CloudFront just won’t do it, so don’t let those concerns get in the way of enabling automatic compression.
+
+## Even easier: Enable compression with CloudFix 
+
+As you can see, unlike some opportunities for AWS cost optimization (looking at you, [EBS Snapshot Archive](/blog/cutting-aws-costs-ebs-volume-snapshot-archiving/)), enabling compression in CloudFront manually is pretty simple. 
+
+In this case, the biggest challenge is not the actual process of enabling compression, but identifying when it should be enabled. Many teams find themselves in analysis paralysis, stuck trying to make sure that there are no existing cache policies which would preclude compression – and as a result, not doing it at all.  
+
+Good thing there’s CloudFix. We have automated selection criteria that reduce costs and improve performance quickly and easily. Simply turn on the “CloudFront Turn on Compression” fixer and you’re on your way to serious savings. 
+
+As usual, we’ve built safeguards into the process so there’s zero risk when running the fixer. To be conservative, CloudFix will only enable compression when:
+
+1.  There are no caching or compression policies in place, OR
+2.  The existing cache policies do not explicitly forbid compressed files.
+
+This ensures that, if it has been explicitly decided to not have caching and/or compression on a particular CloudFront distribution, CloudFix won’t touch it. 
+
+There you have it. With automatic compression in Amazon CloudFront, transferring data costs less and goes faster. Your 1994 self would be blown away.

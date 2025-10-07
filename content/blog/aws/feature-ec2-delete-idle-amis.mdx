@@ -1,0 +1,90 @@
+---
+title: "CloudFix Finder: EC2 Delete Idle AMIs (Manual Fix)"
+description: "Amazon Machine Images (AMIs) backed by EBS snapshots incur storage costs even when not actively used. CloudFix identifies potentially unused AMIs that haven't l..."
+date: 2025-04-09 18:05:05
+modified: 2025-04-09 18:05:05
+category: "AWS"
+tags: ["AWS","cloud","ec2","backup","storage"]
+published: true
+slug: "feature-ec2-delete-idle-amis"
+---
+
+Amazon Machine Images (AMIs) backed by EBS snapshots incur storage costs even when not actively used. CloudFix identifies potentially unused AMIs that haven't launched an instance recently and are not associated with running or stopped instances. Deregistering these AMIs allows for potential cost savings by enabling the cleanup of their underlying EBS snapshots.
+
+## Manual Fix Required
+
+**CloudFix identifies this opportunity but does not automatically deregister AMIs.** Deregistering an AMI is an irreversible action that prevents it from launching new instances. Careful consideration and manual action are required by the user to ensure the AMI is no longer needed before proceeding.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How CloudFix Identifies the Opportunity](#how-it-works)
+-   [Manual Fix Steps](#manual-fix-steps)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+EBS-backed AMIs rely on underlying EBS snapshots for storing the image data. These snapshots accrue storage costs in your AWS account. AMIs that are no longer used for launching instances but remain registered contribute to unnecessary storage expenses.
+
+### Solution Identification
+
+CloudFix identifies AMIs that are potentially unused based on specific criteria (see 'How CloudFix Identifies the Opportunity'). By highlighting these AMIs, CloudFix provides an opportunity for users to manually review and deregister them, subsequently enabling the deletion of the associated EBS snapshots (potentially by other CloudFix finders/fixers or manual processes) to reduce storage costs.
+
+## AWS Services Affected
+
+Service
+
+Icon
+
+[Amazon EC2 (AMI)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html)
+
+![Amazon EC2](/media/uploads/EC2.svg)
+
+[Amazon EBS (Snapshots)](https://docs.aws.amazon.com/ebs/latest/userguide/ebs-snapshots.html)
+
+![Amazon EBS](/media/uploads/Elastic-Block-Store.svg)
+
+## How CloudFix Identifies the Opportunity
+
+CloudFix identifies potentially unused AMIs based on the following criteria:
+
+-   The AMI is not currently used by any running or stopped EC2 instances.
+-   The AMI is not owned by Amazon (i.e., it's a custom AMI).
+-   The AMI was not created by the AWS Backup service.
+-   Neither the AMI nor its associated EBS snapshots have been used to launch an instance in the last 31 days.
+-   The potential annual cost savings from deregistering the AMI and deleting its snapshots (extrapolated from the last 31 days) exceed a defined threshold (default $100).
+
+## Manual Fix Steps
+
+After CloudFix identifies a potentially unused AMI, follow these steps:
+
+1.  **Verify Necessity:** Confirm that the identified AMI is no longer required for future instance launches, disaster recovery, or other operational needs. Check any dependencies or applications that might rely on this specific AMI.
+2.  **Consider Backup (Optional):** Before deregistering, you might consider creating a final manual snapshot of the AMI's underlying EBS volume(s) as an extra backup, storing it with appropriate tags indicating its purpose and potential retention period.
+3.  **Deregister the AMI:** Use the AWS Management Console, AWS CLI, or SDKs to deregister the AMI. Refer to the [AWS documentation for deregistering AMIs](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/deregister-ami.html). This action removes the AMI from the list of available images for launching instances but does \*not\* automatically delete the underlying snapshots.
+4.  **Clean Up Snapshots (Separate Action):** After deregistering the AMI, the underlying EBS snapshots are no longer directly associated with a registered AMI. These snapshots can now be identified and deleted, either manually or potentially through other snapshot lifecycle management tools or CloudFix features focused on idle snapshots. Refer to the [AWS documentation for deleting EBS snapshots](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-deleting-snapshot.html).
+
+## FAQ
+
+**Q: Why doesn't CloudFix automatically deregister the AMI?**  
+A: Deregistering an AMI is irreversible and prevents future launches from it. CloudFix identifies the potential opportunity, but requires user verification and manual action to avoid accidentally removing a necessary AMI.
+
+**Q: Does deregistering the AMI delete the snapshots?**  
+A: No. Deregistering the AMI only removes its registration. The underlying EBS snapshots must be deleted separately to achieve cost savings.
+
+**Q: What are the potential savings?**  
+A: Savings come from the storage costs of the underlying EBS snapshots associated with the deregistered AMI. The actual amount depends on the size and number of snapshots.
+
+**Q: What considerations are important before deregistering?**  
+A: Ensure the AMI is not needed for future deployments, check application dependencies, consider compliance requirements, and optionally create a manual backup snapshot.
+
+## Related Resources
+
+-   [Deregister Your AMI (AWS Documentation)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/deregister-ami.html)
+-   [Deleting an Amazon EBS Snapshot (AWS Documentation)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-deleting-snapshot.html)
+-   [Amazon Machine Images (AMIs) (AWS Documentation)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html)
+-   [Amazon EBS Snapshots (AWS Documentation)](https://docs.aws.amazon.com/ebs/latest/userguide/ebs-snapshots.html)
+-   [Clean-up Unused AMIs (CloudFix Support)](https://support.cloudfix.com/article/16903-clean-up-unused-amis)

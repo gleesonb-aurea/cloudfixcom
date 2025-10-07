@@ -1,0 +1,172 @@
+---
+title: "Cut QuickSight Costs: Auto-Remove Idle Users"
+description: "“William is idle.” – Billy Idol’s disapproving teacher, c. 1960s Fun fact: Billy Idol, born William Michael Albert Broad, adopted the name “Billy Idle” after a..."
+date: 2023-03-20 16:58:56
+modified: 2025-01-23 12:24:17
+category: "AWS"
+tags: ["AWS","cloud","lambda","s3","rds"]
+published: true
+slug: "cut-amazon-quicksight-costs-removing-idle-users"
+---
+
+> “William is idle.”  
+> _– Billy Idol’s disapproving teacher, c. 1960s_
+
+Fun fact: Billy Idol, born William Michael Albert Broad, [adopted the name “Billy Idle”](https://www.laweekly.com/billy-idol-is-back-to-remind-you-how-punk-he-is/) after a teacher wrote “William is idle” on his report card. He eventually changed “Idle” to “Idol” to avoid association with Eric Idle, a British comedian and part of Monty Python.
+
+The more you know, right?
+
+Our idle talk doesn’t stop there. In this week’s fixer blog, we cover how removing idle users from Amazon QuickSight can help you right-size your usage and reduce costs by 50% or more – and how CloudFix makes the process as easy as dancing with yourself.
+
+## Table of contents
+
+-   [Why it’s easy to overspend on Amazon QuickSight](#overspend)
+-   [Reduce Amazon QuickSight costs by identifying and removing inactive users](#reduce-costs)
+-   [How to write a program to find and delete idle QuickSight accounts](#program-delete-idle-accounts)
+-   [Optimize QuickSight easily and automatically with CloudFix](#optimize-with-cloudfix)
+
+## Why it’s easy to overspend on Amazon QuickSight
+
+Amazon describes [QuickSight](https://aws.amazon.com/quicksight/) as “Unified business intelligence at hyperscale.” While QuickSight may not be quite as feature-rich as solutions like Tableau or PowerBI, it’s typically more than sufficient for general dashboard requirements. As an AWS-native tool, it also integrates well with AWS data sources such as Athena, RedShift, and S3, and eliminates the overhead and potential security concerns of yet another vendor. 
+
+QuickSight’s pricing model is different from similar BI tools. Amazon bills a monthly rate for each active dashboard creator and a per-session rate (up to a fixed limit) for each dashboard user. Like other AWS products, this consumption-based pricing model introduces the opportunity for both savings and wasted spend.
+
+In the Enterprise version, QuickSight’s pricing uses two metrics:
+
+1.  Number of “Authors”: Authors are QuickSight users who can connect to dashboards, create data sets, and create and publish dashboards and reports, and other processes involving creating things.
+2.  Number of “Readers”: Readers are QuickSight users who have the ability to view and interact with dashboards, filter data, and share dashboards and reports.
+
+The Standard edition removes the concept of Readers and simply has Users. Both Standard and Enterprise editions can charge either on a higher month-to-month (M-to-M) rate or a lower rate for an annual commitment.
+
+Here’s the [monthly pricing for QuickSight](https://aws.amazon.com/quicksight/pricing/), as of March 2023:
+
+ 
+
+**Enterprise**
+
+**Standard**
+
+ 
+
+M-to-M
+
+Annual
+
+M-to-M
+
+Annual
+
+Author
+
+$24
+
+$18
+
+$9
+
+$12
+
+Reader
+
+$0.30/session up to $5
+
+ 
+
+ 
+
+Author with Q
+
+$34
+
+$28
+
+ 
+
+ 
+
+Reader with Q
+
+$0.30/session up to $10
+
+ 
+
+ 
+
+Not cheap, right? Especially if you add QuickSight Q to the mix, which is an add-on that allows natural language querying of QuickSight. It’s easy to see how costs can add up as companies add users when necessary – and then promptly forget who has which kind of login, for what reason, and (most importantly) whether the account is being actively used.
+
+## Reduce Amazon QuickSight costs by identifying and removing inactive users
+
+So, each Author in QuickSight costs about the same per month as going out to lunch. How bad can it be if we don’t keep track of them?
+
+Let’s do some “back-of-the-envelope” calculations (well, maybe a couple of envelopes) to show how QuickSight costs can accumulate over time. 
+
+Consider a medium-sized company with 500 employees. The company begins a dashboarding, observability, and reporting initiative, and starts with 50 employees using QuickSight. The initial monthly cost for 50 Enterprise QuickSight accounts (without Q) is 50 \* $24 = $1200/month, or $14,400 per year. 
+
+Eventually, though, those 50 initial users won’t all need QuickSight. Job descriptions change, roles evolve, people move on to different projects and no longer use their account. What they don’t do is go out of their way to tell IT that they’re no longer actively using QuickSight. So that seat is still taken – and new ones are added along the way. 
+
+You can see where we’re going with this: if you’re not paying attention, your costs will continue to rise. It’s important to identify and remove idle users – but how often? 
+
+Let’s run some numbers. Starting with the 50 QuickSight users, we’ll consider three scenarios: 
+
+1.  Inactive users are disabled every 6 months
+2.  Inactive users are disabled every 3 months
+3.  Inactive users are disabled monthly
+
+To visualize the differences between the three scenarios, I put together a [simple simulation](https://github.com/stephenVertex/quickSightPricingSim). It includes the following assumptions:
+
+1.  We start with 50 active QuickSight users
+2.  A user has a 30% chance of going inactive every month
+3.  Once a user goes inactive, they do not reactivate
+4.  5 new active users are added every month
+5.  Pricing is based on Authors, as Enterprise month-to-month customers
+
+![Chart: Quicksight user deactivation comparison](/media/uploads/Chart-Quicksight-user-deactivation-comparison.png)
+
+Looking at the graph: first, notice the straight line going upwards. This represents the increasing monthly costs as more users are added to QuickSight. Makes sense. 
+
+Without looking for inactive users, the monthly cost chart would continue to increase every single month. **When we start to monitor for inactive users, however, the monthly cost starts to go down.** Also makes sense.
+
+In addition, the more often we check for inactive users, the lower the costs. In fact, **checking every month versus every six months cuts costs by more than half** – we’ve reduced the monthly bill from $1200/month to less than $600/month while still supporting the same amount of active users. That’s an extra $7k+ that just went back into the company’s pocket.
+
+A couple more thoughts on this. The parameters that we used for the simulation are actually quite conservative estimates. At one large organization, a full 76% of QuickSight accounts had not been used in over a month. That’s a tremendous amount of savings right out of the gate.
+
+Also, it’s worth it to regularly clean up your QuickSight accounts even if you’re on the annual plan. The annual plan only gives you a set number of seats. If inactive users are taking up those seats, you have to buy more. By removing inactive accounts every month, you ensure that you’re only paying for the seats that you need.
+
+## How to write a program to find and delete idle QuickSight accounts
+
+Case closed: identifying and deleting idle QuickSight users reduces costs and clutter. Now that we understand the _why_, let’s get into the _how_.
+
+It’s pretty clear that doing this on a one-off basis wouldn’t work. Even in an imaginary world where every employee who stopped using QuickSight immediately reported that they were done with it, IT has much better things to do with their time than individually remove or switch around QuickSight users. 
+
+There is a way to manually automate the process, but it’s a bit cumbersome. In our fixer blogs, we typically give instructions for running the fix manually using the AWS Management Console and using the [AWS Command Line Interface](https://aws.amazon.com/cli/). Not today. For this one, you have to write a program to execute a series of API calls, with some processing between the steps. 
+
+Here are the steps:
+
+1.  Use the QuickSight [ListUsers](https://docs.aws.amazon.com/quicksight/latest/APIReference/API_ListUsers.html) API to identify Author and Admin users who have logged in at least once. This will give you a list of all billed users.
+2.  Use the CloudTrail [LookupEvents](https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_LookupEvents.html) API to see which of the users from step 1 have not logged in over the last 30 days. Also, identify an active Admin user (to receive resources from users to be deleted).
+3.  The users found in step 1 and not step 2 are the inactive users that can safely be deleted. Before deletion, use the [UpdateAnalysisPermissions](https://docs.aws.amazon.com/quicksight/latest/APIReference/API_UpdateAnalysisPermissions.html) and [UpdateDashboardPermissions](https://docs.aws.amazon.com/quicksight/latest/APIReference/API_UpdateDashboardPermissions.html) from the QuickSight API to transfer assets to the active Admin user found in step 2.  
+    **NOTE:** Don’t skip this step! Otherwise, you will end up with “orphaned” assets – dashboards and data sets which do not have owners. This will be frustrating to fix.
+4.  Use the [DeleteUserByPrincipalId](https://docs.aws.amazon.com/quicksight/latest/APIReference/API_DeleteUserByPrincipalId.html) API to delete the user, once you’ve completed step 3.
+
+In CloudFix parlance, steps 1 and 2 are the finder – you’re identifying the resources to be deleted. Steps 3 and 4 make up the fixer – actually deleting the resources, or running the “fix.” Once you have written this automation, you could use a [Scheduled Lambda Function](https://docs.aws.amazon.com/lambda/latest/dg/services-cloudwatchevents-tutorial.html) to run this on a regular basis.
+
+## Optimize QuickSight easily and automatically with CloudFix
+
+You could write that code. You could schedule it. You could maintain it and give it food and water and love. Or you could do something more valuable with your time while CloudFix does it for you. 
+
+CloudFix automatically does the “finding” and “fixing” that the manual automation requires. Plus, it far surpasses the once per month benchmark and identifies and deletes idle users weekly. That means you can always trust that your QuickSight instance is fully optimized and you’re only paying for the accounts that you need. 
+
+Worried about reinstating an account if it’s deleted but still required? Not a problem. It can be done with a single command using the AWS CLI:
+
+```bash
+aws quicksight register-user    \
+  --aws-account-id 123456789012 \
+  --namespace default           \
+  --email user@example.com      \
+  --identity-type IAM           \
+  --user-role READER            \
+  --iam-arn arn:aws:iam::123456789012:user/example-user \
+  --region us-east-1
+```
+
+That’s it for this week’s idle talk. QuickSight users: it’s a nice day to start again… start using CloudFix.

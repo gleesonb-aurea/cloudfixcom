@@ -1,0 +1,70 @@
+---
+title: "CloudFix Finder/Fixer: EBS Archive Old Volume Snapshots"
+description: "Amazon EBS (Elastic Block Store) snapshots are essential for data backup and disaster recovery, but storing them in the standard tier can be costly. This CloudF..."
+date: 2025-04-06 23:44:31
+modified: 2025-04-06 23:44:31
+category: "AWS"
+tags: ["AWS","cloud","ec2","backup","storage"]
+published: true
+slug: "cloudfix-finder-fixer-ebs-archive-old-volume-snapshots"
+---
+
+Amazon EBS (Elastic Block Store) snapshots are essential for data backup and disaster recovery, but storing them in the standard tier can be costly. This CloudFix Finder/Fixer helps you identify and archive old EBS snapshots to a more cost-effective storage tier while maintaining their availability for future use.
+
+## Contents
+
+-   [What Does This Finder/Fixer Do?](#what-does-this-finder-fixer-do)
+-   [AWS Services Affected](#aws-services-affected)
+-   [Benefits](#benefits)
+-   [How It Works](#how-it-works)
+-   [Common Questions](#common-questions)
+-   [Related Resources](#related-resources)
+
+## What Does This Finder/Fixer Do?
+
+This tool analyzes your EBS snapshots to identify candidates for archival based on age and data usage patterns. It specifically looks for:
+
+-   Snapshots older than 30 days that are the most recent snapshot of an EBS volume
+-   Snapshots with more than 25% "unreferenced" data (data not referenced by other snapshots)
+-   Opportunities to move snapshots to the archive tier for significant cost savings
+
+## AWS Services Affected
+
+![Amazon EBS](/media/uploads/Elastic-Block-Store.svg)
+
+[Amazon Elastic Block Store (EBS)](https://aws.amazon.com/ebs/)
+
+## Benefits
+
+-   Reduce storage costs by up to 75% for archived snapshots
+-   Automatically identify optimal snapshots for archival
+-   Maintain data accessibility while optimizing costs
+-   No impact on production workloads during archival
+
+## How It Works
+
+1.  CloudFix analyzes your EBS snapshots to identify archival candidates
+2.  It evaluates snapshots based on age and unreferenced data percentage
+3.  Snapshots meeting the criteria are flagged for archival
+4.  You can review and approve the recommended changes
+5.  CloudFix moves approved snapshots to the archive tier
+
+## Common Questions
+
+**Q: How does CloudFix determine which snapshots to archive?**
+
+CloudFix uses two main criteria: snapshots older than 30 days that are the most recent snapshot of a volume, and snapshots with more than 25% unreferenced data. It also excludes snapshots managed by AWS Backup, shared with other accounts, or those with Fast Snapshot Restore enabled.
+
+**Q: How much can I save with snapshot archiving?**
+
+Savings vary based on the amount of unreferenced data in each snapshot. For example, a snapshot with 50% unreferenced data would result in a 25% cost saving, while one with 75% unreferenced data could save 50%. The maximum potential savings is 75%.
+
+**Q: Can I restore archived snapshots if needed?**
+
+Yes, archived snapshots can be restored at any time, though the process may take up to 72 hours depending on the snapshot size. Note that there is a minimum 90-day archive period - if you restore before this period ends, you'll still be billed for the remaining days in the archive tier.
+
+## Related Resources
+
+-   [Amazon EBS Snapshot Archive](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/snapshot-archive.html)
+-   [Amazon EBS Snapshots](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSSnapshots.html)
+-   [AWS Blog: New – Amazon EBS Snapshots Archive](https://aws.amazon.com/blogs/aws/new-amazon-ebs-snapshots-archive/)

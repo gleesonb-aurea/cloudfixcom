@@ -1,0 +1,123 @@
+---
+title: "CloudFix Finder/Fixer: RDS Optimize Instances"
+description: "Optimize the cost and performance of your Amazon RDS database instances with CloudFix. This Finder identifies opportunities to retype and resize RDS instances b..."
+date: 2025-04-07 00:22:06
+modified: 2025-04-07 00:22:06
+category: "AWS"
+tags: ["AWS","cloud","serverless","rds","migration"]
+published: true
+slug: "feature-rds-optimize-instances"
+---
+
+Optimize the cost and performance of your Amazon RDS database instances with CloudFix. This Finder identifies opportunities to retype and resize RDS instances based on actual usage patterns, helping you make data-driven decisions about your database resources and reduce your overall AWS costs.
+
+## Contents
+
+-   [What It Does](#what-it-does)
+-   [How It Works](#how-it-works)
+-   [AWS Services Affected](#aws-services-affected)
+-   [Benefits](#benefits)
+-   [Implementation Details](#implementation-details)
+-   [Frequently Asked Questions](#faq)
+-   [Related Resources](#related-resources)
+
+## What It Does
+
+The RDS Optimize Instances Finder identifies Amazon RDS databases that could benefit from instance type changes, focusing on Aurora PostgreSQL and RDS PostgreSQL engines. By analyzing usage patterns and comparing current instance types against available options, it recommends more cost-effective configurations without compromising performance.
+
+This Finder targets two primary optimization strategies:
+
+-   **Resizing operations**: Adjusting the instance size to better match your actual workload requirements (e.g., db.r6i.16xlarge → db.r6i.12xlarge)
+-   **Retyping to Graviton**: Moving from x86-based instances to more cost-effective ARM-based Graviton instances (e.g., db.r6i.12xlarge → db.r6g.12xlarge)
+
+By leveraging AWS Compute Optimizer recommendations and CloudFix analytics, you can achieve significant savings on database instance costs—up to 33% when combining both resizing and Graviton migration.
+
+## How It Works
+
+CloudFix analyzes your RDS instances through a multi-step process:
+
+1.  Identifies candidate RDS instances using the AWS Cost and Usage Report (CUR) by filtering for:
+    -   RDS instances running PostgreSQL or Aurora PostgreSQL engines
+    -   Non-serverless instances that have been active for at least 14 days
+    -   Annual costs exceeding a configurable threshold (default $100)
+2.  Leverages AWS Compute Optimizer's API to gather right-sizing recommendations
+3.  Applies additional filtering to select only recommendations that:
+    -   Provide at least 15% cost savings
+    -   Focus on gen6 or gen7 instance types
+    -   Include Graviton instances when appropriate
+    -   Are rated as "low" or "very low" risk by AWS Compute Optimizer
+4.  Presents actionable recommendations in the CloudFix user interface
+
+These recommendations are based on actual CPU and memory utilization metrics from CloudWatch, ensuring that the suggested changes align with your database's real-world usage patterns.
+
+## AWS Services Affected
+
+![Amazon RDS](/media/uploads/RDS.svg)
+
+[Amazon RDS](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Welcome.html)
+
+## Benefits
+
+-   **Cost Savings**: Reduce RDS instance costs by up to 33% by combining right-sizing and Graviton migration
+-   **Performance Optimization**: Select instance types that best match your workload requirements
+-   **Graviton Advantages**: Benefit from ARM-based instances that provide up to 10-15% cost savings for the same compute capacity
+-   **Data-Driven Decisions**: Make changes based on actual usage metrics rather than guesswork
+-   **Risk Mitigation**: Recommendations are filtered for low-risk implementations
+
+When comparing pricing across different instance types and families, the potential for savings becomes clear:
+
+-   Resizing operations (e.g., db.r6i.16xlarge → db.r6i.12xlarge): ~25% cost reduction
+-   Retyping to Graviton (e.g., db.r6i.12xlarge → db.r6g.12xlarge): ~10.5% cost reduction
+-   Combined approach (e.g., db.r6i.16xlarge → db.r6g.12xlarge): ~33% cost reduction
+
+## Implementation Details
+
+This Finder does not have an automatic Fixer. RDS instance modifications must be performed manually through the following process:
+
+1.  Review the recommendations in the CloudFix user interface
+2.  Select an appropriate maintenance window for the change
+3.  Modify the instance using either:
+    -   The AWS Management Console: Navigate to RDS → Databases → select the instance → Modify
+    -   The AWS CLI: Use the `modify-db-instance` command with the appropriate parameters
+4.  Monitor the instance during and after the change to ensure performance meets expectations
+
+Example AWS CLI command:
+
+```
+aws rds modify-db-instance \
+  --db-instance-identifier your-instance-id \
+  --db-instance-class db.r6g.12xlarge \
+  --apply-immediately
+```
+
+Note that modifying an RDS instance may cause a brief interruption during the change. For PostgreSQL instances, the database will be unavailable during the instance class change. Plan to perform this operation during a maintenance window to minimize impact.
+
+## Frequently Asked Questions
+
+**Can CloudFix implement the fix automatically?**
+
+No. This is a manually executed fix that requires planning and execution by your team to ensure minimal impact on your applications.
+
+**Does this fix require downtime?**
+
+Yes. Modifying an RDS instance class requires a brief period of downtime while the instance is modified. For PostgreSQL databases, the instance will be unavailable during this operation. It's recommended to schedule these changes during maintenance windows.
+
+**Will this affect my database performance?**
+
+CloudFix only recommends changes that are assessed as "low" or "very low" risk by AWS Compute Optimizer, meaning the performance impact should be minimal. However, it's always a good practice to monitor your database after making changes to ensure it meets your performance requirements.
+
+**Is it possible to roll back if I encounter issues?**
+
+Yes. You can revert to the original instance type by repeating the modification process with the original instance class. This will require another period of downtime.
+
+**Which database engines are supported?**
+
+This specific Finder targets Aurora PostgreSQL and RDS PostgreSQL instances. CloudFix also offers similar optimization recommendations for other database engines like Aurora MySQL and RDS MySQL.
+
+## Related Resources
+
+-   [Modifying an Amazon RDS DB Instance](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html)
+-   [Amazon RDS for PostgreSQL Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html)
+-   [Amazon Aurora PostgreSQL Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.AuroraPostgreSQL.html)
+-   [New Rightsizing Recommendations for Amazon RDS PostgreSQL](https://aws.amazon.com/blogs/aws-cloud-financial-management/new-rightsizing-recommendations-for-amazon-rds-mysql-and-rds-postgresql-in-aws-compute-optimizer/)
+-   [Scaling Amazon RDS Instances Vertically and Horizontally](https://aws.amazon.com/blogs/database/scaling-your-amazon-rds-instance-vertically-and-horizontally/)

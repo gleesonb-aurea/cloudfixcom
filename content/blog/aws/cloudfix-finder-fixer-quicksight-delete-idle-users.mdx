@@ -1,0 +1,80 @@
+---
+title: "CloudFix Finder/Fixer: QuickSight Delete Idle Users"
+description: "Amazon QuickSight users with author or admin roles incur monthly charges, even when they're not actively using the service. This CloudFix Finder/Fixer identifie..."
+date: 2025-04-09 18:01:45
+modified: 2025-04-09 18:01:45
+category: "AWS"
+tags: ["AWS","cloud","rds","monitoring"]
+published: true
+slug: "cloudfix-finder-fixer-quicksight-delete-idle-users"
+---
+
+Amazon QuickSight users with author or admin roles incur monthly charges, even when they're not actively using the service. This CloudFix Finder/Fixer identifies inactive QuickSight users and helps you optimize costs by removing unnecessary user licenses while preserving their shared resources.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+Amazon QuickSight offers different user roles - readers, authors, and admins - each with varying levels of access and associated costs. While reader accounts are free when inactive, author and admin accounts continue to incur charges regardless of usage. This Finder/Fixer helps you identify and remove inactive author and admin users, ensuring you only pay for actively used licenses.
+
+## AWS Services Affected
+
+![Amazon QuickSight](/media/uploads/QuickSight.svg)
+
+[Amazon QuickSight](https://aws.amazon.com/quicksight/)
+
+## How It Works
+
+### Finder Component
+
+The Finder component analyzes your QuickSight user base by:
+
+-   Identifying users with author or admin roles across all regions
+-   Monitoring user activity patterns over the last 30 days
+-   Detecting users who haven't interacted with QuickSight during this period
+-   Calculating potential cost savings from removing inactive user licenses
+
+### Fixer Component
+
+When executed, the Fixer:
+
+-   Identifies another active admin user in the account to preserve resource access
+-   Transfers ownership of the inactive user's resources to the identified admin
+-   Safely removes the inactive user's QuickSight access
+-   Verifies successful resource transfer and user removal
+
+## FAQ
+
+### What are the potential savings?
+
+You can save 100% of the per-seat cost for each removed idle user. The exact savings depend on the number of inactive users and their license types (author or admin).
+
+### What happens to the user's resources?
+
+Before removing a user, their resources (such as dashboards and analyses) are transferred to another active admin user in the same account. This ensures no data or work is lost when the user is removed.
+
+### Can changes be rolled back?
+
+No, this fix cannot be rolled back automatically. If a removed user needs QuickSight access again, they will need to go through the original sign-up process. Consider assigning them a reader role initially if they don't require author/admin capabilities.
+
+### Is the fix automatic after accepting the recommendation?
+
+Yes. Once you approve the recommendation, CloudFix will automatically transfer the user's resources and remove their access.
+
+### Does this fix require downtime?
+
+No. The fix does not cause any service disruption. Active users will continue to have normal access to QuickSight during and after the process.
+
+## Related Resources
+
+-   [Amazon QuickSight Documentation](https://docs.aws.amazon.com/quicksight/latest/user/welcome.html)
+-   [Amazon QuickSight Pricing](https://aws.amazon.com/quicksight/pricing/)
+-   [Support Article: QuickSight Remove Idle Users](https://support.cloudfix.com/article/17038-quicksight-remove-idle-users)

@@ -1,0 +1,84 @@
+---
+title: "CloudFix Finder: Delete Idle SageMaker Models (Manual Fix)"
+description: "Amazon SageMaker models, the artifacts containing your trained machine learning logic, can accumulate over time. Models that are no longer associated with activ..."
+date: 2025-04-09 18:08:12
+modified: 2025-04-09 18:08:12
+category: "AWS"
+tags: ["AWS","cloud","s3","cost optimization","security"]
+published: true
+slug: "feature-delete-idle-sagemaker-models"
+---
+
+Amazon SageMaker models, the artifacts containing your trained machine learning logic, can accumulate over time. Models that are no longer associated with active endpoints or recent batch transform jobs represent potential cost savings opportunities. CloudFix identifies SageMaker models that appear idle based on their lack of recent usage, suggesting they can be manually deleted to reduce storage costs.
+
+## Manual Fix Required
+
+**CloudFix identifies potentially idle SageMaker models but does not automatically delete them.** Deleting a model is irreversible and removes the trained artifact. Users must manually verify that a model is truly no longer needed for inference, retraining, or analysis before performing the deletion.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How CloudFix Identifies the Opportunity](#how-it-works)
+-   [Manual Fix Steps](#manual-fix-steps)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+As machine learning projects evolve, numerous SageMaker models may be created for experiments, different versions, or specific tasks. Once these models are superseded or projects conclude, they might remain in the account, incurring storage costs without providing active value. Identifying and removing these unused model artifacts is essential for cost optimization.
+
+### Solution Identification
+
+CloudFix examines SageMaker resources and their usage patterns. It identifies models that have not been linked to any SageMaker endpoint configurations and have not participated in any batch transform jobs within the last 30 days. These criteria suggest the model is likely idle, presenting an opportunity for manual review and deletion to save on associated costs.
+
+## AWS Services Affected
+
+Service
+
+Icon
+
+[Amazon SageMaker](https://aws.amazon.com/sagemaker/)
+
+![Amazon SageMaker](/media/uploads/SageMaker.svg)
+
+## How CloudFix Identifies the Opportunity
+
+CloudFix identifies potentially idle SageMaker models based on the following criteria:
+
+-   The resource is an Amazon SageMaker Model.
+-   The model has not been associated with any SageMaker endpoint configurations.
+-   The model has not been used in any SageMaker batch transform jobs in the last 30 days.
+-   The potential extrapolated annual cost saving from deleting the model exceeds a defined threshold (default $100).
+-   The model is not tagged with `cloudfix_dont_fix_it`.
+
+## Manual Fix Steps
+
+After CloudFix identifies a potentially idle SageMaker model:
+
+1.  **Verify Idleness:** Confirm that the identified model is genuinely not required. Check if it's part of any active development, testing, scheduled jobs, or if there are plans for its future use. Review model lineage and project documentation if available.
+2.  **Consider Backup (Optional):** Before deletion, consider backing up the model artifacts from their S3 location if there is any uncertainty or potential future need.
+3.  **Delete the Model:** Use the AWS Management Console, AWS CLI (`aws sagemaker delete-model --model-name <your-model-name>`), or SDKs to delete the SageMaker model resource. Refer to the [DeleteModel API documentation](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_DeleteModel.html).
+
+## FAQ
+
+**Q: Why doesn't CloudFix automatically delete the model?**  
+A: Deleting a model is irreversible and removes the trained artifact. CloudFix requires user verification to prevent accidental loss of a potentially valuable model.
+
+**Q: What are the potential savings?**  
+A: Savings primarily come from eliminating the storage costs associated with the model artifacts in S3, although the SageMaker model resource itself might have a minor associated cost. The exact amount depends on the model size.
+
+**Q: Does deleting the model affect endpoints using it?**  
+A: CloudFix specifically identifies models \*not\* associated with current endpoint configurations. However, if an endpoint \*was\* recently using it and got deleted, deleting the model would prevent recreating that specific endpoint configuration later. Always verify dependencies.
+
+**Q: What considerations are important before deleting?**  
+A: Confirm the model is unused, check dependencies (endpoints, transform jobs, code repositories), consider backup needs, and review security/compliance policies related to model retention.
+
+## Related Resources
+
+-   [Manage Models with SageMaker (AWS Documentation)](https://docs.aws.amazon.com/sagemaker/latest/dg/models-manage.html)
+-   [DeleteModel API Reference](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_DeleteModel.html)
+-   [SageMaker Python SDK - Model Class](https://sagemaker.readthedocs.io/en/stable/api/inference/model.html)
+-   [ML Delete Idle SageMaker Models (CloudFix Support)](https://support.cloudfix.com/article/17014-ml-delete-idle-sagemaker-models)

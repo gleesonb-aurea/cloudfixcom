@@ -1,0 +1,487 @@
+---
+title: "Cut DynamoDB Costs by 60% Using Infrequent Access Table Class"
+description: "2.5 petabytes (2.5 million gigabytes) of data - The memory capacity of the human brain A reader recently wrote into Scientific American to ask if there was a ph..."
+date: 2023-04-17 07:51:31
+modified: 2025-01-23 10:22:04
+category: "AWS"
+tags: ["AWS","cloud","serverless","s3","rds"]
+published: true
+slug: "reduce-costs-dynamodb-infrequent-access-class"
+---
+
+### 2.5 petabytes (2.5 million gigabytes) of data
+
+_\- The memory capacity of the human brain_
+
+A reader recently wrote into [Scientific American](https://www.scientificamerican.com/article/what-is-the-memory-capacity/) to ask if there was a physical limit to the amount of information that the human brain can store. Short answer: no. According to science, “We don’t have to worry about running out of space in our lifetime.” That’s a relief.
+
+The technology we use, however, is a different story. AWS storage is both limited and, unlike our brains, tied to costs. As a result, we’re constantly optimizing storage, from using [Intelligent-Tiering for EFS](/blog/optimize-amazon-efs-storage-costs-intelligent-tiering/) and [Amazon S3](/blog/aws-s3-intelligent-tiering-default-storage-class/) to migrating [io1 and io2 volumes to gp3](/blog/optimize-aws-elastic-block-storage-by-migrating-io1-and-io2-volumes-to-gp3/). If human memory was optimized as easily, we would all remember where we left our keys instead of being able to sing radio jingles from 20 years ago and recite our high school locker combinations. C’est la vie. 
+
+In any case, today we’ll look at another opportunity to reduce AWS costs by strategically managing storage. Let’s see how we can use DynamoDB’s Infrequent Access table class to spend less on AWS.
+
+![A single frame comic showing a an overwhelmed student asking to be excused from class. Their reason: “their brain exploded.”](/media/uploads/my-brain-is-full.jpg)
+
+## Table of Contents
+
+-   [How the DynamoDB Standard-IA access table class can save you up to 60%](#how-to-save)
+-   [DynamoDB pricing: When is Standard-IA less expensive than Standard?](#dynamodb-pricing)
+-   [The hard part: Determining which DynamoDB tables to transition from Standard to Standard-IA](#hard-part)
+-   [The easy part: Actually migrating the DynamoDB tables](#easy-part)
+-   [The ridiculously easy part: Automatically find and transition tables to the right DynamoDB class with CloudFix](#cloudfix-way)
+
+## How the DynamoDB Standard-IA table class can save you up to 60%
+
+DynamoDB is one of AWS’s core services. It’s a planet-scale database, capable of serving any load. It can operate in either provisioned or on-demand mode, so it’s useful for everything from simple serverless apps to high traffic applications. DynamoDB powers all of the databases behind the retail Amazon.com site, which served 105 million requests _**per second**_ during Prime Day 2022. 
+
+(Speaking of Prime Day, we have a heck of a podcast episode coming up on season two of [AWS Insiders](/podcast/) that goes behind the scenes on exactly what it takes to pull that off.)
+
+Like other AWS services, DynamoDB’s capabilities and pricing have evolved over time. It was initially offered with just provisioned throughput, and the billing model was based only on provisioned throughput and storage. AWS then introduced [reserved capacity](https://aws.amazon.com/blogs/aws/dynamodb-price-reduction-and-new-reserved-capacity-model/), which lets you lock in read and write capacity for a one-year or three-year term in exchange for cost savings. Next came [on-demand capacity mode](https://aws.amazon.com/blogs/aws/amazon-dynamodb-on-demand-no-capacity-planning-and-pay-per-request-pricing/), which made it possible to use DynamoDB without any provisioned capacity, enabling a whole new class of applications to be built on DynamoDB.
+
+Most recently, AWS launched the [Standard-Infrequent Access (Standard-IA) table class](https://aws.amazon.com/about-aws/whats-new/2021/12/amazon-dynamodb-standard-infrequent-access-table-class/) for DynamoDB. This is where our story begins – and how you can **reduce DynamoDB storage costs by up to 60%**.
+
+In a nutshell, DynamoDB Standard-IA offers lower costs for data storage but increased cost for throughput. There’s no change to performance, durability, or availability, and no changes are required to application code. Switching to DynamoDB Standard-IA is purely a configuration change that you can make to optimize costs for a particular table where it makes sense. 
+
+So where does it make sense? Glad you asked.
+
+## DynamoDB pricing: When is Standard-IA less expensive than Standard?
+
+Deciding when to transition tables into DynamoDB Standard-IA comes down to running the numbers. Fair warning: DynamoDB pricing is not for the faint of heart (or brain). It’s a complex topic, but for our purposes, we’ll break it down to throughput and storage.
+
+Let’s start here. This chart shows a simplified version of DynamoDB pricing, based on us-east-1 in April 2023.
+
+**Type**
+
+**Tier**
+
+**Read**
+
+**Write**
+
+**Storage**
+
+OD
+
+Standard
+
+$0.25 / MM RRU
+
+$1.25 / MM WRU
+
+25GB + $0.25 GB/M
+
+ 
+
+Standard-IA
+
+$0.31 / MM RRU
+
+$1.56 / MM WRU
+
+$0.10 GB/M
+
+PC
+
+Standard
+
+$0.00013 / RCU
+
+$0.00065 / WCU
+
+25GB + $0.25 GB/M
+
+ 
+
+Standard-IA
+
+$0.00016 / RCU
+
+$0.00013 / WCU
+
+$0.10 GB/M
+
+_DynamoDB pricing, simplified. Based on [Apr 2023 pricing in us-east-1](https://aws.amazon.com/dynamodb/pricing)_
+
+The first segment of the table shows on-demand (OD) pricing, while the second segment shows provisioned capacity (PC) pricing. The different DynamoDB pricing models use different units. On-demand pricing is priced per million read/write request units (RRUs / WRUs). Provisioned capacity is priced according to read/write capacity units (RCUs / WCUs). Alphabet soup, anyone? 
+
+The important thing here is the ratios between the prices. **Read and write actions**, in either on-demand or provisioned capacity modes, cost ~ **24% _more_** in Standard-IA than Standard. **For storage**, the situation is reversed: storage costs **60% less** per GB in Standard-IA than Standard. 
+
+This illustrates the tradeoff between DynamoDB Standard and Standard-IA: For data that is infrequently accessed, **storage costs matter the most**, which are cheaper in Standard-IA.
+
+Using this pricing, we can calculate the most cost-effective class for each table based on storage vs. data transfer costs – more on that in a bit.
+
+**Side note:** [Reserved capacity](https://aws.amazon.com/dynamodb/reserved-capacity/) can throw a wrinkle into these calculations. As mentioned above, reserved capacity allows for one-year or three-year commitments in exchange for 54% to 77% savings. The wrinkle is that reserved capacity only works for DynamoDB Standard. That means that if you’re using reserved capacity, you also need to consider how those savings compare to savings offered by DynamcDB Standard-IA and/or any potential unused reserved capacity that could go to waste if you move tables to Standard-IA. It’s very possible that DynamoDB Standard-IA could still be less expensive than reserved capacity, but it will depend on your individual setup.
+
+For the sake of this discussion, let’s carry on comparing pricing between DynamoDB Standard and Standard-IA classes to determine when it makes sense to switch. Buckle up.
+
+## The hard part: Determining which DynamoDB tables to transition from Standard to Standard-IA
+
+So: in general, for infrequently accessed data, it makes sense to take advantage of the DynamoDB Standard-IA table class, because storage is far less expensive than DynamoDB Standard. Check.
+
+Here’s where it gets hairy. Finding all of your available DynamoDB tables, identifying their current classes, and determining each table’s spend on storage and access (the key variables to help us decide which table class is most cost-effective) is no small feat. 
+
+If your life depended on it, you could technically accomplish these steps one-by-one for every table. Given that you’re probably not in a life-or-death DynamoDB situation, however, running this process manually would probably entail writing an automation. There are various ways to make that happen, but they all involve three core building blocks:
+
+1.  Find all of your DynamoDB tables and their current table class
+2.  Determine historical spend on storage and access
+3.  Calculate savings based on equations derived from the pricing table
+
+### Step one: Find all of your DynamoDB tables and their current table class
+
+We can use the AWS CLI to query DynamoDB to list the tables and their current `TableClass`, which will be either STANDARD or STANDARD\_INFREQUENT\_ACCESS. You will need to do this for each region, for each account.
+
+The query looks like this:
+
+```bash
+aws dynamodb -region your-region list-tables
+```
+
+This will return a JSON structure with a list of table names.
+
+{
+    "TableNames": [
+        "Table1",
+        "Table2",
+        "Table3"
+    ]
+}
+
+Given this list of names, we can then check the current class of the table. This is called the TableClass property. We query table properties using this command:
+
+```bash
+aws dynamodb describe-table --table-name YourTableName --region your-region
+```
+
+This will return a large JSON object. We are looking for a few key items within this object. 
+
+{
+  "Table": {
+    "TableName": "YourTableName",
+    "TableArn": "arn:aws:dynamodb:your-region:123456789012:table/YourTableName",
+    "TableId": "1a2b3c4d-5678-90ab-cdef-EXAMPLE12345",
+    "TableClass": "STANDARD_INFREQUENT_ACCESS",
+    "KeySchema": [
+      {
+        "AttributeName": "id",
+        "KeyType": "HASH"
+      }
+    ],
+    "TableStatus": "ACTIVE",
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "id",
+        "AttributeType": "S"
+      }
+    ],
+    // …. More table information 
+  }
+}
+
+The important data returned by this query is the `TableArn` and `TableClass` for a given `TableName`, which tell us the current class.
+
+### Step 2: Determine historical spend on storage and access
+
+This is where it really gets fun. 
+
+In order to calculate which class is best for which table, we need to know the table’s storage and access costs (remember that these costs are inversely related across the two table classes.) Unfortunately, getting those numbers is harder than you would think. It’s not something we can just look up – we have to use historical data to estimate costs over a 30-day period. 
+
+The best source of historical data for this is the [Cost and Usage Report](https://docs.aws.amazon.com/cur/latest/userguide/what-is-cur.html) (CUR). We can query the Cost and Usage Report [using Athena](https://docs.aws.amazon.com/cur/latest/userguide/cur-query-athena.html) to get the costs for data throughput and data storage. The throughput units will be different depending on if the table is on-demand or provisioned capacity (RRUs/WRUs vs. RCUs/WCUs), but at the end of the day it all comes down to actual dollar cost.
+
+A tutorial on creating SQL queries for the CUR is a whole other kettle of fish, but the following query is a good starting point.
+
+```sql
+DECLARE @start_date DATE = '2023-03-06';
+DECLARE @end_date DATE = DATEADD(day, 30, @start_date);
+
+SELECT
+    line_item_usage_start_date,
+    product_region,
+    product_instance,
+    line_item_usage_account_id,
+    line_item_resource_id,
+    line_item_usage_type,
+    SUM(line_item_unblended_cost) AS total_cost
+FROM
+    
+WHERE
+    product_name = 'Amazon DynamoDB'
+    AND line_item_usage_start_date BETWEEN @start_date AND @end_date
+    AND (line_item_usage_type = 'WriteCapacityUnit-Hrs' 
+         OR line_item_usage_type = 'ReadCapacityUnit-Hrs' 
+         OR line_item_usage_type = 'Storage'
+         OR line_item_usage_type = 'WriteRequestUnits'
+         OR line_item_usage_type = 'ReadRequestUnits')
+GROUP BY
+    line_item_usage_start_date,
+    product_region,
+    product_instance,
+    line_item_usage_account_id,
+    line_item_resource_id,
+    line_item_usage_type
+```
+
+This is a sample, but hopefully gets the idea across. The key facts about this table are:
+
+1.  We are querying the usage of Amazon DynamoDB
+2.  We are looking for storage and read/write units
+3.  We calculate a 30-day range based on a specified input date
+4.  The line\_item\_resource\_id field contains the DynamoDB table ARN
+
+### Step 3: Calculate savings based on equations derived from the pricing table
+
+Now that we know each table’s current class and storage and access costs, we can run some relatively simple calculations to determine the savings potential for switching to the other TableClass. Note that while we’ve mainly focused on the cost savings available from transitioning from DynamoDB Standard to Standard-IA, it can also work the other way; you may have tables currently in the Standard-IA class which would be better suited for the Standard class. The good news: the process works in both directions.
+
+On to our equations. Remember the pricing comparison chart?
+
+**Type**
+
+**Tier**
+
+**Read**
+
+**Write**
+
+**Storage**
+
+OD
+
+Standard
+
+$0.25 / MM RRU
+
+$1.25 / MM WRU
+
+25GB + $0.25 GB/M
+
+ 
+
+Standard-IA
+
+$0.31 / MM RRU
+
+$1.56 / MM WRU
+
+$0.10 GB/M
+
+PC
+
+Standard
+
+$0.00013 / RCU
+
+$0.00065 / WCU
+
+25GB + $0.25 GB/M
+
+ 
+
+Standard-IA
+
+$0.00016 / RCU
+
+$0.00013 / WCU
+
+$0.10 GB/M
+
+Looking at the relative prices, we find that:
+
+**Savings transitioning from Standard to Standard-IA** = 0.6 \* storage - 0.25 \* access
+
+Inverting this equation:
+
+**Savings transitioning from Standard-IA to Standard** = -1.5 \* storage + 0.2 \* access
+
+Now it’s just a matter of running the numbers. Let’s go over an example. 
+
+In the pricing chart below, we have five DynamoDB tables with different access patterns. The **Access** costs are calculated as read cost + write costs, with the rates taken from the table above using the on-demand pricing. The **Storage** costs are also calculated based on the on-demand storage rates, taking into account the free 25GB of storage included in the Standard storage class.
+
+Let’s compare the five tables to see which ones are best suited for DynamoDB Standard-IA.
+
+-   **Table-A** and **Table-B** are very active tables, with a large amount of read and write activity relative to their sizes. Therefore, the lion’s share of the cost is access, and DynamoDB Standard makes more sense.
+-   **Table-C** is right at the tipping point, where it costs $46.75 for Standard and $46.60 for Standard-IA. We still recommend Standard-IA, because some savings is better than no savings.
+-   **Table-D** and **Table-E** are clear-cut cases for DynamoDB Standard-IA, with usage patterns much more heavily oriented towards storage. Transitioning these tables from Standard to Standard-IA would save 22.17% and 40.59% respectively – not too shabby.
+
+ 
+
+**Standard**
+
+**Standard-IA**
+
+ 
+
+**Table**
+
+**Read**
+
+**Write**
+
+**Storage**
+
+**Access**
+
+**Storage**
+
+**Total**
+
+**Access**
+
+**Storage**
+
+**Total**
+
+**Choice**
+
+**% Svg IA**
+
+Table-A
+
+200
+
+100
+
+50
+
+$175.00
+
+$6.25
+
+$181.25
+
+$218.00
+
+$5.00
+
+$223.00
+
+Use Std
+
+\-23.03%
+
+Table-B
+
+50
+
+50
+
+50
+
+$75.00
+
+$6.25
+
+$81.25
+
+$93.50
+
+$5.00
+
+$98.50
+
+Use Std
+
+\-21.23%
+
+Table-C
+
+20
+
+20
+
+92
+
+$30.00
+
+$16.75
+
+$46.75
+
+$37.40
+
+$9.20
+
+$46.60
+
+Use Std-IA
+
+0.32%
+
+Table-D
+
+20
+
+20
+
+200
+
+$30.00
+
+$43.75
+
+$73.75
+
+$37.40
+
+$20.00
+
+$57.40
+
+Use Std-IA
+
+22.17%
+
+Table-E
+
+2
+
+1
+
+100
+
+$1.75
+
+$18.75
+
+$20.50
+
+$2.18
+
+$10.00
+
+$12.18
+
+Use Std-IA
+
+40.59%
+
+One caveat to the above: You can only change table class [twice every 30 days](https://aws.amazon.com/blogs/aws/new-dynamodb-table-class-save-up-to-60-in-your-dynamodb-costs/). You can’t, for instance, switch to Standard-IA over the weekend and then back during the week based on your access patterns. This is where the historical data helps; you can identify trends and patterns over the course of the 30-day period to inform your longer-term decision making. (CloudFix helps here, too, by continuously evaluating DynamoDB table classes and adjusting accordingly within the confines of the 2x/month rule.)
+
+## The easy part: Actually migrating the DynamoDB tables
+
+First, take a break. You’ve earned it.
+
+Once you’ve identified the table and crunched the numbers, migrating it is by far the easiest step. Using the AWS CLI, run the following command:
+
+```bash
+aws dynamodb update-table        \
+  --region your-region          \
+  --table-name your-table-name  \ 
+  --table-class TABLE_CLASS
+```
+
+TABLE\_CLASS is either STANDARD or STANDARD\_INFREQUENT\_ACCESS.
+
+This can also be done via the AWS Console. Within the DynamoDB console:
+
+1.  Select a table
+2.  Click on the Actions menu, and select Update table class
+3.  Select “DynamoDB Standard” or “DynamoDB Standard-IA”, depending on the calculated savings potential
+4.  Click “Save Changes” and the table status will update in the background
+
+## The ridiculously easy part: Find and transition tables to the right DynamoDB class automatically with CloudFix
+
+Some fixes that we cover are relatively simple to do manually, even if they’re tedious and time-consuming. Not this one. Tying all of these steps together into a well-tuned piece of automation yourself would be a substantial bit of work, not to mention accounting for the additional complexity of the reserved capacity situation. 
+
+Fortunately, we’ve done it for you. After many thousands of runs across AWS accounts of all sizes and configurations, CloudFix can intelligently select the DynamoDB tables that should be transitioned to a different class for AWS cost savings. Even better, like the manual method, this finder/fixer is bidirectional. It not only identifies and transitions tables that would be less expensive in DynamoDB Standard-IA, it works the other way, too. If it would cost less to switch a table from Standard-IA to Standard (due to changes in access patterns, for example), CloudFix will make that switch as well. 
+
+This is the beauty of automation: you really can [set it and forget it](/resources/success-story-conns-homeplus/). As access patterns change, CloudFix continuously re-evaluates and executes against opportunities for AWS cost savings. Did your read activity go up because it’s the end of the financial year? No problem – CloudFix sees the change and adjusts accordingly. When it goes back down after a few months, CloudFix transitions those tables back. And of course, none of these changes impact application performance or require downtime. It’s simply an easy way to save money by tailoring your access patterns to the available storage classes.
+
+Perhaps one day, AWS storage will be as limitless as the human brain. Until then, there’s CloudFix.

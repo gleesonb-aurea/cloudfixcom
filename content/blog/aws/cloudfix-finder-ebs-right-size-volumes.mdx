@@ -1,0 +1,88 @@
+---
+title: "CloudFix Finder: EBS Right Size Volumes"
+description: "Amazon EBS volumes are often overprovisioned to ensure sufficient storage capacity. This CloudFix Finder helps you identify and optimize underutilized EBS volum..."
+date: 2025-04-09 18:02:11
+modified: 2025-04-09 18:02:11
+category: "AWS"
+tags: ["AWS","cloud","ec2","monitoring","storage"]
+published: true
+slug: "cloudfix-finder-ebs-right-size-volumes"
+---
+
+Amazon EBS volumes are often overprovisioned to ensure sufficient storage capacity. This CloudFix Finder helps you identify and optimize underutilized EBS volumes by analyzing usage patterns and providing right-sizing recommendations, helping you reduce storage costs while maintaining appropriate capacity buffers.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Implementation Guide](#implementation-guide)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+Organizations often overprovision EBS volumes to ensure they have sufficient storage capacity for future growth. However, this practice can lead to unnecessary costs when the extra capacity goes unused. This Finder analyzes your EBS volume usage patterns and provides data-driven recommendations for optimal volume sizes, helping you maintain the right balance between cost and capacity.
+
+## AWS Services Affected
+
+![Amazon EBS](/media/uploads/Elastic-Block-Store.svg)  
+
+[Amazon Elastic Block Store](https://aws.amazon.com/ebs/)
+
+## How It Works
+
+### Finder Component
+
+The Finder analyzes your EBS volumes by:
+
+-   Identifying non-root EBS volumes attached to active instances
+-   Analyzing 7-90 days of historical usage metrics
+-   Applying predictive modeling to forecast future storage needs
+-   Including a 10% overhead buffer in calculations
+-   Focusing on volumes with significant cost-saving potential (minimum $100 annualized)
+-   Excluding volumes tagged with ‘dontfixit’
+-   Generating detailed rightsizing recommendations
+
+### Implementation Guide
+
+To implement the volume resizing recommendations:
+
+1.  Review the Finder’s recommendations and cost-benefit analysis
+2.  Verify the proposed volume size meets your application requirements
+3.  Plan the resizing operation during a maintenance window
+4.  Use AWS Elastic Volumes to modify the volume size:
+    -   Through the AWS Management Console
+    -   Using the AWS CLI
+    -   Via Infrastructure as Code templates
+5.  Monitor the volume during and after resizing
+6.  Update any relevant documentation or monitoring thresholds
+
+## FAQ
+
+### What are the potential savings?
+
+Savings vary based on the degree of overprovisioning. For example, reducing a 1TB volume to 500GB can result in up to 50% cost savings for that volume. The Finder focuses on volumes with a minimum potential annual savings of $100.
+
+### Is this change automatic?
+
+No. This is a Finder-only feature that provides recommendations. You must manually implement the volume resizing using AWS tools like Elastic Volumes.
+
+### What volumes are excluded from analysis?
+
+The Finder excludes root device volumes and any volumes tagged with ‘dontfixit’. This ensures system stability and respects volumes that should not be modified.
+
+### How do you ensure sufficient capacity?
+
+The Finder includes a 10% overhead buffer in its calculations and uses predictive modeling based on 7-90 days of historical data to forecast future needs. This helps ensure recommended sizes accommodate normal growth and usage patterns.
+
+### Can changes be rolled back?
+
+Since this is a recommendation-only feature, there’s no automatic change to roll back. If you implement a resize and need more capacity, you can increase the volume size using Elastic Volumes.
+
+## Related Resources
+
+-   [Amazon EBS Elastic Volumes Documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-modify-volume.html)
+-   [Amazon EBS Pricing](https://aws.amazon.com/ebs/pricing/)
+-   [Support Article: EBS Underutilized Volumes](https://support.cloudfix.com/article/16956-ebs-underutilized-volumes)

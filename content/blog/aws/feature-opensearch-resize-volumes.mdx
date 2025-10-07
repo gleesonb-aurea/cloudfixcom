@@ -1,0 +1,118 @@
+---
+title: "CloudFix Finder/Fixer: OpenSearch Resize Volumes"
+description: "Amazon OpenSearch domains with over-provisioned storage volumes incur unnecessary costs. This Finder/Fixer identifies OpenSearch domains with excessively large..."
+date: 2025-04-09 18:02:57
+modified: 2025-04-09 18:02:57
+category: "AWS"
+tags: ["AWS","cloud","ec2","rds","storage"]
+published: true
+slug: "feature-opensearch-resize-volumes"
+---
+
+Amazon OpenSearch domains with over-provisioned storage volumes incur unnecessary costs. This Finder/Fixer identifies OpenSearch domains with excessively large EBS volumes and intelligently resizes them based on actual usage patterns, while ensuring sufficient capacity for future growth. By automatically analyzing storage utilization trends and implementing optimal volume sizing, CloudFix helps you reduce costs while maintaining performance.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+OpenSearch domains often have storage volumes much larger than necessary, leading to significant waste in AWS spend. AWS charges premium pricing for OpenSearch EBS volumes—35% more for gp2 and 52.5% more for gp3 compared to regular EC2 volumes—making this over-provisioning particularly costly. Many organizations allocate excess storage as a precaution but never utilize it, paying for capacity that sits idle.
+
+### Solution
+
+The OpenSearch Resize Volumes Finder/Fixer analyzes CloudWatch metrics to identify storage utilization patterns and growth trends over the past 30 days. Using linear regression modeling, it predicts future storage requirements and recommends an optimal volume size that maintains sufficient headroom while eliminating excess capacity. CloudFix then automates the volume resizing process through the AWS API, with built-in safeguards to ensure ongoing performance and availability.
+
+### Benefits
+
+By implementing this Finder/Fixer, you can:
+
+-   Reduce OpenSearch storage costs by 12% or more
+-   Eliminate unnecessary capacity while maintaining performance
+-   Implement data-driven storage sizing based on actual usage patterns
+-   Maintain appropriate safety margins with predictive capacity planning
+-   Apply consistent storage optimization across your AWS environments
+
+## AWS Services Affected
+
+![Amazon OpenSearch Service](/media/uploads/OpenSearch-Service.svg)
+
+[Amazon OpenSearch Service](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/what-is.html)
+
+## How It Works
+
+### Finder Component
+
+The Finder component identifies over-provisioned OpenSearch domains using the following process:
+
+1.  Collects 30 days of storage utilization data from CloudWatch metrics
+2.  Verifies that the current volume size is greater than the 10GB AWS minimum
+3.  Applies a linear regression model to predict future storage requirements:
+    -   PredictedFreeStorageSpaceIn3Months = 4 × CurrentFreeStorageSpace − 3 × FreeStorageSpace30DaysAgo
+    -   RecommendedVolumeSize = int((CurrentVolumeSize − MinimumFreeStorageSpace) × 1.3)
+4.  Confirms that the recommended volume size is smaller than the current size
+5.  For gp2 volumes, verifies that IOPS requirements will still be met after resizing
+
+Only domains that meet all criteria and offer significant savings potential are flagged for optimization.
+
+### Fixer Component
+
+Once over-provisioned OpenSearch domains are identified, the Fixer component:
+
+1.  Calls the UpdateDomainConfig API to apply the new optimized volume size
+2.  Monitors the resizing progress using the DescribeDomainChangeProgress API
+3.  Implements CloudWatch alarms to monitor free storage space after resizing
+4.  Establishes automatic rollback procedures if storage utilization exceeds safe thresholds
+
+The entire process is executed without downtime, though temporary performance impacts may occur during the resizing operation.
+
+## FAQ
+
+**What criteria are used to identify over-provisioned OpenSearch volumes?**
+
+CloudFix identifies over-provisioned OpenSearch volumes when they meet all of the following criteria:
+
+-   The domain has at least 30 days of available CloudWatch metrics
+-   The current volume size is greater than 10GB (AWS minimum)
+-   Linear regression analysis predicts that a smaller volume size will be sufficient for the next 3 months
+-   The recommended size maintains a 30% buffer above predicted usage
+-   For gp2 volumes, the reduced size still supports required IOPS
+
+**How much can I expect to save with this optimization?**
+
+Typical savings from the OpenSearch Resize Volumes Finder/Fixer are 12% or more of your OpenSearch storage costs. Since AWS charges premium pricing for OpenSearch EBS volumes (35% more for gp2 and 52.5% more for gp3 compared to EC2 equivalents), the absolute savings can be substantial.
+
+**Is it possible to roll back if there are issues after resizing?**
+
+Yes, the Fixer implements multiple safety mechanisms:
+
+-   Automatic rollback is triggered if free storage space drops below 20%, using CloudWatch alarms
+-   Manual rollback from a snapshot is available if a cluster enters a "red" state
+-   The rollback automation ensures the volume is resized back up to provide 30% free space
+-   CloudWatch alarms remain active for 90 days after the resize operation
+
+**Does this fix require downtime?**
+
+No, the resize operation does not require downtime. However, temporary performance degradation such as increased latency may occur during the resizing process. AWS temporarily increases the instance count during volume modification, which can put additional load on cluster master nodes. We recommend scheduling the fix during a maintenance window for production systems.
+
+**Will this affect my OpenSearch query performance?**
+
+The Finder/Fixer is designed to maintain performance by ensuring sufficient capacity. The recommended volume size includes a 30% buffer above predicted needs and accounts for IOPS requirements. After resizing, query performance should remain unchanged while still achieving cost savings.
+
+**What happens if my data grows faster than predicted after resizing?**
+
+CloudFix implements CloudWatch alarms that monitor free storage space after resizing. If usage increases faster than predicted and free space drops below 20%, an automatic rollback process will trigger to resize the volume back up, ensuring your cluster maintains adequate storage capacity.
+
+## Related Resources
+
+-   [Optimize OpenSearch Domains with Over-Provisioned Storage](https://support.cloudfix.com/article/123395-optimize-opensearch-domains-with-over-provisioned-storage)
+-   [Sizing Amazon OpenSearch Service domains](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/sizing-domains.html)
+-   [Configuration changes in Amazon OpenSearch Service](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/managedomains-configuration-changes.html)

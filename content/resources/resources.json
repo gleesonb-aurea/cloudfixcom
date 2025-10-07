@@ -1,31 +1,549 @@
-[
-  {
-    "id": "case-study-acme",
-    "title": "Case Study: Acme Corp Reduces AWS Costs by 38%",
-    "description": "How Acme used CloudFix and RightSpend to cut monthly AWS bills.",
-    "type": "case-study",
-    "category": "Cost Optimization",
-    "tags": ["EC2", "RDS", "RightSizing"],
-    "publishDate": "2025-09-15",
-    "featured": true,
-    "thumbnail": "/images/resources/acme-case-study.jpg",
-    "author": "CloudFix Team",
-    "url": "/resources/case-study-acme",
-    "metadata": { "views": 1200, "downloads": 400 }
-  },
-  {
-    "id": "blog-hello-world",
-    "title": "Welcome to the CloudFix Blog",
-    "description": "Introducing our new MDX-powered blog and what to expect.",
-    "type": "blog",
-    "category": "Announcements",
-    "tags": ["CloudFix", "Announcements"],
-    "publishDate": "2025-10-07",
-    "featured": false,
-    "thumbnail": "/images/blog/hello-world.jpg",
-    "author": "CloudFix Team",
-    "url": "/blog/hello-world",
-    "metadata": { "views": 220, "downloads": 0 }
+{
+  "resources": [
+    {
+      "id": 16658,
+      "title": "[WEBINAR] 9 Ways to Save on EBS",
+      "description": "9 Ways to Save on EBS In this live, interactive webinar, Stephen will go over 9 ways to save with EBS! If you use EC2, you will have most certainly been surprised at how large a cost EBS volumes can b...",
+      "content": "# 9 Ways to Save on EBS\n\nIn this live, interactive webinar, Stephen will go over 9 ways to save with EBS! If you use EC2, you will have most certainly been surprised at how large a cost EBS volumes can be. Tune in and learn how to reduce your EBS spending substantially, up to an order of magnitude or more.\n\n# Register Here",
+      "type": "webinar",
+      "category": "Cost Optimization",
+      "tags": [
+        "EC2"
+      ],
+      "slug": "webinar-9-ways-to-save-on-ebs",
+      "date": "2025-06-26 23:14:56",
+      "modified": "2025-06-26 23:14:56",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 16642,
+      "title": "[WEBINAR] Savings Plans vs Convertible Reserved Instances",
+      "description": "Savings Plans vs Convertible Reserved Instances AWS offers various levels instruments for EC2 optimization. How do you manage the these instruments, and what is the tradeoff between discount rate, fle...",
+      "content": "# Savings Plans vs Convertible Reserved Instances\n\nAWS offers various levels instruments for EC2 optimization. How do you manage the these instruments, and what is the tradeoff between discount rate, flexibility, and complexity? Does it all feel like an expensive game of contractual tetris?\n\nJoin [Stephen](https://www.linkedin.com/in/stephenjbarr/) and [Dmitry](https://www.linkedin.com/in/mitek/) as they go over this in an easy-to understand, visual webinar.\n\n# Register Now",
+      "type": "webinar",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "EC2"
+      ],
+      "slug": "savings-plans-vs-convertible-reserved-instances",
+      "date": "2025-06-26 19:57:55",
+      "modified": "2025-06-26 22:38:48",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 16302,
+      "title": "Biotech Research Acceleration: Optimizing Computational Resources",
+      "description": "window.location.href = \"https://cloudfix.com/biotech-research-acceleration-optimizing-aws-compute-resources/\"; If you are not redirected automatically, click here.",
+      "content": "window.location.href = \"/biotech-research-acceleration-optimizing-aws-compute-resources/\";\n\nIf you are not redirected automatically, [click here](/biotech-research-acceleration-optimizing-aws-compute-resources/).",
+      "type": "resource",
+      "category": "Compute",
+      "tags": [
+        "AWS",
+        "cloud",
+        "compute"
+      ],
+      "slug": "biotech-research-acceleration-optimizing-computational-resources",
+      "date": "2025-04-03 16:15:41",
+      "modified": "2025-04-03 16:15:41",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 16293,
+      "title": "Safety-Critical Systems Provider Achieves Zero-Downtime AWS Optimization with CloudFix",
+      "description": "window.location.href = \"https://cloudfix.com/zero-downtime-aws-optimizations/\"; If you are not redirected automatically, click here.",
+      "content": "window.location.href = \"/zero-downtime-aws-optimizations/\";\n\nIf you are not redirected automatically, [click here](/zero-downtime-aws-optimizations/).",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud"
+      ],
+      "slug": "safety-critical-systems-provider-achieves-zero-downtime-aws-optimization-with-cloudfix",
+      "date": "2025-04-03 16:11:21",
+      "modified": "2025-04-03 16:13:45",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 16291,
+      "title": "Maritime Platform Reduces Multi-Region AWS Spending by $378,000 with CloudFix",
+      "description": "window.location.href = \"https://cloudfix.com/improve-cloud-cost-visibility-before-negotiating-with-aws/\"; If you are not redirected automatically, click here.",
+      "content": "window.location.href = \"/improve-cloud-cost-visibility-before-negotiating-with-aws/\";\n\nIf you are not redirected automatically, [click here](/improve-cloud-cost-visibility-before-negotiating-with-aws/).",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud"
+      ],
+      "slug": "maritime-platform-reduces-multi-region-aws-spending-by-378000-with-cloudfix",
+      "date": "2025-04-03 16:11:01",
+      "modified": "2025-04-03 16:11:01",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 16289,
+      "title": "Utility Provider Achieves $2.8M AWS Cost Savings While Maintaining Strict Compliance",
+      "description": "window.location.href = \"https://cloudfix.com/maintaining-strict-compliance-while-saving-money/\"; If you are not redirected automatically, click here.",
+      "content": "window.location.href = \"/maintaining-strict-compliance-while-saving-money/\";\n\nIf you are not redirected automatically, [click here](/maintaining-strict-compliance-while-saving-money/).",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud",
+        "compliance"
+      ],
+      "slug": "utility-provider-achieves-2-8m-aws-cost-savings-while-maintaining-strict-compliance",
+      "date": "2025-04-03 13:28:44",
+      "modified": "2025-04-03 16:10:26",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 16282,
+      "title": "Manufacturing Giant Cuts $1.4M in AWS Waste with CloudFix Automated Optimization",
+      "description": "window.location.href = \"https://cloudfix.com/manufacturing-giant-cuts-1-36m-in-aws-waste/\"; If you are not redirected automatically, click here.",
+      "content": "window.location.href = \"/manufacturing-giant-cuts-1-36m-in-aws-waste/\";\n\nIf you are not redirected automatically, [click here](/manufacturing-giant-cuts-1-36m-in-aws-waste/).",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud"
+      ],
+      "slug": "manufacturing-giant-cuts-1-4m-in-aws-waste-with-cloudfix-automated-optimization",
+      "date": "2025-04-02 19:23:09",
+      "modified": "2025-04-03 16:08:48",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 16277,
+      "title": "Global Consulting Firm Achieves $648000+ Annual AWS Savings with CloudFix's Automated Remediation",
+      "description": "window.location.href = \"https://cloudfix.com/global-firm-achieves-huge-annual-aws-savings/\"; If you are not redirected automatically, click here.",
+      "content": "window.location.href = \"/global-firm-achieves-huge-annual-aws-savings/\";\n\nIf you are not redirected automatically, [click here](/global-firm-achieves-huge-annual-aws-savings/).",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud"
+      ],
+      "slug": "global-consulting-firm-achieves-648000-annual-aws-savings-with-cloudfixs-automated-remediation",
+      "date": "2025-04-01 18:31:50",
+      "modified": "2025-04-03 16:04:58",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 15746,
+      "title": "Free Unlimited Savings Terms and Conditions",
+      "description": "Terms and Conditions CloudFix Special Offer: Free Unlimited Savings Offer Description: This special offer provides new CloudFix customers with free unlimited savings for the first three months. The of...",
+      "content": "## Terms and Conditions\n\n### CloudFix Special Offer: Free Unlimited Savings\n\n1.  **Offer Description**:\n    \n    -   This special offer provides new CloudFix customers with free unlimited savings for the first three months.\n    -   The offer is valid only for the CloudFix Fixer/Finder Cost Optimization product.\n    -   This offer does not apply to the CloudFix RightSpend product.\n2.  **Eligibility**:\n    \n    -   The offer is exclusively available to brand new customers of CloudFix.\n    -   Existing customers, renewals, or customers with previous CloudFix subscriptions are not eligible for this offer.\n3.  **Offer Period**:\n    \n    -   The offer begins on June 7, 2024.\n    -   To be eligible, customers must sign up and activate their CloudFix Fixer/Finder Cost Optimization product within the offer period.\n4.  **Terms of Use**:\n    \n    -   New customers will receive full access to the CloudFix Fixer/Finder Cost Optimization product without any cost for the first three months.\n    -   At the end of the three-month period, regular pricing will apply as per CloudFix’s standard pricing plans.\n5.  **Limitations**:\n    \n    -   This offer cannot be combined with any other promotions, discounts, or offers.\n    -   The offer is subject to change or termination by CloudFix at any time without prior notice.\n6.  **Termination**:\n    \n    -   CloudFix reserves the right to terminate the offer or any customer’s participation in the offer if any terms and conditions are violated or in case of any fraudulent activity.\n7.  **Liability**:\n    \n    -   CloudFix shall not be liable for any indirect, incidental, special, or consequential damages arising out of or in connection with the use of the CloudFix Fixer/Finder Cost Optimization product during the free period.\n8.  **Governing Law**:\n    \n    -   These terms and conditions are governed by the laws of the State of Texas.",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud",
+        "cost optimization"
+      ],
+      "slug": "free-unlimited-savings-terms-and-conditions",
+      "date": "2024-06-13 00:44:21",
+      "modified": "2024-06-13 00:46:22",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 15742,
+      "title": "CloudFix Introduces Free Unlimited Savings",
+      "description": "CloudFix, the leader in automated AWS cost optimization, is thrilled to announce the launch of a special offer: Free Unlimited Savings with CloudFix for the first three months. This groundbreaking initiative aims to help businesses maximize their cloud efficiency and reduce AWS costs effortlessly.",
+      "content": "### **Press Release**\n\n**For Immediate Release**\n\n**CloudFix Introduces Free Unlimited Savings**\n\n**Austin, TX – June 12, 2024** – CloudFix, the leader in automated AWS cost optimization, is thrilled to announce the launch of a special offer: Free Unlimited Savings with CloudFix for the first three months. This groundbreaking initiative aims to help businesses maximize their cloud efficiency and reduce AWS costs effortlessly.\n\nCloudFix is designed to continuously scan AWS accounts, identify cost-saving opportunities, and implement optimizations automatically. This ensures ongoing, compounding savings that help businesses achieve substantial cost reductions with minimal effort.\n\n**Unparalleled Savings with CloudFix:**\n\n-   **Eliminate Waste:** On average, ECU utilization is less than 10%, meaning 90% is wasted. CloudFix turns these inefficiencies into savings.  \n      \n    \n-   **Non-Disruptive Fixes:** Implement AWS recommendations that can save up to 30% with simple, non-disruptive fixes, all handled by CloudFix.  \n      \n    \n-   **Effortless Automation:** CloudFix scans your AWS accounts, identifies new cost-saving opportunities, and automatically provides one-click  fixes around the clock.\n\n**Brandon Pizzacalla, CEO of CloudFix, commented:** “Our mission at CloudFix has always been to simplify and maximize AWS cost optimization for our clients. With this new offer, businesses can experience the full power of CloudFix without any initial cost barriers. We are confident that the automated, continuous savings provided by CloudFix will transform how companies manage their AWS spend.”\n\nHe added, “AWS cost optimization doesn’t have to be a manual, time-consuming process. CloudFix takes the complexity out of it, providing businesses with immediate, risk-free savings that compound over time. This special offer is our way of helping more companies realize these benefits right from the start.”\n\n**About CloudFix:** CloudFix is the automatic, always-running solution for optimizing AWS cost and performance. By continuously finding and fixing savings opportunities, CloudFix ensures that businesses can save between 15% to 60% per AWS service. Trusted by the world’s most innovative companies, CloudFix transforms how organizations manage their cloud costs, making it easy to achieve and maintain substantial savings.\n\nFor more information or to take advantage of this offer, visit [CloudFix](/assessment/).\n\n\\*\\* [TERMS AND CONDITIONS](/resources/free-unlimited-savings-terms-and-conditions/)\n\n**Media Contact:** \n\nBrandon Pizzacalla  \nCEO  \nCloudFix  \nEmail: brandon.pizzacalla@cloudfix.com\n\n**Join the ranks of the world’s most innovative businesses and take control of your AWS costs effortlessly with CloudFix. Enjoy continuous, automated savings, reduce waste, and maximize your discounts with risk-free optimizations. Start saving today and see immediate results.**\n\n**CloudFix – The automatic, always-running way to optimize AWS cost and performance.**",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud",
+        "cost optimization"
+      ],
+      "slug": "cloudfix-introduces-free-unlimited-savings",
+      "date": "2024-06-12 23:23:16",
+      "modified": "2024-06-13 00:45:03",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 15694,
+      "title": "How a Billion-Dollar EdTech Company Saved $27.8 Million with CloudFix RightSpend",
+      "description": "Discover how a leading EdTech company saved $27.8 million over three years with CloudFix RightSpend, unlocking funds for new high-growth projects without additional technical effort.",
+      "content": "## Case Study: How a Billion-Dollar EdTech Company Saved $27.8 Million with CloudFix RightSpend\n\n### Overview\n\nA leading private equity portfolio EdTech company, with a revenue exceeding $1 billion and an annual cloud spend of over $50 million, sought to optimize their cloud costs without impacting their technical team's workload. By partnering with CloudFix and utilizing the RightSpend service, the company achieved significant savings, unlocking $27.8 million over three years.\n\n### Customer Profile\n\n-   **Industry:** EdTech\n-   **Revenue:** $1B+\n-   **Cloud Spend:** $50 Million+\n-   **Private Equity Portfolio Company**\n\n### Challenge\n\nThe company faced escalating cloud costs as they scaled, with their cloud spend surpassing $50 million annually. They required a solution that would minimize these costs without requiring additional effort from their already busy technical team.\n\n### Solution: CloudFix RightSpend\n\nCloudFix RightSpend provided the perfect solution. The service offered the following benefits:\n\n-   **Unlock up to 55% on EC2 costs**\n-   **Minimize commitments**\n-   **No technical effort or impact**\n-   **Retain control of optimization strategy**\n-   **Zero impact on other discount instruments like EDPs**\n-   **Discounts on fluctuating usage**\n\n### Results\n\nOver three years, the EdTech company saved a total of $27.8 million with CloudFix RightSpend. The savings broke down as follows:\n\n-   **Year 1:** $5.6 Million\n-   **Year 2:** $11.1 Million\n-   **Year 3:** $11.1 Million\n\n### Impact\n\nThe significant savings unlocked by CloudFix allowed the company to reinvest in new high-growth projects, thereby accelerating their growth and innovation.\n\n### Client Testimonial\n\n\"CloudFix saves us $27.8 million in our first 3 years, unlocking cash flow to invest in new high-growth projects.\"\n\n### Conclusion\n\nCloudFix RightSpend has proven to be an invaluable partner for the EdTech company, delivering substantial savings and operational efficiency. By leveraging CloudFix's optimization strategies, the company continues to thrive and innovate without being burdened by escalating cloud costs.\n\n![](/wp-content/uploads/cf-rightspend-yellow-600x450.png)\n\nWatch as Rahul Subramaniam and Stephen Barr talk about the savings:\n\n\\[embedyt\\] https://www.youtube.com/watch?v=8yQC3whQtWU\\[/embedyt\\]",
+      "type": "case-study",
+      "category": "Cost Optimization",
+      "tags": [
+        "cloud",
+        "EC2"
+      ],
+      "slug": "edtech-company-saved-14-5-million-with-cloudfix-rightspend",
+      "date": "2024-05-16 00:45:20",
+      "modified": "2024-05-30 04:04:16",
+      "downloadUrl": null,
+      "featuredImage": "/media/uploads/cf-rightspend-yellow-600x450.png",
+      "published": true
+    },
+    {
+      "id": 14353,
+      "title": "Webinar on demand: Stop waiting for AWS savings",
+      "description": "",
+      "content": "",
+      "type": "webinar",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS"
+      ],
+      "slug": "webinar-on-demand-stop-waiting-for-aws-savings",
+      "date": "2023-08-30 16:20:29",
+      "modified": "2023-09-11 09:30:34",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 13303,
+      "title": "Startups achieve AWS cost savings from day one with CloudFix",
+      "description": "Learn how CloudFix helped three Brisbane-based startups unleash the power of the cloud, allowing them to scale efficiently while reducing their AWS costs.",
+      "content": "## How three innovative companies reduced spend and optimized resources from the very beginning of their AWS journeys\n\n_Brisbane, Australia, features a thriving, close-knit startup community dedicated to providing unique, high-quality products and services. As their businesses begin to scale, many of these startups look to AWS for its speed, performance, and cost efficiency. Unlike some lift-and-shifters, however, these cutting-edge organizations understand what they’re getting into: AWS is powerful, but costs can get out of control quickly._\n\nThat’s why three Brisbane-based startups – ECOCOCO, Sponsa, and The Laid Back Bride – turned to CloudFix. While still in the beginning stages of their AWS journeys, these forward-thinking entrepreneurs wanted to ensure that cost and performance were optimized from the start. \n\n## Meet the startups: ECOCOCO, Sponsa, and The Laid Back Bride\n\n[ECOCOCO](https://www.ecococo.com.au/) is an Australian wellness and beauty company that creates simple, clean, effective skin and hair care. ECOCOCO products are enriched with botanicals and certified organic coconut oils designed to hydrate and refresh skin with no nasties and only natural, cruelty-free ingredients. \n\n[Sponsa](https://sponsa.io/) helps sponsorship sellers sell faster. By aggregating sponsorship opportunities, minimizing admin, and tracking sponsor leads, Sponsa reduces the time and effort it takes for people and organizations to be supported. Sponsa’s mission: to empower people who deserve sponsorship to focus on what they do best.\n\n[The Laid Back Bride](https://tlbbride.com/) is a new kind of bridal boutique, born from the belief that bridal should be more diverse and personal. Its in-house collection transcends the typical big-name designers with a down-to-earth, effortless style, while custom design services, a relaxed studio, and one-on-one attention guarantee that every experience is fun, friendly, and stress-free.\n\n## The shift to cloud: AWS promises speed, scale, and lower costs\n\nAll three companies have several things in common: they’re based in Brisbane, they’re growing fast, they’re part of the same network, and they decided in late 2022 to switch from a traditional on-premises infrastructure to AWS. \n\nThe reason: lower costs, greater scalability, and more power. Geneva Holley, Ecommerce and Marketing Lead at ECOCOCO, explained, “The speed and scale of building new applications was the most attractive thing about AWS for us. It was also important that cloud costs were lower than our on-prem expenses.” At Sponsa, the story was similar. Tim McMurray, CTO, expanded, “We think AWS will be the best way to scale our usage and allow us to keep tech expenses low.” \n\nAleena Long, Managing Director at The Laid Back Bride, agreed. “The cost and complexity of an on-premise infrastructure was a large pain point for us. We ‘cost optimized’ our on-premise tech by spending large amounts of money on engineers who spent large amounts of time cleaning code.” AWS promised to solve this problem with its breadth of services, inherent flexibility and scalability, and the potential to control costs more easily and efficiently.\n\n## Getting ahead of the game: Startup leaders share the value of CloudFix\n\nThe leaders of all three companies understood that while AWS offered tremendous opportunities, there were potential pitfalls as well. None of the companies wanted to replicate their inefficient on-prem cost optimization techniques, but also weren’t sure how to best manage AWS costs from day one. \n\nThen, through their network, they found CloudFix.\n\n“A mutual friend introduced us to CloudFix,” continued McMurray from Sponsa. “He strongly encouraged us to invest in an AWS optimization tool that would help us limit waste from the outset before starting to invest heavily in AWS itself.” The Sponsa team shared that recommendation with colleagues at ECOCOCO, who passed it onto The Laid Back Bride. “ECOCOCO endorsed CloudFix after purchasing it themselves. They spoke highly of the people that helped them get started and the value of the product,” Long added.\n\n## “CloudFix was the perfect answer” for AWS cost optimization from day one\n\nSoon, all three businesses were using CloudFix to ensure that their AWS operations were up-to-date and cost optimized – even before they fully launched. \n\nHolley from ECOCOCO explained, “CloudFix’s promise to eliminate wastage from the outset was the most compelling thing for us. We wanted to make sure we started our AWS journey with a strategy that ensured we didn’t waste money from the get go. We purchased it for that very reason. . . CloudFix was the perfect answer for us. ”\n\n> CloudFix’s promise to eliminate wastage from the outset was the most compelling thing for us. We wanted to make sure we started our AWS journey with a strategy that ensured we didn’t waste money from the get go. We purchased it for that very reason. . . CloudFix was the perfect answer for us.\n\nAnd for Sponsa, CloudFix represented precious time back for the engineering team to focus on what matters: the product. “I was most excited about the ability to build without reservations,” CTO McMurray continued. “I hold the tech budget, so cost is important to me and my team. Not having to monitor and constantly find ways to reduce our usage to save money will give us back more than five hours per week.”\n\n## What’s next: Continued investment in AWS with nonstop savings from CloudFix\n\nFor all three companies, CloudFix has played a crucial role in their successful rollout of AWS from very early in the journey – and will only add more value over time. \n\nWhat would they say to startups in the same position? “Automate AWS optimization from the very beginning of your shift to AWS. We haven't deployed all our tech capital into AWS yet and are already getting value from the tool and the CloudFix team,” said Sponsa’s McMurray.\n\nAs their AWS footprints grow, each leader believes strongly that CloudFix will allow them to embrace the innovation of the cloud and grow their businesses with less cost and complexity. \n\nFrom ECOCOCO’s perspective, “CloudFix will allow our leadership to invest more in the cloud without worrying about mounting costs. I believe CloudFix will continue to give time back to our technical staff, saving us human resource dollars and allowing engineers to do what they do best: building product.”\n\nIt’s a similar story at Sponsa. McMurray commented, “Deploying cost savings into new projects and other AWS services is an extraordinary benefit to using this tool. CloudFix will help us achieve greater speed and confidence of new builds and fast re-deployment of capital.”\n\nLong from The Laid Back Bride concluded, “We’re confident CloudFix will act as our nucleus as we manage our cloud spend. It enables us to invest exponentially in technology without hesitating about any potential wastage.” \n\nThree fast-growing startups. One unique day-one use case. Millions of dollars to be saved. That’s the power of CloudFix.",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud",
+        "cost optimization"
+      ],
+      "slug": "success-story-startups-achieve-aws-cost-saving",
+      "date": "2023-07-06 10:50:01",
+      "modified": "2023-07-06 10:50:32",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 13419,
+      "title": "Webinar on demand: The Role of Engineering in FinOps",
+      "description": "",
+      "content": "",
+      "type": "webinar",
+      "category": "General",
+      "tags": [],
+      "slug": "webinar-on-demand-the-role-of-engineering-in-finops",
+      "date": "2023-05-18 11:53:12",
+      "modified": "2023-05-31 11:54:38",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 13173,
+      "title": "Pay Less for AWS: 3 Pain-Free Ways to Save More Now",
+      "description": "",
+      "content": "",
+      "type": "resource",
+      "category": "General",
+      "tags": [
+        "AWS"
+      ],
+      "slug": "webinar-on-demand-pay-less-for-aws",
+      "date": "2023-05-15 13:54:51",
+      "modified": "2023-05-24 13:18:14",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 12225,
+      "title": "Valent’s small IT team achieves big savings with CloudFix",
+      "description": "See how Valent automated their process with the help of CloudFix in order to save around $40,000 per month.",
+      "content": "## How a sustainable agriculture company automated its way to more time and lower costs\n\n_Headquartered in San Ramon, California, Valent develops and markets agricultural products that integrate biorational, botanical, and traditional chemistry approaches. Its mission is bold: advance sustainable agriculture, protect crops, enhance crop yields, improve food quality, beautify the environment, and safeguard public health._\n\nWith worldwide operations and customers, and little on-site infrastructure, moving to AWS was an easy choice for Valent. A multi-year digital transformation journey resulted in more than 90% of the company’s infrastructure running on the cloud, but as adoption grew, so did costs. Valent needed a way to streamline and automate AWS cost optimization so its slim IT team could focus on delivering business value. That’s when they found CloudFix.\n\n## The benefits of AWS keep growing – but so does the cost\n\nThe Valent team chose AWS for its breadth of offerings, speed to implementation, and resources to support its R&D team. “Moving away from hardware infrastructure to AWS lets us be much more agile,” said Mike Cortez, Valent’s lead IT infrastructure architect. “It’s central to our digital transformation initiative and important to our research team, too. AWS not only supports our IT objectives, its genetics layers play a key role in R&D for our products.”\n\n> AWS is central to our digital transformation initiative and important to our research team, too. It not only supports our IT objectives, its genetics layers play a key role in R&D for our products.\n\nFor Valent, the benefits of AWS kept growing – but so did the price. “We learned quickly that the ‘lift and shift’ model was not very cost effective,” Cortez continued. “It’s not like-kind to like-kind and doesn’t take into account differences in sizing. We ended up with a ton of wasted space but couldn’t reduce our volumes, so our costs were out of control.”\n\nCortez and his team hired an AWS managed service provider to help with cost optimization, but while the third-party helped identify savings opportunities, it was up to Valent to put them into practice. Cortez shared, “We could use their tools to review things like right-sizing and changing volume types, but it was all manual. It took a tremendous amount of time and energy to implement them. It just wasn’t sustainable, especially for our small team.”\n\n## Valent saves time and money with CloudFix’s automated fixes\n\nCortez learned about CloudFix from his AWS rep, and was immediately drawn to the ability to automate AWS-recommended fixes. The initial CloudFix savings assessment found almost $30,000 in savings by [switching from gp2 to gp3](/blog/migrate-gp2-to-gp3-better-performance-lower-costs/) alone. “I wish I had CloudFix sooner!” Cortez said. “We were manually moving from gp2 to gp3, but this is 1000% easier and faster.” With the work the team had completed prior to CloudFix, plus impact of the CloudFix fix, Valent now saves approximately $40,000 per month on Amazon Elastic Block Store (EBS) volumes alone.\n\nImplementing CloudFix was fast and easy as well. According to Cortez, “CloudFix and our managed service provider came together and deployed it seamlessly. There were no bumps that weren’t ironed out in the first 30 minutes. It’s very straightforward to set up and use.”\n\n> AWS is a monster; I can’t keep up with all the advisories. Being able to automatically implement the latest recommendations is game-changing.\n\nThe Valent team particularly appreciates the automated nature of CloudFix. “We run a very lean environment and I have to be able to automate as much as I can,” Cortez commented. “AWS is a monster; I can’t keep up with all the advisories. Being able to automatically implement the latest recommendations is game-changing.”\n\nBest of all: CloudFix takes AWS cost optimization off of Cortez’s plate so he can work on business-critical initiatives. “Time is very valuable. To be able to save that much time so I can focus on more value-added work is a huge thing, above and beyond the dollar figure. That time back is very much appreciated,” he added.\n\n## “It’s a no-brainer”: Valent doubles down on AWS with its savings from CloudFix\n\nWhat’s next for Valent, AWS, and CloudFix? Cortez plans to optimize additional Amazon EBS volumes and to keep using his favorite feature – the “always fix” button – to save more time than ever. The team also intends to reinvest the time and savings delivered by CloudFix into expanding further into AWS. Cortez concluded, “CloudFix is a no-brainer. Any AWS users who are struggling with ballooning costs – CloudFix is the way to go.”\n\n> To be able to save that much time so I can focus on more value-added work is a huge thing, above and beyond the dollar figure.",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud",
+        "cost optimization"
+      ],
+      "slug": "success-story-valent",
+      "date": "2023-03-28 13:50:21",
+      "modified": "2023-10-18 09:33:43",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 12217,
+      "title": "CloudFix Savings Report (Example)",
+      "description": "",
+      "content": "",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "cloud"
+      ],
+      "slug": "cloudfix-savings-report",
+      "date": "2023-03-22 16:37:58",
+      "modified": "2023-05-24 13:19:19",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 11856,
+      "title": "What If Media Group trusts CloudFix for nonstop AWS cost optimization",
+      "description": "Find out how CloudFix helped What If Media Group save over $144,000 in AWS costs in just a few months without impacting performance or downtime.",
+      "content": "## The performance marketing company identified over $250k in savings in its first scan alone – and hasn’t stopped since\n\n_What If Media Group, a multi-million dollar performance marketing organization with almost 200 employees, enables the world’s leading brands to acquire valuable new customers at scale. Through AI, data science, and an extensive network of proprietary media channels, What If helps customers like Uber, Clorox, and Nationwide Insurance achieve meaningful customer experiences and powerful business performance._\n\nTo support its data-driven approach to performance marketing, What If relies on four separate Product Engineering groups to develop custom AWS-native applications. The What If team deeply values AWS and relies on it to power the business, but found themselves with growing cost control challenges. What If needed a more reliable, efficient way to manage AWS spend – and at AWS re:Invent 2022, they found CloudFix.\n\n## “Spend now, ask questions later”: As What If grows, so do its AWS costs\n\nAfter a series of mergers and acquisitions, What If CTO John Pershing faced the difficulty of managing and combining several heterogeneous tech ecosystems. The only common denominator was AWS, but as the business has scaled, so did their costs. “AWS makes it easy to spend money now and ask questions later,” Pershing shared. While that’s great for innovation – Pershing empowers his engineers to build what they need to move the business forward – it also introduces the need to more tightly control their spend.\n\nThe problem for What If wasn’t identifying ways to reduce costs; it was putting them into practice. “It’s relatively simple to find ways to cut back on your AWS bills,” Pershing explained. “But those changes, like upgrading Amazon Elastic Block Store (EBS) volumes to newer versions, for example, are very labor intensive. Our engineering teams would sink an incredible amount of time into performing the fixes, but the return would be just a one-time saving.”\n\nPershing knew that manually keeping pace with AWS was unrealistic. “In a dynamic, ever-changing cloud environment, one-and-done fixes only do so much. AWS is always changing, and we’re always spinning up new resources. Plus, they issue 50+ new service advisories every week. We just can’t keep up.” In addition, manually regulating their AWS spend proved far too resource intensive. Many team members lacked the technical and financial acumen to make optimal decisions, and Pershing needed to allocate those that did to higher-value initiatives.\n\n## “We were blown away”: CloudFix finds over $250k in savings in its initial scan\n\nIn late 2022, Pershing began to search for a cloud cost management solution that could find and realize new savings around the clock. What If had hit $5 million in annualized AWS spend and continued to grow. Manual cost optimization was no longer enough.\n\n> We were blown away. (With CloudFix), we found hundreds of thousands of dollars before re:Invent was over.\n\nJohn Pershing and his team came to Las Vegas for AWS re:Invent 2022 with FinOps tooling in mind and soon connected with CloudFix. “We were initially attracted to CloudFix’s simple, flat-fee pricing because most FinOps tools take a percentage of a company’s annualized AWS spend,” Pershing said. They also liked how CloudFix automatically finds and fixes AWS cost optimization opportunities in an ongoing way, which would allow their engineers to focus on bigger, more impactful projects.\n\nAccording to Pershing, “We decided to complete the CloudFix free savings assessment right there in Vegas. Our preliminary research indicated it was secure, and we were curious what it would find.” Because the What If team had been manually optimizing their AWS spend, they didn’t expect to see significant savings.\n\nTo their surprise, CloudFix identified $263,000 in immediate savings with a projected value of almost $500,000 over the next 12 months across their 32 accounts. “We were blown away,” Pershing laughed. “We found hundreds of thousands of dollars before re:Invent was over, mostly through the [Amazon Simple Storage Service (S3)](https://aws.amazon.com/s3/) and [Amazon DynamoDB](https://aws.amazon.com/dynamodb/) fixers. CloudFix was fast, easy to use, and simple to configure. It let us consolidate our cost optimization efforts across the organization and get our engineers back to high-value work.”\n\n> CloudFix is fast, easy to use, and simple to configure. It lets us consolidate our cost optimization efforts across the organization and get our engineers back to high-value work.\n\n## With CloudFix, What If Media Group gets automated, nonstop savings\n\nWhat If has saved over $144,000 to date without impacting performance or availability. Pershing concluded, “CloudFix far exceeded our expectations. We’re excited to see our savings continue to grow as AWS releases new savings opportunities and CloudFix automates them. CloudFix has helped us achieve a continuous FinOps practice – not just one-off savings, but an end-to-end process for cost management.”\n\nWhat’s next for What If? The team plans to implement the latest fixers and deploy CloudFix to any remaining accounts to realize CloudFix’s projected annual value. They’re looking forward to effortlessly keeping up with AWS best practices, too. With CloudFix, What If Media Group is confident that they can continue to support their engineers, grow their business, and keep AWS costs under control.\n\n> CloudFix far exceeded our expectations. We’re excited to see our savings continue to grow as AWS releases new savings opportunities and CloudFix automates them. CloudFix has helped us achieve a continuous FinOps practice – not just one-off savings, but an end-to-end process for cost management.",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud",
+        "cost optimization",
+        "storage",
+        "S3"
+      ],
+      "slug": "sucess-story-what-if-media-group",
+      "date": "2023-03-07 08:48:04",
+      "modified": "2023-10-18 09:32:32",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 11959,
+      "title": "AWS re:Invent 2022 - The nonstop way to find AWS-recommended savings opportunities",
+      "description": "In his AWS re:Invent 2022 presentation, Rahul Subramaniam, founder of CloudFix, shares a transformative approach to identifying and implementing AWS-recommended cost-saving opportunities. Drawing from...",
+      "content": "In his AWS re:Invent 2022 presentation, Rahul Subramaniam, founder of CloudFix, shares a transformative approach to identifying and implementing AWS-recommended cost-saving opportunities. Drawing from 15 years of experience with large AWS implementations, Rahul emphasizes accelerating existing successful strategies with simple, actionable practices. By adopting a continuous, automated process, organizations can achieve compounding savings that significantly impact their bottom line.\n\n**Key Takeaways:**\n\n-   **Continuous Optimization:** Implementing an ongoing, automated approach to cost savings ensures that organizations consistently benefit from the latest AWS recommendations.\n    \n-   **Practical Strategies:** Rahul provides actionable steps that can be immediately applied to enhance current cost optimization efforts without overhauling existing systems.\n    \n-   **Compounding Savings:** By regularly applying these optimizations, enterprises can realize significant, cumulative cost reductions over time.\n    \n\nhttps://youtu.be/kpFjC4MDNJs",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud",
+        "cost optimization"
+      ],
+      "slug": "video-aws-reinvent-2022-nonstop-savings-opportunities",
+      "date": "2023-03-03 16:36:29",
+      "modified": "2025-01-23 09:31:54",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 11957,
+      "title": "GeekWire Studios | AWS re:Invent Partner Profile: CloudFix",
+      "description": "Rahul Subramaniam, founder of CloudFix, sits down with GeekWire to share how he created CloudFix to actually realize savings on AWS.",
+      "content": "Rahul Subramaniam, founder of CloudFix, sits down with GeekWire to share how he created CloudFix to actually realize savings on AWS – not just make recommendations. You’ll hear how CloudFix works, why it’s different from other AWS cost control tools, the critical role of automation in AWS cost optimization and more.\n\nhttps://www.youtube.com/watch?v=iD5PciWFucM",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud",
+        "cost optimization"
+      ],
+      "slug": "video-geekwire-studios-aws-reinvent-partner-profile",
+      "date": "2023-03-03 16:36:09",
+      "modified": "2024-02-19 16:43:43",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 11037,
+      "title": "Conn’s HomePlus achieves nonstop savings with CloudFix",
+      "description": "“We just set it and forget it”: How the billion-dollar retailer dramatically reduces their AWS spend.",
+      "content": "### About Conn’s\n\nFounded in 1890, Conn’s HomePlus started as a small mom-and-pop plumbing and heating company in Beaumont, Texas. Over the next 130 years, the company grew into one of the leading retailers of furniture, appliances, and consumer electronics in the Southern U.S., operating over 160 stores in 15 states, with over 4,100 employees.\n\nTheir guiding vision: that everyone deserves a home they love. To make that possible, Conn’s offers some of the best customer benefits in the industry — including unmatched, personalized payment options for everyone.\n\nThis “customer-first” focus runs deep at Conn’s HomePlus — so deep that it’s the first thing Jeremy Anderson, Cloud Architect at Conn’s, mentions: “My job is helping our company save money where we can so we can make bigger investments in our customer experience, so we can keep making bigger investments in our customer experience. Using CloudFix enables us to find and fix the biggest AWS savings opportunities.”\n\n### AWS powers digital transformation – at an unexpectedly high cost\n\nConn’s HomePlus began their move to AWS 4 years ago for a common reason. “The whole premise of moving to the cloud was to reduce operational costs“ Anderson said.\n\nTwo other initiatives made the move to the cloud (and controlling spend) even more urgent. “First, when Covid hit, we had to get people working at home as quickly as possible. At the same time, we were undergoing a huge digital transformation — adding major website modernizations to make it easier to place and track orders, and new ways for customers to pay online,” Anderson said.\n\nWith this new cloud innovation came a big surge in AWS spending — and the need for a solution like CloudFix to easily and automatically contain the costs.\n\n“Honestly, we were expecting the cost to be lower after we migrated from on-prem to IaaS, but we discovered that in the cloud, storage and compute gets very pricey,” Anderson said. “So we went searching for the best way to optimize AWS costs.”\n\n> CloudFix actually fixes things, not just finds them. The team keeps on top of releasing new fixers that generate new savings for us regularly — and they’re all based on guidance from AWS, so we don’t have to focus on whether the recommendations are good or not. They just inherently are.\n\n### Finding (and achieving) instant AWS savings\n\nConn’s HomePlus discovered CloudFix at an AWS conference and decided to try it. “We started with a few of our higher spend accounts,” Anderson said. “CloudFix instantly found significant savings by transitioning our storage from Amazon Elastic Block Store GP2 to GP3. So we decided to let CloudFix find and fix savings across all of our AWS accounts, and that’s when we really started saving money.”\n\nBefore CloudFix, Anderson and team tried a range of other solutions. “Native AWS tools for optimizing costs just aren’t as accurate as we need them to be . . . and you have to be the doctor, looking at the problems meticulously to see if the recommendations are correct,” Anderson said.\n\nThat’s his favorite part of saving with CloudFix. “CloudFix actually fixes things, not just finds them,” Anderson said. “The team keeps on top of releasing new fixers that generate new savings for us regularly — and they’re all based on guidance from AWS, so we don’t have to focus on whether the recommendations are good or not. They just inherently are.”\n\n### Set it, forget it, and let the savings compound\n\nAccording to Anderson, “you really do just ‘set CloudFix and forget it.’ CloudFix constantly looks at our new resources and finds and fixes opportunities to save on our AWS spend.”\n\nFor Conn’s HomePlus, the CloudFix implementation was incredibly easy, with zero safety concerns. “The ease was fantastic. I literally went into our AWS management account, allowed a few AWS-approved permissions, and that was it.”\n\nWithin a matter of minutes, CloudFix scanned every AWS instance across the entire Conn’s HomePlus infrastructure. “It was off to the races at that point,” Anderson said. “CloudFix just went to work finding and fixing big savings opportunities.”\n\nOn the first day, they found $10,000 in savings. That ballooned to over $85,000 in a matter of weeks. As the savings compound, Conn’s HomePlus expects to save much more over the next several years.\n\n### Today, Conn’s HomePlus finds savings nonstop\n\nWhat does non-stop savings mean to Anderson, and to his Cloud Architecture team at Conn’s HomePlus? “We expect CloudFix to save us a tremendous amount of money with very little effort. We’re counting on the team to keep rolling out incredible new fixers. Most of the other AWS savings tools we tried promised this, but CloudFix actually delivered.”\n\nHis advice for other companies considering CloudFix: “I would tell them the (CloudFix) savings far outweigh the price”\n\n> CloudFix saves us a tremendous amount of money with very little effort. We’re counting on the team to keep rolling out incredible new fixers. Most of the other AWS savings tools we tried promised this, but CloudFix actually delivered.",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud",
+        "storage",
+        "compute"
+      ],
+      "slug": "success-story-conns-homeplus",
+      "date": "2022-11-19 21:07:13",
+      "modified": "2024-07-15 19:08:04",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 10384,
+      "title": "AWS Summit Video Highlights",
+      "description": "CloudFix CEO Rahul Subramaniam had audiences captivated at AWS Summit Anaheim 2022 with his two must-see sessions on AWS cost optimization and low code app development. ",
+      "content": "Rahul Subramaniam, CloudFix Founder and Chief Evangelist had audiences captivated at AWS Summit Anaheim 2022 with his two must-see sessions on AWS cost optimization and low code app development. Missed the event or want a recap? Watch the full sessions now.\n\n## Session 1: The three tiers of AWS cost savings\n\n## Session 2: Code + first principle thinking",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud",
+        "cost optimization",
+        "S3"
+      ],
+      "slug": "aws-summit-anaheim-2022-videos",
+      "date": "2022-10-03 00:56:59",
+      "modified": "2022-12-08 12:07:46",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 7555,
+      "title": "CloudFix saves Western Digital $450k on AWS in just 6 weeks",
+      "description": "Western Digital relies on cloud technology to accelerate growth, CloudFix helps reduce cost",
+      "content": "## About Western Digital\n\nWestern Digital isn’t just the world’s leading data storage company — they literally invented the hard drive. Today, more than 40% of the world’s data is stored on its products.\n\nTheir mission: to innovate at the boundaries of technology, whether in your pocket, home, car, or the cloud. This innovation is at the core of their culture, whether exploring edge-based solutions in AI and machine learning or creating radical new materials for non-volatile memory.\n\nTo invest even more in these innovations, Western Digital relies on AWS technology to accelerate growth while reducing cost. They’ve realized significant savings through their own initiatives — but with a $100 million dollar cost reduction goal, they were highly motivated to explore additional ways to optimize their AWS investment. That’s where CloudFix comes in.\n\n## Starting small (and still saving big on AWS) with CloudFix\n\nWestern Digital initially deployed CloudFix in just thirty minutes. “We started small to see how the product worked,” explained David Sunarta, Sr. Manager, Cloud Computing. “Very quickly, it became clear that our business stakeholders were comfortable with the security, ease, and reliability of CloudFix.”\n\nThey started by just accepting one of CloudFix’s savings recommendations — known as “fixers” — in a single dev account. In their first two weeks, they saved $5k in AWS costs.\n\nNow comfortable with CloudFix’s least-privilege model and AWS-native approach, the team began scaling CloudFix across all their AWS accounts, spanning five different business units. The savings began to snowball, and by week six they had saved an incredible $450,000 — a number they expect will swell to over $1 million within the year.\n\n> CloudFix has exceeded my expectations. Not only have we seen significant savings, we have implemented a repeatable, scalable process that is simple to institutionalize and expand.\n\n“CloudFix has exceeded my expectations,” said Jahid Khandakar, CIO. “Not only have we seen significant savings, we have implemented a repeatable, scalable process that is simple to institutionalize and expand.”\n\nCloudFix saves more than just direct costs, too. By enabling Western Digital to optimize AWS spend quickly and easily — spending just a few minutes of engineering time each week — the company has also dramatically increased the efficiency of their AWS cost optimization practice. Since CloudFix only deploys AWS-recommended fixes, automatically and at-scale, Khandakar’s team can reallocate their limited resources to higher-value, strategic initiatives.\n\n## Western Digital sees more AWS savings in their future\n\nThe plan at Western Digital: keep driving even greater AWS savings using CloudFix. That means adopting CloudFix across more instances and deploying the latest fixes as CloudFix releases them. “Simply put,” said Khandakar, “we are always pursuing better ways to run our business — and CloudFix has helped us do precisely that.”",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud",
+        "cost optimization",
+        "security",
+        "storage"
+      ],
+      "slug": "success-story-western-digital",
+      "date": "2022-04-20 18:37:29",
+      "modified": "2023-07-17 12:29:39",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 7114,
+      "title": "Tokara Solutions instantly cuts AWS costs by 10% with CloudFix",
+      "description": "Discover how Tokara Solutions replaced their manual AWS cost optimization process with CloudFix, a tool that automatically fixes the AWS saving opportunities you choose.",
+      "content": "## The CRM consulting business replaced manual AWS cost optimization with automated savings from CloudFix\n\n_Tokara Solutions’ tagline is “CRM done right” – and they take it very seriously. A global team of CRM consultants and engineers, Tokara brings together people, processes, and technology to maximize business value and build trusted, long-term relationships. Its seasoned team of CRM professionals averages 15+ years of experience and is dedicated to helping clients accelerate business by putting the customer first._\n\nShawn Grant, President of Tokara Solutions, is an AWS superfan. He doesn’t just use AWS for his own company’s infrastructure; he encourages even his largest enterprise clients to migrate. But each month, when Tokara’s AWS bill arrived, he felt like he could be paying significantly less. Grant needed a way to reduce Tokara’s AWS spend without a lengthy consulting engagement – and with CloudFix, he found it.\n\n## “The bill was too high”: Tokara looks for an automated AWS cost optimization solution\n\nFor Grant, the challenge was simple: “I would get an AWS bill, and it would be too high.” Even as someone who was all-in on AWS, cost control had become difficult. “The AWS services are worth every penny,” Grant continued. “But if we optimized how we ran each instance, I knew we could save a lot of money.”\n\nThe Tokara team first tried to tackle AWS cost optimization manually. They attempted to read all the AWS bulletins and implement each recommended fix, but Hector Santos, Tokara’s Director of Professional Services, admits even he couldn’t keep up.\n\n“With how quickly AWS releases updates, changes just come too quick. If you are running 50-plus servers and creating new instances left and right, your people can’t maintain it anymore. There is a better use of their time and resources.“ Santos said. It was critical for the Tokara team to focus on its mission – CRM done right – and not waste time on manual updates.\n\n## Why Tokara chose CloudFix: Easy to deploy, easy to use, instant savings\n\nTokara considered multiple solutions for AWS cost optimization, but landed on CloudFix. The team chose it based on two essential criteria: ease of deployment and ease of action.\n\n“It practically sets itself up,” Santos said. “It was fast and safe to connect our AWS account and let CloudFix run. It takes all the hard work out of finding and fixing the optimizations that AWS recommends that would just be too time consuming to perform manually.” Plus, CloudFix is constantly adding new finders and fixers — keeping up with the incredible volume of technical recommendation bulletins being published by AWS.\n\n> CloudFix lets us review and implement the latest recommendations in a few clicks.\n\nFor Grant, these regular new fixers were one of the strongest selling points. “We get hit up all the time by different vendors for high-dollar AWS savings consultations or to try other tools that just recommend savings improvements, but you still have to implement them manually,” Grant shared. “CloudFix lets us review and implement the latest recommendations in a few clicks. That’s huge.”\n\n## CloudFix instantly saves Tokara 10% on its annual AWS spend\n\nWhat impact did CloudFix make on Tokara’s AWS budget?\n\n“CloudFix instantly saved us 10% of our overall AWS spend,” Grant continued. “I know Hector (Santos) feels better about showing me the bill every month.”\n\nAt Tokara, where they regularly consult on CRM projects with major enterprises, they’re already thinking beyond using CloudFix internally.\n\n“I envision us recommending CloudFix to our own customer base,” Grant said. “Any growing enterprise will quickly get to the point where they have too many AWS instances to manage  \nmanually. That’s when CloudFix steps up, makes ongoing management easy, and results in real cost savings.”\n\nGrant concluded, “My favorite thing about CloudFix? It saves us money. Honestly, if you are running 10 to 15 servers in AWS, there is no reason not to be using CloudFix.”\n\n> It takes all the hard work out of finding and fixing the optimizations that AWS recommends.",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud",
+        "cost optimization"
+      ],
+      "slug": "success-story-tokara-solutions",
+      "date": "2022-04-14 14:58:37",
+      "modified": "2023-05-01 07:19:05",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 7112,
+      "title": "Mobilogy saves 25% on AWS storage costs with CloudFix",
+      "description": "Discover how the software company Mobilogy worked with CloudFix to reduce their AWS storage costs by 25% without any service disruption or downtime.",
+      "content": "## How a growing software company optimized Amazon S3 buckets and Amazon Elastic Block Store (EBS) volumes to slash its AWS spend\n\n_Mobilogy offers advanced mobile lifecycle solutions that enable operators, retailers, buyback vendors, and enterprises to provide enhanced customer experience, increase revenue, improve productivity, enhance security, and reduce cost. Through in-store, online, and on-device delivery channels, Mobilogy customers enjoy services ranging from advanced diagnostics to content transfer, backup, restore, wipe, and automated phone buyback._ \n\nMobilogy deploys over 75,000 units at more than 100 mobile operators and retailers globally, representing well over 50,000 outlets handling hundreds of millions of transactions per year. The company turned to AWS to support this level of scale – but soon found that costs were higher than expected.\n\n## Mobilogy discovers automated AWS savings with CloudFix\n\nAs Mobilogy’s customer base grew, so did their AWS spend. Although the cost of compute and networking resources was elastic based on traffic, their storage cost was growing steadily. Mobilogy needed a way to reduce storage costs without sacrificing performance and service availability. \n\nEnter CloudFix. \n\nThe Mobilogy team discovered that several of CloudFix’s “fixers” could help them optimize and lower their storage costs. With CloudFix, Mobilogy was able to:\n\n-   Move rarely accessed data stored in the S3 Standard Tier to the Infrequent Access Tier by [enabling Amazon S3 Intelligent-Tiering](/blog/aws-s3-intelligent-tiering-default-storage-class/)\n-   [Convert gp2 volumes to gp3 volumes](/blog/migrate-gp2-to-gp3-better-performance-lower-costs/), which are less expensive and offer higher maximum throughput rates while maintaining the same high levels of durability and availability\n-   [Migrate io1 and io2 volumes to gp3](/blog/optimize-aws-elastic-block-storage-by-migrating-io1-and-io2-volumes-to-gp3/) to cut costs by approximately half without sacrificing performance\n\n## How Mobilogy saved 25% on AWS storage costs with CloudFix\n\nMobilogy was thrilled that so many fixers could be applied directly to its environment. The IT team reviewed CloudFix’s recommended changes, evaluated the total cost and potential savings of each resource and fix, then implemented them with just a few clicks. Mobilogy also took advantage of the automation of CloudFix, ensuring that the fixes not only ran once, but continued to find and execute nonstop savings. \n\nThe result: Mobilogy reduced their storage costs by 25% by optimizing the costs of Amazon S3 buckets and Amazon EBS volumes. They experienced zero service disruptions or performance issues during or after the fixes were applied. And best of all, with CloudFix, Mobilogy can rely on new savings every year as new fixers are released. For this growing company, that’s a game-changer.",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud",
+        "security",
+        "storage",
+        "compute",
+        "networking",
+        "S3",
+        "backup"
+      ],
+      "slug": "success-story-mobilogy",
+      "date": "2022-04-14 14:58:03",
+      "modified": "2023-10-18 09:29:50",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 7106,
+      "title": "Kingslake saves 10% annually with “set it and forget it” AWS cost optimization from CloudFix",
+      "description": "Learn how Kingslake turned to CloudFix to help manage AWS costs with ease. ",
+      "content": "## How a multinational software company complements consultants with fast, easy AWS cost savings\n\n_Founded in 1994, Kingslake builds and delivers software that brings agility to manufacturing. From increasing visibility of operations to improving customer service, inventory management to transportation logistics, Kingslake is dedicated to helping its clients excel._\n\nInspired by its breadth of solutions, partners, and customer locations, Kingslake turned to the cloud early. They develop all their offerings using cloud and cognitive technologies and pass their stack’s OpEx-based pricing on to their customers. AWS is their backbone – but like many companies, Kingslake found that as it scaled up, its costs became increasingly hard to manage. Kingslake and the companies it serves needed a simple, cost-effective way to control their AWS spend.\n\n## “It all comes back to managing costs”: As AWS scales up, so does its spend\n\nAs the Chairman of Kingslake, Dr. S. Dharmavasan (Dharma to his friends) regularly consults with multinational companies that are household names — and he’s seen firsthand how AWS is transforming their businesses.\n\nHe’s also seen, however, how quickly costs can rise. “Major companies are using AWS for their most strategic business initiatives,” Dharma said. “AWS is so affordable and powerful to get started that the department heads dive straight in. Eventually, though, it all has to come back to managing costs.”\n\nOne of the most challenging parts of managing costs: keeping up with the sheer volume of AWS savings recommendations. According to Dharma, “With all these communications coming out of AWS, no one can keep up anymore.” It’s virtually impossible to not only track the latest updates, but manually implement them as well.\n\n## Kingslake and its customers save 10% on their annual AWS spend with CloudFix\n\nKingslake discovered CloudFix through its partnership with Aurea. Dharma and his team now use it themselves and recommend it even to their largest customers – all of whom save an average of 10% on their AWS spend. “Most companies aren’t using AWS as efficiently as they could be. That’s where CloudFix comes in,” Dharma said. “CloudFix brings every instance together to centrally manage how much you are using and spending.”\n\n> It’s incredibly simple to set up — it was a bit like just turning on an iPhone and letting it self-configure.\n\nDharma also likes how CloudFix makes it easy to keep up with the deluge of savings recommendations – and how easy it is to implement. “CloudFix keeps up with the bulletins and finds and fixes your top AWS-recommended savings opportunities. Plus, it’s incredibly simple to set up. It was like turning on an iPhone and letting it self-configure,” Dharma continued.\n\nFor Kingslake and its clients, CloudFix plays a vital role in a larger AWS savings strategy. Dharma explained, “Big companies tend to turn to consultants to look for AWS savings. CloudFix often makes more sense. It’s more affordable, it runs in the background, and it finds  \nand fixes only Amazon’s approved recommendations, so you know it’s safe.”\n\nPerhaps Kingslake’s favorite thing about CloudFix? “You just set it and forget it,” Dharma said. “There is absolutely no reason to not have CloudFix running. It’s like virus scanning or malware protection, except it’s constantly fine-tuning AWS to implement Amazon’s latest recommended fixes. You can save your consultant budget for more complex projects.”\n\n## With CloudFix, Kingslake simplifies and streamlines AWS cost savings\n\nAt Kingslake, Dharma has big plans for CloudFix. “We’re excited to help take CloudFix even broader across Asia, entering countries like Malaysia and beyond,” Dharma concluded. “This will have tremendous value to medium and large businesses who have been using consultants. Even if it saves you 10 percent, that is a substantial savings on a very large number.”\n\n> CloudFix is affordable, it runs in the background, and it finds and fixes only Amazon’s approved recommendations, so you know it’s safe.",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud",
+        "cost optimization"
+      ],
+      "slug": "success-story-kingslake",
+      "date": "2022-04-14 14:56:34",
+      "modified": "2023-05-01 07:20:10",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 7116,
+      "title": "InsideSales cuts database operational costs by 62% with CloudFix",
+      "description": "InsideSales: Cost savings through DB Consolidation",
+      "content": "## How a growing software company slashed its AWS costs with automation and expertise\n\n_InsideSales, based in Austin, TX, creates software designed for enterprise sales and account management. With Playbooks™ from InsideSales, sales professionals increase productivity, optimize customer interactions, and connect to the right buyers. Playbooks manages lead follow-up and prospecting cadences, automates administrative tasks, and uses data to predict who, when, and how to engage buyers for the best outcome._\n\n## An influx of new features and customers results in too many databases\n\nInsideSales faced a good problem, but a problem nonetheless. Due to rapid growth of its customer base, along with a steady development of new features, the company found itself with an unmanageable number of databases. Initially, there were 874 databases running on a total of 175 Amazon Relational Database Service (RDS) instances. InsideSales knew it needed to reduce maintenance and operational costs without redesigning the entire application suite.\n\nInsideSales discovered CloudFix through its professional network. The organization looked to CloudFix for both its automated cost optimization capabilities as well as the company’s expertise in AWS cost savings.\n\n## CloudFix streamlines and automates the migration to Amazon Aurora\n\nTo address InsideSales’ database issue, the CloudFix team recommended migrating to Amazon Aurora. A cloud-native managed database, Amazon Aurora provides managed load balancers, multi-AZ writes, backups, failover, failure detection and recovery. The larger the Amazon Aurora instance size, the more performance you get; not just CPU and memory, but also network IO and disk IOPS. These features enabled InsideSales to combine great workloads and run multi-tenant database instances as a cost-reduction solution.\n\n> With CloudFix, InsideSales was able to streamline and automate the migration and consolidation process wherever possible to achieve zero outages.\n\nWith CloudFix, InsideSales was able to streamline and automate the migration and consolidation process wherever possible to achieve zero outages. After gathering all the required data and identifying all database references, the team performed thorough checks to make sure there were no applications that monopolizing shared resources and affecting overall performance, availability and stability.\n\nThe CloudFix team didn’t stop there. They performed extensive checks before, during, and after the migration with AWS Database Migration Service to ensure data integrity and prevent any problems during the cutover from the old to the new database cluster.\n\n## InsideSales cuts database costs by 62%, plus reduces spend on EBS and S3\n\nIn collaboration with CloudFix, InsideSales consolidated all 874 databases into a single Amazon Aurora cluster, greatly reducing its maintenance burden. But maintenance effort wasn’t the only thing that went down: InsideSales reduced its annual database operational costs from $641,000 to $244,000, a 61.93% cost savings.\n\n> InsideSales reduced its annual database operational costs from $641,000 to $244,000, a 61.93% cost savings.\n\nCloudFix’s standard automated fixers helped InsideSales save on AWS, too. The company cut its Amazon Elastic Block Store (EBS) costs by 23.40% by retyping gp2 volumes to gp3 and 22.19% by enabling Amazon Simple Storage Service (S3) Intelligent-Tiering on all suitable buckets.\n\nWhat’s next for InsideSales? The team plans to continue working with CloudFix to further fine-tune the performance of the Amazon Aurora cluster and pursue additional avenues for savings, such as Reserved Instances. They also continue to roll out new CloudFix fixers as they’re released, with full confidence that CloudFix will keep finding new opportunities for InsideSales to pay less for AWS.",
+      "type": "resource",
+      "category": "Cost Optimization",
+      "tags": [
+        "AWS",
+        "cloud",
+        "cost optimization",
+        "migration",
+        "storage",
+        "S3",
+        "RDS",
+        "backup"
+      ],
+      "slug": "success-story-insidesales",
+      "date": "2022-04-14 14:55:09",
+      "modified": "2023-11-13 12:44:44",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    },
+    {
+      "id": 1020,
+      "title": "Rahul Subramaniam Video Insights",
+      "description": "What’s next for AWS, what are the biggest cloud migration misconceptions, and why should you be using CloudFix right now? Check out these exclusive insights from CEO of CloudFix and Head of Innovation at ESW Capital, Rahul Subramaniam!",
+      "content": "Over the course of his career, CloudFix Founder and Chief Evangelist, FinOps Foundation board member, and host of the AWS Insiders podcast Rahul Subramaniam has acquired and transformed 140+ software products and optimized 45,000+ AWS accounts. Watch these videos now for his unique perspective and industry insights.\n\n## How new AWS features simplify things\n\n## The strength of AWS product teams\n\n## Misconceptions on AWS migration\n\n## The one takeaway about CloudFix\n\n## Top Announcements From AWS re:Invent\n\n## Why you need to use AWS",
+      "type": "resource",
+      "category": "Migration",
+      "tags": [
+        "AWS",
+        "cloud",
+        "migration"
+      ],
+      "slug": "rahuls-videos",
+      "date": "2022-01-15 10:00:22",
+      "modified": "2022-12-08 12:15:42",
+      "downloadUrl": null,
+      "featuredImage": null,
+      "published": true
+    }
+  ],
+  "metadata": {
+    "total": 28,
+    "categories": [
+      "Cost Optimization",
+      "Compute",
+      "General",
+      "Migration"
+    ],
+    "types": [
+      "webinar",
+      "resource",
+      "case-study"
+    ],
+    "lastUpdated": "2025-10-07T14:15:24.019Z"
   }
-]
-
+}

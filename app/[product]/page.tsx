@@ -1,3 +1,5 @@
+// ABOUTME: Dynamic product page handling common layout and CTAs
+// ABOUTME: Renders product hero, features, and cross-links to other products
 import { notFound } from 'next/navigation';
 import Hero from '@/components/Hero';
 import ContentBlock, { FeatureCard } from '@/components/ContentBlock';
@@ -6,6 +8,7 @@ import Section from '@/components/ui/Section';
 import { getProductData } from '@/lib/products';
 import type { Metadata } from 'next';
 import RelatedProducts from '@/components/RelatedProducts';
+import Link from 'next/link';
 
 export default function ProductPage({ params }: { params: { product: string } }) {
   const product = getProductData(params.product);
@@ -33,7 +36,7 @@ export default function ProductPage({ params }: { params: { product: string } })
         <Container>
           <h2 className="text-3xl font-bold mb-6">Ready to get started?</h2>
           <p className="text-gray-700 mb-6">Contact our team to see {product.name} in action and learn how it fits your environment.</p>
-          <a href="/contact" className="inline-block bg-accent text-gray-900 px-6 py-3 rounded-lg font-semibold">Schedule Demo</a>
+          <Link href="/contact" className="inline-block bg-accent text-gray-900 px-6 py-3 rounded-lg font-semibold">Schedule Demo</Link>
         </Container>
       </Section>
 

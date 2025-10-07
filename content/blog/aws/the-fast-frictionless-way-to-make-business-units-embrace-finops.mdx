@@ -1,0 +1,46 @@
+---
+title: "The fast, frictionless way to make business units embrace FinOps"
+description: "Here in the FinOps community, “alignment” is a popular word. For FinOps to succeed, the thinking goes, we must build a culture in which every group takes owners..."
+date: 2023-11-21 14:54:16
+modified: 2023-12-01 09:31:53
+category: "AWS"
+tags: ["AWS","cloud","s3","rds","cost optimization"]
+published: true
+slug: "the-fast-frictionless-way-to-make-business-units-embrace-finops"
+---
+
+Here in the FinOps community, “alignment” is a popular word. For FinOps to succeed, the thinking goes, we must build a culture in which every group takes ownership of its spend _and_ aligns its financial choices with FinOps’ cost management principles. Creating this culture requires information, education, and support from leadership, and the hope is that with those ingredients, each department will see the light and incorporate FinOps practices into its work. 
+
+I find this approach laudable – wouldn’t it be great if everyone agreed that saving money was important? – and extraordinarily utopian. In reality, almost the exact opposite is true. There is minimal alignment. Every team has its agenda based on the definitions of success that have been handed down to them. In the best case scenario, FinOps folks find a way to broker between various groups and eke out some small wins. More likely, they find themselves with no leverage and objectives that sit at the bottom of everyone’s to-do list. 
+
+This situation won’t change through advocacy and awareness. Showing people how much money they’re wasting will never inspire them to change their behavior. This situation isn’t a case of apathy or inertia -- it’s a problem of misaligned prioritization. To find a way out of this misalignment, FinOps teams must find a different solution that makes cost optimization a priority for every business unit.
+
+## Cost optimization runs counter to most business units’ goals.
+
+Many companies start down the path of putting showback processes in place. FinOps teams dig into the departments’ cloud financials and create reports showing where the money goes. The underlying assumption is that most groups don’t know where, when, and how they’re wasting money, and if only they knew, they would have a different attitude towards their spend.
+
+In reality, those reports go straight into an email folder, never to be seen again. Even if teams are aware of their spend, they answer to different priorities. For example:
+
+-   **Sales and marketing teams** care about, well, sales. From the CRO to account managers, they’re evaluated on the number of leads, size of deals, customer retention, upsell opportunities, and other KPIs that translate directly to revenue. They want a bigger pipeline and more features, faster, so they can sell more products to customers. If they have to spend money to make money, so be it.
+-   **Engineering teams** are always under pressure from the business teams to release features quickly. They are measured on the speed and quality of their releases. If it takes a ton of machines to hit those goals, that’s what it takes. Asking them to spend time on cost efficiency instead of new features is antithetical to them hitting their targets. 
+-   **Product management** is in a similar boat. They are focused on designing the products that Engineering will build and Sales will sell. They need the time and resources to ensure that those products will perform as promised and drive top-line metrics in support of the business’ overall growth. 
+
+It’s clear that not only is cost efficiency not a priority, but it seemingly runs counter to what most groups are measured on. When choosing between achieving their goals and finding cost-efficient solutions, you can’t blame them for choosing the former.
+
+## Separate cost and price to drive behavioral change
+
+To effectively gain traction in organizations, FinOps teams should utilize the concept of "Chargeback." This method makes each department accountable for their expenses by billing them accordingly, fostering a sense of responsibility. To implement this, first engage with the Finance team, who are crucial allies focused on cost reduction and overall financial health.
+
+Next, innovate in applying chargeback policies. The FinOps foundation suggests not just showing departments their expenses but actually charging them for what they spend. However, this alone may not drive change. A more effective approach is to differentiate between cost and price. The cost is what's paid to the cloud service provider, while the price is an internally set metric. By treating these separately, organizations can encourage desired behaviors through financial incentives and penalties rather than merely charging departments for usage.
+
+## Incentivize good behavior, tax bad behavior
+
+Everyone loves a freebie. Imagine making the charge on buckets that use S3 Intelligent-Tiering free for all. Teams have the freedom to choose, but opting for Intelligent-Tiering means zero costs, while others face a hefty 3-4x service fee. This presents a clear choice for business units: stick to the old ways at a high cost, or nudge Engineering to embrace the new, cost-effective option. Most teams will find the decision straightforward.
+
+Keep the "tax" system simple, too. Forget complex calculations; a straightforward surcharge on usage works wonders. For instance, if Engineering wants to host data lakes for dev and staging, they'll face a flat $5,000 tax per database monthly. This simplicity aids in business comprehension and financial tracking.
+
+The beauty of this model? It's self-sustaining. Use the taxes collected from less efficient choices to subsidize the incentives for better practices. Set the tax high enough, and teams will feel the pinch in their profit and loss statements, aligning everyone's focus on the bottom line.
+
+As behaviors evolve, so should your incentives and penalties. Regularly reevaluate and adjust your strategies, but remember, it's all internal budgeting gymnastics. Your overall AWS costs get better overall; you're just cleverly manipulating internal finances to lower that bill.
+
+This strategy capitalizes on basic human tendencies. Rather than relying solely on information to spur change, it leverages consequences to drive rapid, frictionless organizational transformation. While it's crucial for organizational units to be aware of their spending, real change in FinOps requires actionable policies and procedures that prompt decisive action.

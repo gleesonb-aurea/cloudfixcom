@@ -1,0 +1,49 @@
+---
+title: "Single Sign-On (SSO) Support - New Feature!"
+description: "Here at CloudFix, we are trying to make it as easy as possible for you to save money. A part of that is making CloudFix easy to use within your organization. To..."
+date: 2024-09-10 14:57:36
+modified: 2024-09-13 17:01:06
+category: "AWS"
+tags: ["AWS","cloud","rds","security"]
+published: true
+slug: "single-sign-on-sso-support-new-feature"
+---
+
+Here at CloudFix, we are trying to make it as easy as possible for you to save money. A part of that is making CloudFix easy to use within your organization. Towards that end, we are happy to announce that we now support Single Sign-On (SSO). This announcement makes it much easier for enterprises to incorporate CloudFix into their processes without maintaining an additional set of credentials. 
+
+# **Why is this (S)SO Important?**
+
+Single Sign-On (SSO) is an authentication method that allows users to securely access multiple applications and services with one set of login credentials, eliminating the need to remember and manage separate usernames and passwords for each system. Enterprises can have one identity provider, such as Google/GSuite, Microsoft Active Directory, Okta, etc. The identity provider (IDP) is responsible for ensuring that the users of the system are who they claim to be. SSO can also allow social providers, such as Facebook or Github, to act as an identity provider.
+
+![SSO login for CloudFix](/media/uploads/Screenshot-2024-09-10-at-7.50.39 AM-554x600.png)
+
+## **Making it Easy to Use CloudFix**
+
+We want to make sure that you are able to easily integrate CloudFix into your routine. For example, we have also enabled customizable notifications so our cost-saving remediations can be delivered to the person or team best able to take action. Our support for SSO also fits in to the ‘make CloudFix easy to use’ paradigm, by integrating with your existing identity management setup.
+
+## **The Benefits of SSO in Enterprise Environments**
+
+Without SSO, a separate set of credentials must be maintained for each user of each third-party app, in this case CloudFix. In general, app credentials may be a username/password, email/password, and possibly a multi-factor authentication solution. Although credentials have been part of access management for decades, there are some downsides and challenges within an enterprise.
+
+These challenges include making sure that only current authorized users can access the system. In order to do this, you will need to maintain a mapping of app users to your enterprise identity provider. Bob Smith may be robert.smith@example.com in Active Directory, but bobby77@smith-mail.xyz when creating an app. If Bob leaves the company, will you also remember to revoke the permissions of bobby77?
+
+WIthout SSO, there is also the possibility of credential-sharing among applications. A username and password may be shared among a group of colleagues. While this can be initially seen as a convenience, it leads to a lack of auditability and opens the door for security breaches as these credentials get passed around.
+
+With SSO, a centralized policy for access management and authorization can be maintained. In addition to the operational advantages, SSO also enables a customization of the landing page. This facilitates a consistent experience for the end user. 
+
+# **What you need to know**
+
+First of all, enabling SSO is **optional**. If SSO is not for you at this time, then no changes are required and you can continue to use your existing CloudFix credentials.
+
+If you do choose to use SSO, note that CloudFix can integrate with most SAML 2.0 compliant Identity Providers. This includes enterprise solutions such as Microsoft Active Directory Federation Services (ADFS), Azure AAD, Okta, OneLogin, as well as social identity providers such as Facebook, Google/GSuite, Apple, and Amazon. Your CloudFix administrator will need to configure CloudFix to integrate with your organization’s identity provider. To set up SSO, visit our [Setting Up SSO with CloudFix](http://cloudfix.com/) guide.
+
+# **More Reading**
+
+There was a great discussion [recently on HackerNews](https://news.ycombinator.com/item?id=41417659) asking about password management in a large organization. A great comment by [@tptacek](https://x.com/tqbf?lang=en) summed it up nicely:
+
+![](/media/uploads/Screenshot-2024-09-10-at-7.54.22 AM-600x158.png)
+
+In short - password management in an organization can be complex, and SSO makes it simpler and safer. 
+
+  
+On the CloudFix side, we implement SSO using [Amazon Cognito](https://aws.amazon.com/cognito/), Amazon’s solution for customer Identity and Access Management (IAM). If you are curious about how Cognito integrates with SSO, the documentation on [Using SAML identity providers with a user pool](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-saml-idp.html) is located here. With CloudFix, this is all handled for you. But, you may find it interesting if you are building other applications and want to support SSO.

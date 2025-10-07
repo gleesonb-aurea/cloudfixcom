@@ -1,0 +1,102 @@
+---
+title: "CloudFix Finder/Fixer: RDS Optimize EOL Version"
+description: "AWS RDS and Aurora database instances running on older, end-of-life (EOL) versions of MySQL and PostgreSQL can incur significant costs due to AWS's Extended Sup..."
+date: 2025-04-09 18:05:20
+modified: 2025-04-09 18:05:20
+category: "AWS"
+tags: ["AWS","cloud","rds","security","migration"]
+published: true
+slug: "cloudfix-finder-fixer-rds-optimize-eol-version"
+---
+
+AWS RDS and Aurora database instances running on older, end-of-life (EOL) versions of MySQL and PostgreSQL can incur significant costs due to AWS's Extended Support fees. This finder identifies instances on versions approaching end-of-life, allowing you to plan upgrades before these additional costs apply.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+When AWS database engine versions reach their end-of-life (EOL), customers face a critical decision: upgrade to a newer version or pay for Extended Support. AWS introduced Extended Support fees for RDS and Aurora instances running EOL versions of MySQL and PostgreSQL to encourage migration to newer, more secure, and feature-rich versions.
+
+These Extended Support fees can significantly increase your database costs, sometimes by as much as 1.5x the base instance cost, depending on the specific database engine and version. Organizations often miss these impending fees due to lack of visibility into database version lifecycles or insufficient planning for version upgrades.
+
+### Solution
+
+CloudFix scans your AWS accounts to identify RDS and Aurora database instances running on versions that are approaching or have reached AWS end-of-life support. The finder calculates the potential Extended Support fees these instances will incur and helps you proactively plan version upgrades to avoid these additional costs.
+
+By upgrading your database instances before Extended Support fees apply, you can maintain optimal database performance and security while avoiding unnecessary costs.
+
+## AWS Services Affected
+
+![Amazon RDS](/media/uploads/RDS.svg)
+
+[Amazon RDS](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Welcome.html)
+
+![Amazon Aurora](/media/uploads/Aurora.svg)
+
+[Amazon Aurora](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_AuroraOverview.html)
+
+## How It Works
+
+### Finder Component
+
+The RDS Optimize EOL Version finder uses the following process to identify cost-saving opportunities:
+
+1.  Scans all AWS accounts for RDS and Aurora database instances running MySQL or PostgreSQL engines
+2.  Identifies instances on versions approaching or already in AWS Extended Support periods
+3.  Calculates the Extended Support fees that will apply based on AWS pricing and instance configuration
+4.  Estimates annual cost impact by extrapolating from the last 31 days of usage
+5.  Filters opportunities where the projected annual cost exceeds the minimum threshold ($100 by default)
+6.  Prioritizes instances based on the magnitude of potential savings
+
+The finder requires instances to have been running for at least 31 days to establish a reliable usage pattern for accurate cost projections.
+
+### Implementation Approach
+
+CloudFix provides this as a finder-only feature to help you identify which database instances would benefit from version upgrades. Due to the complexity and potential business impact of database upgrades, CloudFix does not automatically apply these changes.
+
+Your team should carefully plan and execute database version upgrades following AWS best practices, including:
+
+-   Creating database snapshots before upgrading
+-   Testing compatibility with applications in non-production environments
+-   Planning for potential downtime during the upgrade process
+-   Reviewing application code for SQL syntax compatibility with newer engine versions
+-   Scheduling upgrades during maintenance windows with minimal business impact
+
+## FAQ
+
+**What are RDS Extended Support fees?**
+
+When an RDS or Aurora database engine version reaches its end of standard support date, AWS charges additional hourly fees to continue supporting the outdated version. These fees are calculated based on the database instance's vCPU count and can significantly increase your overall database costs.
+
+**How much do Extended Support fees cost?**
+
+Extended Support fees vary by engine type, but generally cost between $0.05 to $0.2 per vCPU per hour, depending on the database engine and region. For example, for MySQL 5.7, AWS charges approximately $0.12 per vCPU-hour in US East regions, which can increase your database costs by 20-30% for typical instances.
+
+**Which database versions are affected by Extended Support fees?**
+
+Currently, Extended Support applies to RDS for MySQL 5.7 and PostgreSQL 11, with more versions to be added as they reach end of standard support. AWS regularly updates the list of versions subject to Extended Support fees.
+
+**Is upgrading database versions risky?**
+
+Database upgrades carry some inherent risk, but can be safely performed with proper planning and testing. AWS provides detailed upgrade guides for each database engine, and features like RDS Blue/Green deployments can minimize risk by creating a separate staging environment for testing before promoting the upgrade to production.
+
+**How long do the Extended Support fees apply?**
+
+AWS typically offers Extended Support for three years after a version reaches its end of standard support date. After this Extended Support period ends, you must upgrade as AWS will no longer support or maintain the version.
+
+## Related Resources
+
+-   [Amazon RDS Extended Support Overview](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/extended-support-overview.html)
+-   [Amazon RDS Extended Support Charges](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/extended-support-charges.html)
+-   [AWS Blog: MySQL 5.7 and PostgreSQL 11 Databases Enrollment in RDS Extended Support](https://aws.amazon.com/blogs/aws/your-mysql-5-7-and-postgresql-11-databases-will-be-automatically-enrolled-into-amazon-rds-extended-support/)
+-   [Amazon RDS for MySQL Pricing](https://aws.amazon.com/rds/mysql/pricing/)
+-   [CloudFix Support: RDS Optimize EOL Version](https://support.cloudfix.com/article/17054-rds-optimize-eol-version)

@@ -1,0 +1,60 @@
+---
+title: "CloudFix Finder/Fixer: Delete Idle Elastic IP Addresses"
+description: "CloudFix Finder/Fixer: Delete Idle Elastic IP Addresses Automatically identify and remove unused Elastic IP addresses to reduce costs and improve security Conte..."
+date: 2025-04-06 23:44:39
+modified: 2025-04-06 23:44:39
+category: "AWS"
+tags: ["AWS","cloud","ec2","security","compute"]
+published: true
+slug: "cloudfix-finder-fixer-delete-idle-elastic-ip-addresses"
+---
+
+# CloudFix Finder/Fixer: Delete Idle Elastic IP Addresses
+
+Automatically identify and remove unused Elastic IP addresses to reduce costs and improve security
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [Benefits](#benefits)
+-   [How It Works](#how-it-works)
+-   [Important Considerations](#important-considerations)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+Elastic IP addresses (EIPs) are static IPv4 addresses designed for dynamic cloud computing. While they're free when associated with running EC2 instances, they incur charges when not attached to running instances or when attached to stopped instances. Many organizations accumulate unused Elastic IPs, leading to unnecessary costs and potential security risks.
+
+## AWS Services Affected
+
+![EC2 icon](/media/uploads/EC2.svg)  
+[EC2](https://aws.amazon.com/ec2/)
+
+## Benefits
+
+### Cost Savings
+
+Eliminate charges for unused Elastic IP addresses that are not associated with running instances.
+
+### Security Improvements
+
+Reduce the attack surface by removing unnecessary public IP addresses from your infrastructure.
+
+### Resource Management
+
+Better manage your IP address resources by removing unused allocations.
+
+## How It Works
+
+This Finder/Fixer identifies Elastic IP addresses that have been unattached for over 7 days and are not associated with any Route 53 hosted zone or reverse DNS record. Upon approval, it safely releases these unused addresses using the AWS ReleaseAddress API.
+
+## Important Considerations
+
+Once an Elastic IP address is released, it cannot be recovered. If you need the address again, you'll need to allocate a new one. The Finder/Fixer verifies that the IP is truly unused before recommending its removal.
+
+## Related Resources
+
+-   [CloudFix Knowledge Base](https://support.cloudfix.com/article/16935-remove-unused-elastic-ip-addresses)
+-   [AWS Elastic IP Addresses](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html)
+-   [EC2 Pricing](https://aws.amazon.com/ec2/pricing/)

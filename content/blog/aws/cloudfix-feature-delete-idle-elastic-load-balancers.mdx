@@ -1,0 +1,119 @@
+---
+title: "CloudFix Feature: Delete Idle Elastic Load Balancers"
+description: "Elastic Load Balancers (ELBs) are a critical component of many AWS architectures, distributing incoming traffic across multiple targets to improve application a..."
+date: 2025-04-07 00:21:58
+modified: 2025-04-07 00:21:58
+category: "AWS"
+tags: ["AWS","cloud","cost optimization","security","monitoring"]
+published: true
+slug: "cloudfix-feature-delete-idle-elastic-load-balancers"
+---
+
+Elastic Load Balancers (ELBs) are a critical component of many AWS architectures, distributing incoming traffic across multiple targets to improve application availability and fault tolerance. However, idle or unused ELBs can accumulate in your AWS environment and continue to generate costs without providing any value to your organization.
+
+## Table of Contents
+
+-   [Overview](#overview)
+-   [Benefits](#benefits)
+-   [AWS Services](#aws-services)
+-   [How It Works](#how-it-works)
+    -   [CloudFix Finder](#finder)
+    -   [CloudFix Fixer](#fixer)
+-   [FAQ](#faq)
+-   [Related Resources](#resources)
+
+## Overview
+
+CloudFix identifies and removes idle Elastic Load Balancers (ELBs) that are generating unnecessary costs in your AWS environment. These idle load balancers include Classic Load Balancers (CLBs), Application Load Balancers (ALBs), Network Load Balancers (NLBs), and Gateway Load Balancers (GLBs) that meet specific idle criteria.
+
+An ELB is considered idle when it has been provisioned but has received little to no traffic over an extended period. CloudFix uses precise criteria to identify truly idle ELBs, including:
+
+-   For Application/Network/Gateway Load Balancers: Zero requests processed over the past 90 days and at least 30 days since creation
+-   For Classic Load Balancers: Zero requests processed or zero healthy instances over the past 90 days and at least 30 days since creation
+
+## Benefits
+
+Removing idle Elastic Load Balancers offers several key benefits:
+
+-   **Cost Savings**: Each idle ELB costs approximately $200 per year. By automatically identifying and removing them, CloudFix helps you eliminate this unnecessary expense.
+-   **Reduced Management Overhead**: Fewer ELBs mean less infrastructure to manage, monitor, and secure.
+-   **Improved Security Posture**: Removing unused resources reduces your attack surface and eliminates potential security vulnerabilities.
+-   **Automated Cleanup**: CloudFix handles the entire process from identification to safe removal, eliminating the need for manual work.
+
+## AWS Services
+
+This CloudFix feature interacts with the following AWS services:
+
+![Elastic Load Balancing](/media/uploads/Elastic-Load-Balancing.svg)
+
+![Amazon CloudWatch](/media/uploads/CloudWatch.svg)
+
+[Elastic Load Balancing (ELB)](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/)
+
+[Amazon CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/)
+
+CloudFix identifies and removes idle load balancers from the Elastic Load Balancing service, including Classic Load Balancers (CLBs), Application Load Balancers (ALBs), Network Load Balancers (NLBs), and Gateway Load Balancers (GLBs).
+
+CloudFix analyzes CloudWatch metrics to determine if load balancers are idle, checking metrics like RequestCount, HealthyHostCount, and other load balancer-specific metrics over a 90-day period.
+
+## How It Works
+
+### CloudFix Finder
+
+The CloudFix Finder component identifies idle ELBs through the following process:
+
+1.  Scans your AWS environment to identify all Elastic Load Balancers (Classic, Application, Network, and Gateway)
+2.  Analyzes CloudWatch metrics for each load balancer, examining request counts and instance health over a 90-day period
+3.  Applies specific idle criteria to each type of load balancer:
+    -   For Application/Network/Gateway Load Balancers: Checks for zero requests over 90 days and at least 30 days since creation
+    -   For Classic Load Balancers: Checks for zero requests or zero healthy instances over 90 days and at least 30 days since creation
+4.  Flags load balancers meeting all idle criteria as candidates for removal
+5.  Calculates the potential cost savings based on current ELB pricing
+
+### CloudFix Fixer
+
+Once idle ELBs are identified and you approve the fix, CloudFix Fixer executes the following steps:
+
+1.  For Classic Load Balancers:
+    -   Deregisters any instances from the load balancer
+    -   Executes the DeleteLoadBalancer API call
+2.  For Application/Network/Gateway Load Balancers:
+    -   Deregisters any targets from target groups associated with the load balancer
+    -   Executes the DeleteLoadBalancer API call
+    -   Deletes any target groups that were associated with the load balancer
+3.  Verifies successful deletion of the load balancer and its associated resources
+4.  Reports the completion status and actual cost savings achieved
+
+This process is completely non-invasive and targets only resources that are definitively idle. CloudFix implements robust safety checks to ensure only truly unused ELBs are removed.
+
+## Frequently Asked Questions
+
+#### How does CloudFix ensure it only removes genuinely idle load balancers?
+
+CloudFix employs conservative criteria to identify idle load balancers, requiring zero traffic or zero healthy hosts over a substantial 90-day period. Additionally, the load balancer must have existed for at least 30 days. This approach ensures that temporary or newly created load balancers are not incorrectly identified as idle. CloudFix also provides you with the opportunity to review and approve all identified idle ELBs before any action is taken.
+
+#### Is there a way to roll back if I accidentally approve removal of an ELB that was needed?
+
+There is no automated rollback process once an ELB is deleted. However, since CloudFix only targets ELBs that have shown zero activity for at least 90 days, the chance of removing a needed resource is extremely low. If you need to restore a deleted load balancer, you would need to recreate it manually with its original configuration.
+
+#### Will removing idle ELBs affect my application availability?
+
+No. CloudFix only targets load balancers that have had zero traffic or zero healthy hosts for at least 90 days, indicating they are not actively serving any applications. Removing these idle resources will not impact your application availability.
+
+#### How much can I save by removing idle ELBs?
+
+Each idle ELB costs approximately $200 per year, depending on the type of load balancer and your AWS region. Organizations with large or complex environments often discover multiple idle ELBs, resulting in significant annual savings.
+
+## Related Resources
+
+#### AWS Documentation
+
+-   [Elastic Load Balancing User Guide](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/)
+-   [Deleting an Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html)
+-   [Deleting a Classic Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/config-idle-timeout.html)
+-   [AWS Trusted Advisor – Cost Optimization Checks](https://docs.aws.amazon.com/awssupport/latest/user/cost-optimization-checks.html)
+
+#### CloudFix Resources
+
+-   [Blog: Save Money by Removing Idle Elastic Load Balancers](/blog/savings-remove-idle-elastic-load-balancers/)
+-   [Support: Cleanup Idle Elastic Load Balancers](https://support.cloudfix.com/hc/en-us/articles/20993342094356-Cleanup-Idle-Elastic-Load-Balancers)

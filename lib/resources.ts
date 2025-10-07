@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 
 export type ResourceType = 'blog' | 'podcast' | 'video' | 'case-study' | 'success-story';
@@ -10,13 +10,15 @@ export interface Resource {
   type: ResourceType;
   category: string;
   tags: string[];
-  publishDate: string;
+  publishDate?: string;
+  date?: string;
   featured: boolean;
   readTime?: number;
   duration?: number;
   thumbnail: string;
   author?: string;
   url: string; // internal or external
+  downloadUrl?: string;
   metadata?: {
     views?: number;
     downloads?: number;
@@ -27,14 +29,55 @@ export interface Resource {
 const resourcesPath = path.join(process.cwd(), 'content', 'resources', 'resources.json');
 
 export async function getAllResources(): Promise<Resource[]> {
-  if (!fs.existsSync(resourcesPath)) return [];
-  const raw = fs.readFileSync(resourcesPath, 'utf8');
-  const list: Resource[] = JSON.parse(raw);
-  return list.sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime());
+  try {
+    await fs.stat(resourcesPath);
+  } catch {
+    return [];
+  }
+  const raw = await fs.readFile(resourcesPath, 'utf-8');
+  let parsed: any;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return [];
+  }
+  const arr: any[] = Array.isArray(parsed) ? parsed : Array.isArray(parsed.resources) ? parsed.resources : [];
+  const list: Resource[] = arr.map((it) => {
+    const id = String(it.id ?? it.slug ?? cryptoRandom());
+    const publishDate = it.publishDate ?? it.date ?? '1970-01-01';
+    const thumbnail = it.thumbnail || it.featuredImage || '';
+    const url = it.url || (it.slug ? `/resources/${it.slug}` : `/resources/${id}`);
+    return {
+      id,
+      title: it.title || '',
+      description: it.description || '',
+      type: it.type || 'blog',
+      category: it.category || 'General',
+      tags: Array.isArray(it.tags) ? it.tags : [],
+      publishDate,
+      featured: !!it.featured,
+      readTime: it.readTime,
+      duration: it.duration,
+      thumbnail,
+      author: it.author,
+      url,
+      downloadUrl: it.downloadUrl,
+      metadata: it.metadata,
+    } as Resource;
+  });
+  return list.sort(
+    (a, b) =>
+      new Date((b.publishDate ?? b.date ?? '1970-01-01') as string).getTime() -
+      new Date((a.publishDate ?? a.date ?? '1970-01-01') as string).getTime()
+  );
+}
+
+function cryptoRandom() {
+  // simple fallback id
+  return Math.random().toString(36).slice(2);
 }
 
 export async function getResourceById(id: string): Promise<Resource | null> {
   const all = await getAllResources();
   return all.find((r) => r.id === id) ?? null;
 }
-

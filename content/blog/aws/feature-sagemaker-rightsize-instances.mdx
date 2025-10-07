@@ -1,0 +1,93 @@
+---
+title: "CloudFix Finder: SageMaker Rightsize Instances (Manual Fix)"
+description: "Amazon SageMaker instances, used for notebooks, training, and inference endpoints, are frequently overprovisioned, leading to unnecessary costs. CloudFix identi..."
+date: 2025-04-09 18:08:25
+modified: 2025-04-09 18:08:25
+category: "AWS"
+tags: ["AWS","cloud","cost optimization"]
+published: true
+slug: "feature-sagemaker-rightsize-instances"
+---
+
+Amazon SageMaker instances, used for notebooks, training, and inference endpoints, are frequently overprovisioned, leading to unnecessary costs. CloudFix identifies opportunities to rightsize these instances by analyzing historical usage metrics (CPU, GPU, Memory, Network) collected via Amazon CloudWatch. By comparing usage patterns (specifically the 99th percentile over 14 days) against instance capacity, CloudFix recommends downsizing instances where significant overprovisioning is detected, helping align costs with actual workload needs.
+
+## Manual Fix Required
+
+**CloudFix identifies potential rightsizing opportunities but does not automatically resize SageMaker instances.** Modifying instance types for notebooks, training jobs, or endpoints requires careful planning and manual execution by the user to ensure compatibility and avoid disrupting workflows or impacting performance negatively.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How CloudFix Identifies the Opportunity](#how-it-works)
+-   [Manual Fix Steps](#manual-fix-steps)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+Selecting the optimal instance type and size for SageMaker notebooks, training jobs, and inference endpoints can be challenging. Often, instances are chosen with excess capacity to handle peak loads or based on initial estimates, leading to consistent underutilization and wasted expenditure during periods of lower demand.
+
+### Solution Identification
+
+CloudFix leverages Amazon CloudWatch metrics to analyze the actual resource utilization (CPU, GPU, Memory, Network) of SageMaker instances over a 14-day period. By focusing on the 99th percentile usage, it identifies instances where capacity significantly exceeds requirements. CloudFix then recommends downsizing by one instance size within the same family if the potential cost savings (extrapolated annually) are substantial (e.g., >10%) and meet a minimum cost threshold, providing a data-driven suggestion for manual rightsizing.
+
+## AWS Services Affected
+
+Service
+
+Icon
+
+[Amazon SageMaker](https://aws.amazon.com/sagemaker/)
+
+![Amazon SageMaker](/media/uploads/SageMaker.svg)
+
+[Amazon CloudWatch](https://aws.amazon.com/cloudwatch/)
+
+![Amazon CloudWatch](/media/uploads/CloudWatch.svg)
+
+## How CloudFix Identifies the Opportunity
+
+CloudFix identifies SageMaker rightsizing opportunities based on the following criteria:
+
+-   Collects utilization metrics (CPU, GPU, Memory, Network) for SageMaker instances (notebooks, training, endpoints) at 5-minute intervals over 14 days via CloudWatch.
+-   Analyzes the 99th percentile distribution for these metrics.
+-   Identifies instances where the 99th percentile usage is significantly lower than the instance capacity, suggesting potential for downsizing by one size within the same instance family.
+-   Calculates potential annual cost savings based on 7 days of usage, ensuring the reduction recommendation surpasses a defined threshold (e.g., 10%) and meets a minimum annual cost threshold (default $100).
+-   Excludes instances tagged with `cloudfix_dont_fix_it`.
+
+## Manual Fix Steps
+
+After CloudFix identifies a SageMaker instance rightsizing opportunity:
+
+1.  **Review Recommendation & Metrics:** Examine the specific instance identified, the recommended smaller size, and the CloudWatch utilization data (CPU, GPU, Memory, Network P99 over 14 days) provided by CloudFix.
+2.  **Assess Workload Impact:** Consider the nature of the workload running on the instance. Is the peak usage (P99) representative, or are there occasional, critical bursts that require the current capacity? Will downsizing impact training time, inference latency, or notebook responsiveness unacceptably?
+3.  **Implement the Change:**
+    -   **Notebook Instances:** Stop the notebook instance, modify its instance type through the SageMaker console or API, and then restart it.
+    -   **Training Jobs:** Modify the instance type specified in your training script or job configuration for future training runs.
+    -   **Inference Endpoints:** Update the Endpoint Configuration to use the new instance type and then update the Endpoint to use the new configuration. This typically involves deploying the model on new instances and then shifting traffic.
+4.  **Monitor Performance:** After rightsizing, closely monitor the instance's performance using CloudWatch metrics and application-level logs to ensure it still meets requirements. Be prepared to revert the change if necessary.
+
+## FAQ
+
+**Q: Why doesn't CloudFix automatically resize the instance?**  
+A: Resizing instances involves operational changes (stopping/starting notebooks, updating endpoint configurations) that require manual intervention and validation to avoid performance degradation or workflow disruption.
+
+**Q: Does this apply to all SageMaker instance types?**  
+A: This applies to instances used for SageMaker Notebooks, Training Jobs, and Inference Endpoints where rightsizing is feasible.
+
+**Q: Is there downtime required?**  
+A: Yes, typically. Resizing notebook instances requires a stop/start. Updating endpoints involves deploying new instances before terminating old ones, which can often be done with minimal or no user-facing downtime if managed carefully, but involves an update process. Modifying training jobs only affects future runs.
+
+**Q: What if the P99 doesn't capture critical peaks?**  
+A: Analyze longer-term metrics or consider P100 (maximum) if occasional peaks are critical and cannot tolerate brief periods of higher utilization or throttling on a smaller instance. Rightsizing involves balancing cost savings with performance needs.
+
+## Related Resources
+
+-   [Optimizing Costs for Machine Learning with Amazon SageMaker (AWS Blog)](https://aws.amazon.com/blogs/machine-learning/optimizing-costs-for-machine-learning-with-amazon-sagemaker/)
+-   [Analyze Amazon SageMaker Spend and Determine Cost Optimization Opportunities (AWS Blog Series)](https://aws.amazon.com/blogs/machine-learning/part-1-analyze-amazon-sagemaker-spend-and-determine-cost-optimization-opportunities-based-on-usage-part-1/)
+-   [SageMaker Notebook Instance Types (AWS Documentation)](https://docs.aws.amazon.com/sagemaker/latest/dg/notebooks-available-instance-types.html)
+-   [Update a SageMaker Endpoint (AWS Documentation)](https://docs.aws.amazon.com/sagemaker/latest/dg/inference-multi-variant.html#inference-multi-variant-configure-endpoint)
+-   [ML Resize SageMaker (CloudFix Support)](https://support.cloudfix.com/article/17013-ml-resize-sagemaker)

@@ -1,0 +1,115 @@
+---
+title: "CloudFix Finder/Fixer: RDS Retype IO Optimize"
+description: "Amazon Aurora instances with I/O-intensive applications can incur significant costs due to high volumes of database operations. The RDS Retype IO Optimize finde..."
+date: 2025-04-09 18:05:33
+modified: 2025-04-09 18:05:33
+category: "AWS"
+tags: ["AWS","cloud","rds","storage","databases"]
+published: true
+slug: "cloudfix-finder-fixer-rds-retype-io-optimize"
+---
+
+Amazon Aurora instances with I/O-intensive applications can incur significant costs due to high volumes of database operations. The RDS Retype IO Optimize finder identifies Aurora instances that would benefit from switching to the I/O-Optimized storage type, which can reduce costs by up to 40% for I/O-intensive workloads while maintaining or improving performance.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+Aurora's standard pricing model charges separately for instance hours, storage, and I/O operations. While this model works well for many applications, databases with high I/O usage can experience unpredictable costs that scale with transaction volume. For I/O-intensive workloads, the I/O charges often become the largest component of Aurora database costs.
+
+Many organizations are unaware of the Aurora I/O-Optimized configuration option, which uses a different pricing model designed specifically for I/O-intensive workloads. Others may know about I/O-Optimized but lack the tools to properly analyze whether their specific Aurora instances would benefit from switching to this configuration.
+
+### Solution
+
+CloudFix analyzes Aurora instances to identify those that would benefit from switching to the I/O-Optimized storage type. For applicable instances, the tool can automatically implement the change, modifying the storage configuration while maintaining all data, connections, and configurations.
+
+Aurora I/O-Optimized instances use a different pricing model where you pay slightly more for instance hours (approximately 30% more) and significantly more for storage (approximately 2.25x more), but all I/O operations are included at no additional cost. For workloads with high I/O usage, this can result in substantial cost savings while maintaining or even improving performance.
+
+## AWS Services Affected
+
+![Amazon RDS](/media/uploads/RDS.svg)
+
+[Amazon RDS](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_AuroraOverview.html)
+
+![Amazon Aurora](/media/uploads/Aurora.svg)
+
+[Amazon Aurora](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_AuroraOverview.html)
+
+## How It Works
+
+### Finder Component
+
+The RDS Retype IO Optimize finder follows a data-driven approach to identify cost-saving opportunities:
+
+1.  Analyzes AWS Cost and Usage Reports to identify Aurora instances and their usage patterns over a 90-day period
+2.  Extracts key metrics for each instance, including:
+    -   Instance type and hourly cost
+    -   Storage usage and cost
+    -   I/O operations and cost
+3.  Calculates projected costs under both the standard and I/O-Optimized pricing models using the formula:
+    -   Standard Cost = (Instance Hours × Instance Price) + (Storage GB × Storage Price) + (I/O Operations × I/O Price)
+    -   I/O-Optimized Cost = (Instance Hours × I/O-Optimized Instance Price) + (Storage GB × I/O-Optimized Storage Price)
+4.  Identifies instances where switching to I/O-Optimized would result in cost savings of at least 15%
+5.  Verifies that the instances meet the technical requirements for I/O-Optimized, including:
+    -   Compatible Aurora version (MySQL or PostgreSQL)
+    -   Compatible instance generation (Gen 5+)
+6.  Generates detailed reports showing current costs, projected savings, and implementation details
+
+### Fixer Component
+
+Once an opportunity is identified, CloudFix can implement the change by executing the following steps:
+
+1.  Creates an AWS Change Manager document with detailed execution steps
+2.  Upon approval, executes API calls to modify the Aurora instance storage configuration:
+    -   Uses the `modify-db-instance` API to change the storage type to `aurora-iopt1`
+    -   Sets `apply-immediately` parameter based on user preference
+3.  Monitors the storage modification process to completion
+4.  Verifies that the instance is properly configured with I/O-Optimized storage
+5.  Provides confirmation of successful implementation and projected savings
+
+The storage type modification occurs without downtime and does not impact existing database connections or data. The change takes effect during the next maintenance window unless the "apply immediately" option is selected.
+
+## FAQ
+
+**What is the difference between Aurora Standard and I/O-Optimized pricing models?**
+
+Aurora Standard charges separately for instance usage, storage, and I/O operations. I/O-Optimized charges higher rates for instance usage (approximately 30% more) and storage (approximately 2.25x more), but includes unlimited I/O operations at no additional cost. This makes I/O-Optimized more cost-effective for workloads with high I/O usage.
+
+**How much can I save by switching to I/O-Optimized?**
+
+Savings vary based on your workload's I/O intensity. For highly I/O-intensive applications, savings can reach 30-40% of your Aurora costs. CloudFix only recommends the change when projected savings exceed 15% based on historical usage patterns.
+
+**Will switching to I/O-Optimized affect my database performance?**
+
+No, switching to I/O-Optimized is a pricing model change that does not negatively impact performance. In fact, for I/O-intensive workloads, the unlimited I/O allocation can sometimes improve performance by removing potential I/O throttling.
+
+**Do I need to reconfigure my applications or update connection strings?**
+
+No, the change affects only the storage configuration and pricing model. Your database endpoints, connection strings, and application configurations remain unchanged.
+
+**Can all Aurora instances be switched to I/O-Optimized?**
+
+I/O-Optimized is available for Aurora MySQL and PostgreSQL instances running on Gen 5 or newer instance types. Older instance generations must be upgraded before they can use I/O-Optimized storage. CloudFix verifies these requirements before recommending the change.
+
+**How do I determine if my Aurora instances are good candidates for I/O-Optimized?**
+
+The best way is to analyze your Cost and Usage Reports to calculate costs under both pricing models. CloudFix automates this analysis and considers 90 days of historical data to account for usage patterns and seasonality. If I/O charges represent a significant portion of your Aurora costs, you're likely a good candidate for I/O-Optimized.
+
+## Related Resources
+
+-   [AWS Blog: Amazon Aurora I/O-Optimized Cluster Configuration with Up to 40% Cost Savings](https://aws.amazon.com/blogs/aws/new-amazon-aurora-i-o-optimized-cluster-configuration-with-up-to-40-cost-savings-for-i-o-intensive-applications/)
+-   [AWS Database Blog: Estimate Cost Savings for Amazon Aurora I/O-Optimized Using CloudWatch](https://aws.amazon.com/blogs/database/estimate-cost-savings-for-the-amazon-aurora-i-o-optimized-feature-using-amazon-cloudwatch/)
+-   [Aurora Storage and Reliability Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.StorageReliability.html)
+-   [Amazon Aurora Pricing](https://aws.amazon.com/rds/aurora/pricing/)
+-   [CloudFix Blog: AWS Aurora I/O-Optimized Made Easy](/blog/aws-aurora-i-o-optimized-made-easy/)
+-   [CloudFix Support: RDS Retype IO Optimized](https://support.cloudfix.com/article/17056-rds-retype-io-optimized)

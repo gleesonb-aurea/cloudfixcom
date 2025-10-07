@@ -1,0 +1,90 @@
+---
+title: "CloudFix Finder: EMR Reserve Instances (Manual Fix)"
+description: "Optimize your Amazon Elastic MapReduce (EMR) costs by purchasing EC2 Reserved Instances (RIs) for your steady-state workloads. CloudFix identifies opportunities..."
+date: 2025-04-09 18:07:41
+modified: 2025-04-09 18:07:41
+category: "AWS"
+tags: ["AWS","cloud","ec2","storage","compute"]
+published: true
+slug: "feature-emr-reserve-instances"
+---
+
+Optimize your Amazon Elastic MapReduce (EMR) costs by purchasing EC2 Reserved Instances (RIs) for your steady-state workloads. CloudFix identifies opportunities to reserve capacity, specifically for Master and Core nodes within your EMR clusters, which often represent a consistent baseline usage. Purchasing RIs for these nodes can lead to significant savings compared to On-Demand pricing.
+
+## Manual Fix Required
+
+**CloudFix identifies the potential savings but does not automatically purchase Reserved Instances.** Purchasing RIs involves a commitment (typically 1 or 3 years) and requires careful consideration of long-term usage patterns. Users must manually evaluate the recommendation and execute the purchase through the AWS Management Console or API.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How CloudFix Identifies the Opportunity](#how-it-works)
+-   [Manual Fix Steps](#manual-fix-steps)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+Amazon EMR clusters often have Master and Core nodes that run consistently to maintain cluster state and data storage (HDFS). Running these stable components using On-Demand EC2 instances can be significantly more expensive than necessary if the usage pattern is predictable over the long term.
+
+### Solution Identification
+
+CloudFix analyzes the usage and configuration of your EMR clusters, focusing on Master and Core nodes that are not already covered by reservations. By comparing the extrapolated annual On-Demand cost with the cost of 1-year or 3-year Standard Reserved Instances (no upfront), CloudFix identifies instances where purchasing RIs would result in meaningful savings (default threshold > 2%).
+
+## AWS Services Affected
+
+Service
+
+Icon
+
+[Amazon EMR](https://aws.amazon.com/emr/)
+
+![Amazon EMR](/media/uploads/EMR.svg)
+
+[Amazon EC2](https://aws.amazon.com/ec2/)
+
+![Amazon EC2](/media/uploads/EC2.svg)
+
+## How CloudFix Identifies the Opportunity
+
+CloudFix identifies EMR RI purchase opportunities based on the following criteria:
+
+-   The EC2 instances are identified as Master or Core nodes within an active EMR cluster.
+-   The instances are currently running On-Demand (not covered by an existing RI or Savings Plan).
+-   The extrapolated potential annual cost saving from purchasing a 1-year or 3-year Standard RI (No Upfront) for these instances exceeds 2% of their current annual On-Demand cost.
+-   The total extrapolated annual On-Demand cost of the identified instances exceeds a defined threshold (default $100).
+-   The instances are not tagged with `cloudfix_dont_fix_it`.
+
+## Manual Fix Steps
+
+After CloudFix recommends purchasing Reserved Instances for EMR nodes:
+
+1.  **Review Recommendation:** Carefully examine the CloudFix recommendation, noting the specific instance types, Availability Zones (or Region, depending on RI scope), platform (e.g., Linux/UNIX), and term (1 or 3 years) suggested.
+2.  **Verify Stability:** Confirm that the identified Master and Core nodes represent a stable, long-term baseline usage for your EMR cluster. RIs are best suited for predictable workloads.
+3.  **Consider RI Scope:** Decide whether a Regional RI (more flexibility across AZs, instance sizes within the family) or an AZ-specific RI (capacity reservation) is more appropriate for your needs. CloudFix typically bases savings calculations on Standard RIs.
+4.  **Purchase Reserved Instances:** Navigate to the EC2 service in the AWS Management Console. Go to "Reserved Instances" and click "Purchase Reserved Instances". Configure the purchase according to the CloudFix recommendation (platform, instance type, tenancy, term, offering class - Standard, payment option - No Upfront recommended for initial purchase). Alternatively, use the AWS CLI or SDKs.
+5.  **Monitor Coverage:** After purchase, monitor your RI utilization and coverage using AWS Cost Explorer and Trusted Advisor to ensure the RIs are being applied effectively to your EMR instances.
+
+## FAQ
+
+**Q: Why doesn't CloudFix automatically purchase the RIs?**  
+A: Purchasing Reserved Instances involves a financial commitment (1 or 3 years). CloudFix identifies the savings opportunity but requires user confirmation and manual purchase to ensure alignment with budget and long-term strategy.
+
+**Q: What instance types does this apply to?**  
+A: This focuses on the EC2 instances used for EMR Master and Core nodes, as these typically represent the stable baseline of a cluster.
+
+**Q: Does purchasing an RI impact cluster performance?**  
+A: No. Purchasing an RI is purely a billing construct and does not change the performance or operation of the underlying EC2 instances in your EMR cluster.
+
+**Q: What if my cluster needs change?**  
+A: Standard RIs offer some flexibility (instance size flexibility within the family for Regional RIs). Convertible RIs (not typically recommended by this finder initially due to different pricing) offer more flexibility but less discount. You can also potentially sell Standard RIs on the AWS Marketplace if they are no longer needed (subject to eligibility).
+
+## Related Resources
+
+-   [Instance Purchasing Options in Amazon EMR (AWS Documentation)](https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-instance-purchasing-options.html)
+-   [Amazon EC2 Reserved Instances](https://aws.amazon.com/ec2/pricing/reserved-instances/)
+-   [Reserved Instances User Guide (AWS Documentation)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-reserved-instances.html)
+-   [EMR Reserve Instances (CloudFix Support)](https://support.cloudfix.com/article/16986-emr-reserve-instances)

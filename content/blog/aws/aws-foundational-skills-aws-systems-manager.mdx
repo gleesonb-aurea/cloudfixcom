@@ -1,0 +1,572 @@
+---
+title: "Master AWS Systems Manager: A Comprehensive Guide"
+description: "Welcome back to our Foundation series, where we cover the background info that you need to successfully implement the AWS cost savings recommendations in our Fi..."
+date: 2023-06-05 08:59:31
+modified: 2025-01-23 10:26:08
+category: "AWS"
+tags: ["AWS","cloud","lambda","ec2","s3"]
+published: true
+slug: "aws-foundational-skills-aws-systems-manager"
+---
+
+Welcome back to our Foundation series, where we cover the background info that you need to successfully implement the AWS cost savings recommendations in our Fixer blogs. On deck today: AWS Systems Manager.
+
+In our [last post](/blog/aws-foundational-skills-cloudwatch/), we referred to CloudWatch as the "nervous system" of an AWS deployment. Continuing the analogy, Systems Manager would be the brain, or at least part of the brain. It is responsible for processing the information gathered by CloudWatch, making decisions, and taking appropriate action, such as managing and optimizing infrastructure.
+
+Let’s take a close look at how Systems Manager works and how to make sure the SSM agent is configured and installed correctly.
+
+## Table of Contents
+
+1.  [A brief overview of AWS Systems Manager](#overview)
+2.  [How to make sure the SSM agent is installed](#ensure-ssm-agent-is-installed)
+    1.  [Installing the SSM agent Linux](#install-ssm-agent-linux)
+        1.  [Use the Cost and Usage Report to find running instances](#cost-usage-report)
+        2.  [Use the EC2 DescribeInstances API to validate if the instance is online](#use-the-ec2-describeinstances-api-to-validate-if-the-instance-is-online)
+        3.  [Use SSM DescribeInstanceInformation API to check the status of the SSM agent](#use-ssm-describeinstanceinformation-api-to-check-the-status-of-the-ssm-agent)
+        4.  [Use a Lambda Function and EC2 InstanceConnect to install the SSM agent](#use-a-lambda-function-and-ec2-instanceconnect-to-install-the-ssm-agent)
+    2.  [Install SSM Agent on Windows](#install-ssm-agent-windows)
+3.  [Automatic Update of SSM State Manager](#automatic-update-of-ssm-state-manager)
+    1.  [Finding account/region pairs](#finding-account-region-pairs)
+    2.  [Querying for associations](#querying-for-associations)
+    3.  [Creating / Updating Associations](#creating-updating-associations)
+4.  [VPC Configuration](#vpc-configuration)
+5.  [Wrapping Up](#wrapping-up)
+
+## 1\. A brief overview of AWS Systems Manager
+
+[AWS Systems Manager](https://aws.amazon.com/systems-manager/) is a comprehensive set of tools that collects EC2 instance data and provides a centralized management layer to EC2 instances. The Systems Manager team describes Systems Manager as providing **_agility and control across your environments._** Systems Manager includes an agent, facilitating many of Systems Manager’s capabilities. This agent, called the SSM agent, works on Linux, Windows, and macOS-based instances. It can also be installed to on-prem hardware or even to (gasp!) compute resources in other clouds, providing a consistent management layer to all compute resources.
+
+The pillars of Systems Manager are (1) Change Management, (2) Event Management, (3) Incident and Problem Management, and (4) Node Management. We will be focusing on the 4th pillar. Within Node Management, Systems Manager offers many tools including:
+
+1.  [Distributor](https://docs.aws.amazon.com/systems-manager/latest/userguide/distributor.html) - A simple mechanism for distributing files, packages, and configurations to managed nodes
+2.  [Run command](https://docs.aws.amazon.com/systems-manager/latest/userguide/run-command.html) - A way to run commands on managed nodes
+3.  [State manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-state.html) - A service which makes sure that configurations are maintained. 
+4.  [Inventory](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-inventory.html) - A metadata information service for managed nodes. Using inventory, you can get data on instance details, OS details, resource usage, network configuration, etc.
+5.  [Patch Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/patch-manager.html) - A service to automate the patching process for software, and provide a high level view of patch status across managed nodes.
+
+This is just a high level overview of a selection of tools and capabilities. Check out the [Systems Manager node management](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-instances-and-nodes.html) documentation for more details. Importantly, these services depend on the Systems Manager SSM Agent being installed and running properly. The rest of this guide is going to help you accomplish exactly that! 
+
+To make sure we are on the same page, let’s go over some quick terminology.
+
+1.  Managed node - A compute resource, e.g. an EC2 instance
+2.  SSM Document - An action or set of actions which Systems Manager can execute on a particular instance. SSM Documents reflect a particular purpose, e.g. “Patch nginx server”
+3.  Association - An association is a target state for managed nodes. An association tells Systems Manager to apply an SSM document to a selection of resources, at the region level for a given account.
+
+Now that we are on the same page, the rest of this blog post will help you make sure that the Systems Manager SSM agent is installed, running, and able to communicate with the Systems Manager service.
+
+## 2\. How to make sure the SSM agent is installed
+
+Next up: making sure the SSM agent is installed. 
+
+There’s a chance you don’t even have to worry about this step. [Some AMIs, including very popular ones, have the SSM agent pre-installed](https://docs.aws.amazon.com/systems-manager/latest/userguide/ami-preinstalled-agent.html). This includes Amazon Linux after 2017.9, Amazon Linux 2, Amazon Linux 2023, macOS (10.14.x, 10.15.x, and 11.x), SuSE Linux, Ubuntu (16.04, 18.04, 20.04), Windows Server 2008-2012, WS16, WS19, and WS22. If you’re using one of these AMIs (by AWS), then the SSM agent is installed and ready. 
+
+In fact, you may even find the SSM agent installed on some community-supported AMIs, but make sure to check those more closely as they are not officially AWS supported.
+
+### 2.1. Installing the SSM agent Linux
+
+Assuming you don’t have the SSM agent pre-installed, you’ll have to add it yourself. Let’s look at the process for finding and installing the SSM agent on Linux EC2 instances.
+
+A quick side note: The advantage of the following approach is that it’s extremely general and will work for running EC2 instances without requiring a restart. Even better, this does not require SSH access to the instances. This is one of the ways CloudFix maintains security, by explicitly not requiring SSH access. In the long run, you may want to consider standardizing onto Amazon Linux 2 or some other officially supported AMI.
+
+With that being said, here’s the process for making sure the SSM agent is installed:
+
+1.  Use a Cost and Usage Report (CUR) query to find all EC2 instances. Filter by some criteria, e.g. annualized cost, instance size, how long the instance has been running, etc.
+2.  Use the EC2 DescribeInstances API to verify that the instance is online.
+3.  Use SSM DescribeInstanceInformation API to check the status of the SSM agent:
+    -   Is it installed?
+    -   Is it installed but not responding?
+4.  If it is not installed, use Lambda and EC2 InstanceConnect to install the SSM agent.
+
+Let's see how each step works individually.
+
+#### 2.1.1. Use the Cost and Usage Report to find running instances
+
+We start with the following [Cost and Usage Report](https://docs.aws.amazon.com/cur/latest/userguide/what-is-cur.html) query:
+
+```sql
+SELECT
+   line_item_usage_account_id AS account_id
+ , product_region AS region
+ , line_item_resource_id AS instance_id
+FROM <YOUR CUR DB>.<YOUR CUR TABLE>
+WHERE line_item_usage_start_date
+          BETWEEN date_trunc('week', current_date - interval '8' day)
+          AND date_trunc('week', current_date - interval '1' day)
+   AND line_item_line_item_type = 'Usage'
+   AND line_item_product_code = 'AmazonEC2'
+   AND line_item_resource_id LIKE 'i-%'
+GROUP BY 1, 2, 3;
+```
+
+Make sure to modify this query to use your CUR table name. This query produces output that looks like this:
+
+**account\_id**
+
+**region**
+
+**instance\_id**
+
+123456789012
+
+us-east-1
+
+i-0abcdef123
+
+123456789012
+
+us-west-2
+
+i-0a1b2c3d4e
+
+987654321098
+
+eu-central-1
+
+i-0f1e2d3c4b
+
+987654321098
+
+eu-west-1
+
+i-0123456789
+
+We _could_ use AWS EC2 APIs for this step, but the advantage of the CUR is that we get a view across regions and accounts all at once. Once we have a list of instances for each region/account pair, the next step is to check on the SSM agent status of each of the instances.
+
+#### 2.1.2. Use the EC2 DescribeInstances API to validate if the instance is online
+
+To validate if the instance is online, we can use the [EC2 DescribeInstances API](https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html):
+
+```bash
+aws ec2 describe-instances --instance-ids i-0abcdef123
+```
+
+This will return output (either XML or JSON, I prefer JSON) that looks like this:
+
+{
+    "Reservations": [
+        {
+            "Instances": [
+                {
+                    ...
+                    "InstanceId": "i-0abcdef123",
+                    "State": {
+                        "Code": 16,
+                        "Name": "running"
+                    },
+                    ...
+                }
+            ],
+            "OwnerId": "123456789012",
+            ...
+        }
+    ]
+}
+
+We can see in the output that this instance exists and is running. Great! Proceed to the next step.
+
+#### 2.1.3. Use SSM DescribeInstanceInformation API to check the status of the SSM agent
+
+Next, we can use the [SSM DescribeInstanceInformation API](https://docs.aws.amazon.com/systems-manager/latest/APIReference/API_DescribeInstanceInformation.html) to check the status of the SSM agent. The syntax of that command is:
+
+```bash
+aws ssm describe-instance-information --filters "Key=InstanceIds,Values=i-0abcdef123"
+```
+
+If the SSM agent is not installed, you will get output that looks like this:
+
+{
+    "InstanceInformationList": []
+}
+
+If the agent has been installed but is not responding, you will see this:
+
+{
+    "InstanceInformationList": [
+        {
+            "InstanceId": "i-0abcdef123",
+            ...
+            "PingStatus": "Inactive",
+            "LastPingDateTime": "2023-04-30T12:34:56.000Z",
+            "AgentVersion": "2.3.978.0",
+            ...
+        }
+    ]
+}
+
+Notice the `PingStatus` key, which in this case indicates that the SSM agent is Inactive. 
+
+#### 2.1.4. Use a Lambda Function and EC2 InstanceConnect to install the SSM agent
+
+This is the slightly complicated part. We’re going to use [EC2 Instance Connect](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Connect-using-EC2-Instance-Connect.html), which can give you short-term SSH access to a given instance, to install the SSM agent. Just like the phrase "a picture is worth a thousand words," we think "a snippet of code is worth a thousand…block diagrams." 
+
+import boto3
+import paramiko
+import io
+
+def install_ssm_agent(instance_id):
+    ec2_instance_connect = boto3.client('ec2-instance-connect')
+    ec2 = boto3.resource('ec2')
+
+    instance = ec2.Instance(instance_id)
+
+    # Send the public key to the instance using EC2 Instance Connect
+    ssh_key = paramiko.RSAKey.generate(2048)
+    key_public = ssh_key.get_base64()
+    public_key_material = f'ssh-rsa {key_public} lambda@ssm'
+
+    response = ec2_instance_connect.send_ssh_public_key(
+        InstanceId=instance_id,
+        InstanceOSUser='ec2-user',
+        SSHPublicKey=public_key_material,
+        AvailabilityZone=instance.placement['AvailabilityZone']
+    )
+
+    if response['Success']:
+        try:
+            # SSH to the instance
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+            key_file = io.StringIO()
+            ssh_key.write_private_key(key_file)
+            private_key = paramiko.RSAKey.from_private_key(key_file)
+
+            ssh.connect(
+                hostname=instance.public_dns_name,
+                username='ec2-user',
+                pkey=private_key
+            )
+
+            # Install the SSM agent
+            install_ssm_commands = [
+                'sudo yum install -y amazon-ssm-agent',
+                'sudo systemctl enable amazon-ssm-agent',
+                'sudo systemctl start amazon-ssm-agent',
+            ]
+
+            for command in install_ssm_commands:
+                stdin, stdout, stderr = ssh.exec_command(command)
+                print(stdout.read().decode('utf-8'))
+
+            ssh.close()
+        except Exception as e:
+            print(f'Error while SSH to the instance: {e}')
+    else:
+        print('Failed to send the public key using EC2 Instance Connect')
+
+def lambda_handler(event, context):
+    instance_id = event['instance_id']
+    install_ssm_agent(instance_id)
+
+In this code sample, we’re using the [paramiko Python library](https://www.paramiko.org/) to handle the RSA work. We’re generating an RSA key, then sending that RSA key to our target instance using EC2 Instance Connect. This key will be valid for only 60 seconds.
+
+If Instance Connect can successfully send the key to the instance, the next step is to ssh into the instance and run our commands. Although we normally do this from the terminal or [PuTTY](https://www.putty.org/), we can do it from Python as well using paramiko's ssh client.
+
+In this example, we’re assuming a `yum`\-based installation of the SSM agent. In a production version, you would need something more robust that would work for any Linux version or distribution.
+
+### 2.2. Install SSM Agent on Windows
+
+As we mentioned earlier in the blog post, SSM Agent can run on Windows, as well as macOS and Linux. In this section, we talk about how to automate this process. Note that this process is actually quite complex, so we will only present a high level overview here. If you are using CloudFix, this automation is already ready and available for you. The process we want to follow is similar to the Linux process in the previous section, but with a few extra steps. The installation itself involves using [a user-data PowerShell script](https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2-windows-user-data.html).
+
+At a high level, what you want to do is:
+
+1.  Find all running Windows-based EC2 instances.
+2.  Apply filters to find only instances where SSM agent is not installed, and
+    1.  Is not in GovCloud
+    2.  Is not using ephemeral storage
+    3.  Is not in an auto scaling group
+    4.  Is using an Amazon official AMI
+3.  For the instances from step 2:
+    1.  Save userdata
+    2.  Save persist state
+    3.  Stop instance
+    4.  Update user-data with installation script, restart the instance, confirm SSM running, then restore original user-data
+    5.  Restore state
+    6.  Restore instance
+
+A CUR query to find Windows instances is listed below.
+
+```sql
+SELECT
+    line_item_usage_account_id AS account_id,
+    product_region AS region,
+    line_item_resource_id AS instance_id
+FROM <{YOUR_CUR_TABLE}>
+WHERE line_item_usage_start_date
+    BETWEEN date_trunc('week', current_date - interval '8' day)
+    AND date_trunc('week', current_date - interval '1' day)
+    AND line_item_line_item_type = 'Usage'
+    AND line_item_product_code = 'AmazonEC2'
+    AND line_item_resource_id LIKE 'i-%'
+    AND line_item_usage_type LIKE '%BoxUsage:Windows%'
+GROUP BY 1, 2, 3;
+```
+
+Note that it is similar to the Linux query, with the `line_item_usage_type` constraint to find Windows-based instances.
+
+To apply the filters above, use the `describe-instance-information` API as in the previous step. To check on the ephemeral storage issue, we first use the `describe-instances` API.
+
+```bash
+aws ec2 describe-instances --instance-ids i-0abcdef123
+```
+
+This command should return the details of the specified instance, and you should find the instance type under the `Instances` field.
+
+{
+    "Reservations": [
+        {
+            "Instances": [
+                {
+                    ...
+                    "InstanceId": "i-0abcdef123",
+                    "InstanceType": "t2.micro",
+                    ...
+                }
+            ]
+        }
+    ]
+}
+
+We then use the `describe-instance-types` command with the instance type you found in the previous step:
+
+```bash
+aws ec2 describe-instance-types --instance-types t2.micro
+```
+
+This command will return the details of the specified instance type, including information about the local instance storage. Look for the `InstanceStorageSupported` field:
+
+{
+    "InstanceTypes": [
+	{
+	    ...
+	    "InstanceType": "t2.micro",
+	    ...
+	    "InstanceStorageSupported": false,
+	    ...
+	}
+    ]
+}
+
+In the example above, `InstanceStorageSupported` is false. This instance would then be included. The reasoning behind this is that we do not want to risk losing information. For instances which can have ephemeral storage, we do not have the ability to snapshot volumes. So, we will leave those instances alone. Examples of instance types which would have local storage include the [D3, D3en](https://aws.amazon.com/ec2/instance-types/d3/) and [H1 instance](https://aws.amazon.com/ec2/instance-types/h1/) types.
+
+Finally, the following is a starter PowerShell script that can be used to install the SSM agent.
+
+```powershell
+# Set up SSM agent install directory
+New-Item -Path "C:\Temp" -ItemType "directory" -Force
+
+# Download the latest SSM agent installer for Windows
+Invoke-WebRequest "https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/windows_amd64/AmazonSSMAgentSetup.exe" -OutFile "C:\Temp\AmazonSSMAgentSetup.exe"
+
+# Install SSM agent
+Start-Process -FilePath "C:\Temp\AmazonSSMAgentSetup.exe" -ArgumentList "/S" -Wait
+
+# Clean up the installer file
+Remove-Item -Path "C:\Temp\AmazonSSMAgentSetup.exe" -Force
+```
+
+Again, this process is quite complicated. You will only need to follow this if you are using Windows instances with older Windows AMIs supplied by Amazon.
+
+## 3\. Automatic Update of SSM State Manager
+
+In the previous section, we showed how to make sure that the SSM agent is installed. The automation is surprisingly complex for a straightforward problem, but that is the nature of the variety of operating systems and configurations you may be dealing with. In general, it is much easier to use modern AMIs which are supported by Amazon and have the SSM agent installed. Let's assume that, through either the hard way or the easy way, you now have the SSM agent installed and running on all of your Linux and Windows instances.
+
+Now that we have SSM agent installed and running, we want to make sure that installed SSM agents get automatically updated, as [AWS recommends](https://docs.aws.amazon.com/systems-manager/latest/userguide/ssm-agent-automatic-updates.html). We can manage this via a _State Manager association_. [A State Manager association in AWS Systems Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-associations.html) is a configuration that defines the state that you want to maintain on your instances. It consists of a specified Systems Manager document (such as applying a specific patch, running a specific shell command, or configuring applications), a schedule for applying the configuration, and targets (instances) on which the configuration should be maintained. An SSM association is scoped to a particular account/region pair.
+
+AWS maintains a specific SSM document, titled `AWS-UpdateSSMAgent`, which takes care of updating the SSM agent itself. In other words, once we have SSM installed, we can use SSM to keep itself updated. Cool!
+
+The association to utilize this SSM document looks like this.
+
+{
+  "Name": "AWS-UpdateSSMAgent",
+  "AssociationId": "123e4567-e89b-12d3-a456-426614174000",
+  "AssociationVersion": "1",
+  "Targets": [
+    {
+      "Key": "InstanceIds",
+      "Values": ["*"]
+    }
+  ],
+  "LastExecutionDate": "2022-10-10T05:31:00.773000",
+  "Overview": {
+    "Status": "Success",
+    "DetailedStatus": "Success",
+    "AssociationStatusAggregatedCount": {
+      "Success": 1
+    }
+  },
+  "ScheduleExpression": "rate(14 days)",
+  "AssociationName": "SystemAssociationForSsmAgentUpdate"
+}
+
+The association is created in the context of an account and region, but the association object does not contain the account and region. In order to have updated SSM agents across your entire deployment, you have to make sure that each account/region pair where you are running EC2 instances has such an association. Also, we have found that additional associations tend to accumulate over time. For example, we see associations which apply the `AWS-UpdateSSMAgent` document, but only to particular instances. E.g.
+
+{
+  "Name": "AWS-UpdateSSMAgent",
+  "AssociationId": "123e4567-e89b-12d3-a456-426614174000",
+  "AssociationVersion": "1",
+  "Targets": [
+    {
+      "Key": "InstanceIds",
+      "Values": ["i-0123456789"]
+    }
+  ],
+  //..
+}
+
+We want to get rid of these.
+
+The process we recommend is:
+
+1.  Find all account/region pairs where there are active EC2 instances
+2.  For each account/region, query for associations for the `AWS-UpdateSSMAgent` document
+3.  If there are no associations, create one and scope to all instances. If there are multiple associations where one is scoped to all instances and others to specific instances, remove the instance-specific associations.
+
+### 3.1. Finding account/region pairs
+
+To find account/region pairs, we will use this simple CUR query.
+
+```sql
+SELECT
+   line_item_usage_account_id AS account_id
+ , product_region AS region
+FROM <{YOUR_CUR_TABLE}>
+WHERE line_item_usage_start_date
+          BETWEEN date_trunc('week', current_date - interval '8' day)
+          AND date_trunc('week', current_date - interval '1' day)
+   AND line_item_line_item_type = 'Usage'
+   AND line_item_product_code = 'AmazonEC2'
+   AND line_item_resource_id LIKE 'i-%'
+GROUP BY 1, 2
+```
+
+Make sure to substitute your CUR table’s name in the above query. As we have mentioned before, we are using the `line_item_resource_id LIKE 'i-%'` expression to look for EC2 instance IDs. But, in this case we aren't interested in the IDs themselves, just the accounts and regions where they live.
+
+**account\_id**
+
+**region**
+
+123456789012
+
+us-east-1
+
+123456789012
+
+us-west-2
+
+987654321098
+
+eu-central-1
+
+987654321098
+
+eu-west-1
+
+### 3.2. Querying for associations
+
+Assuming that the AWS credentials and region are part of your environment, you can use this command.
+
+aws ssm list-associations --query 'Associations[?Name==`AWS-UpdateSSMAgent`]'
+
+Here is a small bit of Python which can do this for a list of account/region pairs. Please note that this is demo code. Doing this in production would involve error handling, retrying, logging, and many other “undifferentiated heavy lifts” associated with this type of work (spoiler alert: CloudFix can do this for you).
+
+import boto3
+
+
+def get_ssm_client(account_id, region):
+    # TODO: Implement the function to return an SSM client for the specified account_id and region
+    pass
+
+
+def get_ssm_associations_with_update_agent_document(ssm_client):
+    associations = []
+    paginator = ssm_client.get_paginator("list_associations")
+    for page in paginator.paginate():
+        for association in page["Associations"]:
+            if association["Name"] == "AWS-UpdateSSMAgent":
+                associations.append(association)
+
+    return associations
+
+
+if __name__ == "__main__":
+    account_region_pairs = [
+        ("123456789012", "us-east-1"),
+        ("123456789012", "us-west-2"),
+        ("987654321098", "eu-central-1"),
+        ("987654321098", "eu-west-1"),
+    ]
+
+    for account_id, region in account_region_pairs:
+        ssm_client = get_ssm_client(account_id, region)
+
+        associations = get_ssm_associations_with_update_agent_document(ssm_client)
+
+        print(f"SSM Associations with AWS-UpdateSSMAgent document for account {account_id} in region {region}:")
+        for association in associations:
+            print(association)
+        print()
+
+### 3.3. Creating / Updating Associations
+
+Given a list of associations for each account/region pair, we want to make sure we have exactly one association for the `AWS-UpdateSSMAgent` which targets all instances. We want a function which takes a list of associations, and:
+
+1.  If there are associations which target specific instance ID's, delete them.
+2.  If there is an association targeting all instances, then leave it alone.
+
+If there is no association, then create one which targets all instance ids, e.g.
+
+{
+ //...
+
+ "Targets": [
+     {
+       "Key": "InstanceIds",
+       "Values": ["*"]
+     }
+   ],
+}
+
+Here is a sample Python function which implements this logic:
+
+def manage_associations(ssm_client, associations):
+    associations_to_remove = []
+    all_instance_ids_association_present = False
+
+    # If there exactly 1 association, check if it is the general one
+    # Otherwise mark for deletion
+    for association in associations:
+        targets = association["Targets"]
+        if len(targets) == 1 and targets[0]["Key"] == "InstanceIds":
+            if "*" in targets[0]["Values"]:
+                all_instance_ids_association_present = True
+            else:
+                associations_to_remove.append(association["AssociationId"])
+
+    # Remove associations marked for deletion
+    for association_id in associations_to_remove:
+        ssm_client.delete_association(AssociationId=association_id)
+        print(f"Deleted association with ID {association_id}")
+
+    # If we don't have an all_instances association, create one
+    if not all_instance_ids_association_present:
+        response = ssm_client.create_association(
+            Name="AWS-UpdateSSMAgent",
+            Targets=[
+                {
+                    "Key": "InstanceIds",
+                    "Values": ["*"]
+                }
+            ]
+        )
+        print(f"Created an association targeting all instance IDs with ID {response['AssociationDescription']['AssociationId']}")
+
+These two code snippets should provide a starting point for making sure that all SSM agents will update themselves automatically. This code should be set up to run every two weeks, as per AWS recommendations. If you are using CloudFix, this automation is ready to go.
+
+## 4\. VPC Configuration
+
+In our companion blog post, [AWS Foundational Skills: How to get started with CloudWatch](/blog/aws-foundational-skills-cloudwatch/), we included two sections describing how to ensure that the CloudWatch and SSM agents exist within a functioning network environment - in particular a VPC which [has DNS enabled](/blog/aws-foundational-skills-cloudwatch/#validate-vpc-dns) and [has the required VPC endpoints](/blog/aws-foundational-skills-cloudwatch/#validate-vpc-endpoints). As called out in the CloudWatch post, those sections apply to not just the CloudWatch agent, but the SSM agent too. If you haven’t had a look yet, head over there now.
+
+## 5\. Wrapping Up
+
+Systems Manager is a powerful service, and is the easiest way to manage groups of EC2 instances at scale. The SSM Agent is what enables Systems Manager to monitor, update, and keep these instances working for you! The tutorials and code in this document have been written to make sure your SSM agent is installed and up to date.

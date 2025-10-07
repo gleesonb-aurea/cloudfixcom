@@ -1,0 +1,78 @@
+---
+title: "Valkey - A Cheaper ElastiCache with One Click"
+description: "CloudFix Introduces Valkey Finder/Fixer: Optimize Your ElastiCache Costs with Zero Downtime Are you looking to reduce your AWS ElastiCache costs without comprom..."
+date: 2024-10-21 17:03:32
+modified: 2024-10-28 19:57:51
+category: "AWS"
+tags: ["AWS","cloud","serverless","ec2","security"]
+published: true
+slug: "valkey-a-cheaper-elasticache-with-one-click"
+---
+
+# CloudFix Introduces Valkey Finder/Fixer: Optimize Your ElastiCache Costs with Zero Downtime
+
+Are you looking to reduce your AWS ElastiCache costs without compromising performance? CloudFix is excited to announce our new Valkey Finder/Fixer, designed to help you seamlessly migrate from ElastiCache for Redis OSS to ElastiCache for Valkey and unlock significant cost savings. Now, when you log in your CloudFix dashboard, you will see, in the Advanced Tab, the **ElastiCache Migrate to Valkey** Finder/Fixer. See in the screenshot below - in this account there are nearly $11K of savings to be had by pushing one button! Not a bad day.
+
+![](/media/uploads/vk-2-600x515.png)
+
+## What is Valkey?
+
+[Valkey](https://valkey.io/) is an open-source, high-performance key-value datastore that serves as a drop-in replacement for [Redis](https://redis.io/). Developed by long-standing Redis OSS contributors and maintainers, Valkey offers full compatibility with Redis APIs and data formats while providing enhanced performance and cost benefits. [A great article, “Why AWS supports Valkey,”](https://aws.amazon.com/blogs/opensource/why-aws-supports-valkey/) provides more insights into Valkey’s development and AWS’s commitment to open source, explaining how Valkey emerged as a response to the changes in Redis' licensing model by Redis Inc.
+
+## Valkey Price Comparison
+
+![](/media/uploads/Screenshot-2024-10-21-at-9.44.38 AM-600x411.png)
+
+The graph speaks for itself - Valkey is cheaper than Redis! Now, clearly you could run a bare EC2 instance, for comparison's sake an r7g.large, but this comparison does not take into account the total cost of ownership. If you are running Valkey yourself, you are responsible for security updates, scaling, and all of the other administration that comes with it. It's an apples to "growing your own apple" comparison. As far as managed services go, Valkey is the clear winner here! 
+
+## The CloudFix Valkey Finder/Fixer Advantage
+
+Our new Finder/Fixer automates the process of identifying ElastiCache Redis OSS clusters that can benefit from migration to Valkey. Here’s why this matters to you:
+
+1.  **Seamless Migration**: Valkey is a true drop-in replacement for Redis OSS. This means you can migrate your existing ElastiCache Redis OSS clusters to Valkey without any code changes or architectural modifications. The migration to Valkey can be done in-place with _zero downtime_.
+    
+2.  **Significant Cost Savings**:
+    
+    -   Up to 33% lower pricing for ElastiCache Serverless
+    -   Up to 20% lower pricing for self-designed (node-based) clusters
+    -   90% lower minimum data storage at 100mb
+    -   At the lowest cost, Valkey can operate at $6/month. If you need a cache for a small project, Valkey is a great choice!
+3.  **Performance Boost**: Valkey offers improved multi-core utilization and asynchronous I/O threading, potentially doubling your throughput for a given core count.
+    
+4.  **Reduced Memory Overhead**: Valkey can reduce memory usage by up to 20.6%, allowing you to do more with less.
+    
+5.  **Zero-Downtime Upgrade**: Our Fixer leverages AWS’s zero-downtime upgrade process, ensuring your applications remain available throughout the migration.
+    
+
+## Real-World Savings: $800K and Counting
+
+During the development of Valkey, a large customer has already realized substantial cost savings. This customer, operating at scale, has saved an impressive $800,000 by adopting Valkey for their ElastiCache deployments. This real-world example demonstrates the significant impact Valkey can have on reducing AWS costs for businesses of all sizes. An $800K savings by clicking a single button in the CloudFix dashboard is a game changer!
+
+## How It Works
+
+1.  **Find**: The CloudFix Valkey Finder scans your AWS environment to identify ElastiCache Redis OSS clusters eligible for migration to Valkey.
+    
+2.  **Analyze**: We calculate potential cost savings based on your current usage and Valkey’s pricing model.
+    
+3.  **Fix**: As this is a **brand new** Finder/Fixer, right now the Fixer directs you to the correct resource in the AWS console, where making the migration is a click away. This is why it is currently an "Advanced" Finder/Fixer. As the automation is completed and rolled out, this will become an "Easy" Finder/Fixer.
+    
+4.  **Monitor**: CloudFix tracks the migration progress and verifies the successful transition to Valkey.
+    
+5.  **Report**: We provide detailed reports on the cost savings achieved through the migration.
+    
+
+## Getting Started
+
+To take advantage of the Valkey Finder/Fixer:
+
+1.  Log in to your CloudFix dashboard
+2.  Navigate to the Finders section
+3.  Look for the “ElastiCache Redis to Valkey Migration” Finder, currently in the Advanced tab
+4.  Review the identified opportunities and potential savings
+5.  Click on the resource to in order to fix it!
+
+## Conclusion
+
+The CloudFix Valkey Finder/Fixer offers a risk-free way to optimize your ElastiCache costs while maintaining full compatibility with your existing Redis-based applications. By leveraging Valkey’s drop-in replacement capabilities, you can achieve significant savings without the need for code changes or downtime.
+
+Don’t miss out on this opportunity to reduce your AWS spend. Try the CloudFix Valkey Finder/Fixer today and start optimizing your ElastiCache deployments!

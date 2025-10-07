@@ -1,0 +1,107 @@
+---
+title: "CloudFix Finder: EC2 Retype ECS Manually (Manual Fix)"
+description: "Optimize the cost and performance of your Amazon ECS clusters running on EC2 instances by rightsizing the underlying EC2 instances within their Auto Scaling Gro..."
+date: 2025-04-09 18:06:41
+modified: 2025-04-09 18:06:41
+category: "AWS"
+tags: ["AWS","cloud","ec2","storage","compute"]
+published: true
+slug: "feature-ec2-retype-ecs-manually"
+---
+
+Optimize the cost and performance of your Amazon ECS clusters running on EC2 instances by rightsizing the underlying EC2 instances within their Auto Scaling Groups (ASGs). CloudFix analyzes resource utilization (CPU, Memory) across the instances managed by an ECS Capacity Provider or leverages AWS Compute Optimizer recommendations. Based on this analysis, CloudFix identifies opportunities to change the instance type for the entire ASG to better match workload requirements, potentially recommending memory-optimized or compute-optimized instance families.
+
+## Manual Fix Required
+
+**CloudFix identifies the rightsizing opportunity but requires manual action to implement the change.** Modifying the instance type in an Auto Scaling Group's launch configuration or launch template affects all future instances launched by the ASG and often requires careful planning to manage instance replacement and potential downtime. Users must manually update the ASG configuration.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How CloudFix Identifies the Opportunity](#how-it-works)
+-   [Manual Fix Steps](#manual-fix-steps)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+EC2 instances backing ECS clusters are often configured with a single instance type within an Auto Scaling Group managed by a Capacity Provider. If the chosen instance type is not well-matched to the actual resource needs (CPU vs. Memory) of the containerized workloads, it can lead to inefficient resource utilization and unnecessary costs across the entire cluster.
+
+### Solution Identification
+
+CloudFix analyzes the average CPU and memory utilization across all EC2 instances within an ASG associated with an ECS Capacity Provider. Alternatively, for clusters where applicable, it ingests recommendations from AWS Compute Optimizer. By comparing the dominant resource constraint (CPU or Memory) with the characteristics of the current instance type, CloudFix identifies situations where switching the entire ASG to a different instance family (e.g., from general-purpose to memory-optimized or compute-optimized) could lead to better cost-efficiency based on On-Demand pricing differences. Spot instance retyping is excluded.
+
+## AWS Services Affected
+
+Service
+
+Icon
+
+[Amazon ECS](https://aws.amazon.com/ecs/)
+
+![Amazon ECS](/media/uploads/Elastic-Container-Service.svg)
+
+[Amazon EC2](https://aws.amazon.com/ec2/)
+
+![Amazon EC2](/media/uploads/EC2.svg)
+
+[ECS Capacity Providers](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/cluster-capacity-providers.html)
+
+![ECS Capacity Providers](/media/uploads/Elastic-Container-Service.svg)
+
+[EC2 Auto Scaling](https://aws.amazon.com/ec2/autoscaling/)
+
+![EC2 Auto Scaling](/media/uploads/EC2-Auto-Scaling.svg)
+
+[AWS Compute Optimizer](https://aws.amazon.com/compute-optimizer/)
+
+![AWS Compute Optimizer](/media/uploads/Compute-Optimizer.svg)
+
+## How CloudFix Identifies the Opportunity
+
+CloudFix identifies potential ECS EC2 retyping opportunities based on the following:
+
+-   Detects EC2 instances belonging to an ECS cluster's Capacity Provider ASG using CUR data and ECS API calls (`DescribeContainerInstances`).
+-   Analyzes average CPU and Memory utilization across the instances in the ASG.
+-   Alternatively, uses AWS Compute Optimizer recommendations if available for the instances.
+-   Recommends changing the instance type in the ASG's launch configuration/template if a different instance family (e.g., memory-optimized, compute-optimized) better suits the observed average utilization pattern and offers potential On-Demand cost savings.
+-   Excludes Spot instances from retyping recommendations.
+-   Estimates potential savings based on the reduction in On-Demand costs.
+
+## Manual Fix Steps
+
+After CloudFix identifies an ECS EC2 retyping opportunity:
+
+1.  **Review Recommendation:** Examine the identified ASG, the current instance type, the recommended instance type, and the supporting utilization data (average CPU/Memory) or Compute Optimizer findings provided by CloudFix.
+2.  **Validate Recommendation:** Assess if the recommended instance type aligns with your application's performance needs. Consider peak loads, specific task requirements, and potential impacts of changing instance families (e.g., network performance, storage options).
+3.  **Update ASG Configuration:** Modify the Launch Configuration or Launch Template associated with the Auto Scaling Group. Change the \`InstanceType\` parameter to the recommended type.
+4.  **Implement Instance Refresh/Replacement:** Changing the ASG configuration only affects \*new\* instances. To apply the change to existing instances, you need to either:
+    -   Use [EC2 Auto Scaling Instance Refresh](https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html) to perform a rolling replacement of old instances with new ones based on the updated configuration.
+    -   Manually terminate old instances (allowing the ASG to launch replacements with the new type) in a controlled manner, potentially using [ECS container instance draining](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/container-instance-draining.html) to gracefully stop tasks first.
+5.  **Monitor Cluster:** After the instances have been replaced, monitor ECS service performance, task placement, and CloudWatch metrics for the new instances to ensure the cluster operates as expected.
+
+## FAQ
+
+**Q: Why is this a manual fix?**  
+A: Modifying an ASG's instance type and replacing the running instances is an operational change that can impact cluster capacity and potentially cause downtime if not managed carefully. User intervention is required for planning and execution.
+
+**Q: Does this finder recommend changing instance \*size\* (e.g., m5.large to m5.xlarge)?**  
+A: This specific finder focuses on changing the instance \*family\* or \*type\* (e.g., m5.large to r5.large) based on CPU/Memory balance, not necessarily changing the size. Other rightsizing finders might recommend size changes.
+
+**Q: What happens if I use Spot instances in my ASG?**  
+A: CloudFix explicitly excludes recommending retyping for Spot instances or switching On-Demand to Spot via this finder.
+
+**Q: Is downtime required?**  
+A: Yes, replacing the EC2 instances within the ASG typically requires terminating old instances and launching new ones. While instance refresh and instance draining can minimize disruption, careful planning is needed to avoid impacting service availability.
+
+## Related Resources
+
+-   [Amazon ECS Developer Guide](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html)
+-   [Amazon EC2 Auto Scaling User Guide](https://docs.aws.amazon.com/autoscaling/ec2/userguide/what-is-amazon-ec2-auto-scaling.html)
+-   [ECS Cluster Capacity Providers](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/cluster-capacity-providers.html)
+-   [EC2 Auto Scaling Instance Refresh](https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html)
+-   [AWS Compute Optimizer](https://aws.amazon.com/compute-optimizer/)
+-   [ECS EC2 Manual Retyping (CloudFix Support)](https://support.cloudfix.com/article/16917-ecs-ec2-manual-retyping)

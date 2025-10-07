@@ -1,0 +1,72 @@
+---
+title: "7 common mistakes that lead to overspending on AWS"
+description: "Overview: After reviewing tens of thousands of AWS accounts, we can identify common usage patterns that often result in overspending. These include running one..."
+date: 2023-09-07 17:05:40
+modified: 2023-12-01 09:32:09
+category: "AWS"
+tags: ["AWS","cloud","ec2","s3","rds"]
+published: true
+slug: "7-common-mistakes-that-lead-to-overspending-on-aws"
+---
+
+#### Overview:
+
+-   After reviewing tens of thousands of AWS accounts, we can identify common usage patterns that often result in overspending.
+-   These include running one single account, putting everything in Kubernetes, using too much and/or fixed amounts of EC2, taking a “buffet” approach and more.
+-   By addressing these scenarios, organizations can improve their FinOps posture and more effectively manage their AWS costs.
+
+Through my work at Trilogy and CloudFix, I’ve come across tens of thousands of AWS accounts. Each one, of course, is unique – but there are also plenty of similarities, especially in the mistakes organizations make on their road to the cloud. When developers see patterns of problems in source code, they call it “code smell.” For us, it’s “[FinOps smell](/podcast/the-price-is-wrong-how-to-save-on-aws/)”: the patterns we find when we analyze AWS usage and something’s not quite right. 
+
+While these smells might not be quite as easy to mitigate as washing a gym sock or giving your dog a bath, they can be identified and tackled. The following seven scenarios represent common patterns that we’ve seen on AWS bills: why they happen, why they’re an issue, and what to do about it.
+
+1.  **A single giant account**. When organizations first adopt AWS, they often start with a single account, which is fine – for a while. At some point, it becomes critical to divide accounts based on their use case; one for dev, one for staging, one for production, etc. This ensures resources that shouldn’t be associated with each other don’t get mixed up and your production and development deployments don’t have any unauthorized access.  
+      
+    It’s also important to segment accounts from a FinOps perspective. If you have one giant account, it’s very difficult to determine what’s driving costs, and therefore what to do about it. It’s like going out to dinner for 40 people and you get one bill. Unless you’re incredibly diligent about tagging everything from the beginning, optimizing costs is a nonstarter. Even then, common resources like networking costs are hard to allocate to the right users.  
+      
+    In addition, one joint account introduces a huge security footprint that’s nearly impossible to protect. When you let everyone use the maximum of all the limits across all the services, the blast radius if and when something goes wrong is enormous.  
+      
+    _Pro tip_: Divide your AWS organization into accounts that are separated into business units, use cases, and even applications. AWS accounts within an organization are a powerful way to enforce segmentation.
+2.  **Everything in Kubernetes**. This is something we often see when teams first move to the cloud. They may be unsure about what and where to move, so they hedge their bets by putting everything in a Kubernetes cluster. This theoretically makes it easier if they ever want to go back on-prem (bad idea) or move to another cloud.  
+      
+    The problem with this approach is that it discourages you from using any of the higher order AWS services that offer such tremendous value. Rather than using Aurora or ElastiCache, it’s tempting to simply add a database or cache into the list of applications the Kubernetes cluster is already hosting. In the short run, this seems like the “cheaper” option, but in the long run we’ve found the maintenance burden to be higher than you would think.  
+      
+    _Pro tip_: Once you’re established in AWS, start to transition to managed services. It will be cheaper in the long run.
+**Too much EC2**. Like putting everything in Kubernetes, over-relying on EC2 is often a sign that the organization hasn’t fully adopted the cloud mindset. Instead of embracing AWS’s elasticity, they buy bare metal instances and treat EC2 as if they just bought a bunch of servers. At that point, you might as well buy a bunch of machines and put them in a data center. You’re reinventing the wheel instead of taking advantage of AWS’s incredible services and generally missing the point of the cloud, which is best suited for elastic workloads.  
+  
+As AWS Made Easy guest Keith Hodo put it, treating AWS as simply a colocation facility gives you “your mess, for more \[money\].”   
+  
+  
+_Pro tip:_  
+
+> _Optimize EC2 with financial and technical engineering._
+
+  
+From the financial side, look at instruments like savings plans, CRIs, and reserved instances. Technically, make your applications stateless and run them on spot instances, auto-scaling groups, and spot fleets; use S3 for your object store; or SQS and EventBridge for your pub-sub subsystem. Use EC2 for your custom compute needs and migrate _commodity compute_ (e.g. databases, caches, and elastic search) to managed services.4.  **Fixed amounts of EC2**. Overdoing it isn’t the only EC2 red flag that we see on AWS bills. Having a fixed amount of EC2, week after week and month after month, also demonstrates that on-prem mindset. It means you’re treating EC2 instances like physical servers that you own, which defeats the purpose of moving to the cloud in the first place. Business workloads are almost always cyclical and infrastructure should be able to adapt.  
+      
+    This is really about changing the way that you think about your infrastructure. The cloud delivers value if and only if you use it for its elasticity and scale. If you treat AWS like a data center, nine times out of ten you will end up spending more than you did on-premises.  
+      
+    _Pro tip_: Leverage the elasticity of the cloud through automation. Turn off dev instances when they’re not being used. Use Compute Optimizer to right-size your standing instances. Use spot instances and attribute-based instance selection to get the compute you need without paying more.
+5.  **The “buffet” approach**. As a self-described AWS “superfan,” it’s hard to come down on folks who want to try everything that AWS offers. There are so many options, with new ones coming online seemingly every day. It’s easy to treat it like a buffet and feel the need to try everything: a bit of Aurora, a bit of RedShift, a bit of RDS, a sampling of every storage solution… it’s interesting and even fun, but it’s also expensive and adds unnecessary complexity.  
+      
+    The costs aren’t only upfront, either. Having too many disparate AWS services results in an application that will eventually need some pretty serious rearchitecting. That demands time and resources that could be spent on innovating instead of performing open heart surgery on your application.  
+      
+    _Pro tip_:  
+    
+    > _Try to keep the majority of your application’s footprint to a handful of core services and be thoughtful about adding new ones._
+    
+6.  **Not tagging resources**. Tags are a giant label maker for all the things in your AWS account. They allow you to label and group things so you can stay organized and informed on what your resources are doing. If you don’t see any tags in an AWS account, it’s a clear indication of chaos.  
+      
+    Through the FinOps lens, not tagging your resources makes it incredibly difficult to understand your cost structure. Think of it like a credit card bill: if your bill just gave you one number without any line items, you would have no idea where and how you’re spending your money. A good tagging policy prevents that from happening and provides the visibility you need to better optimize your costs.  
+      
+    _Pro tip_: Use tags, period. Have a tagging policy in place so that there is a standard set of metadata that’s expected to accompany each AWS resource.
+7.  **Forgetting to shut off instances**. This one goes under the “we’re all human” category, but can be financially harmful nonetheless. Teams like data scientists work on very computationally intensive projects that require resources to match. They’re not starting up a T2 micro; they’re running a P3.8xlarge or P3.16xlarge. Those big GPU instances are expensive, and if they’re running when you don’t need them, it adds up fast.  
+      
+    SageMaker, too, is often a culprit here. The number of instances that are just left on can cost hundreds of thousands of dollars. Amazon can’t tell if you’re deliberately leaving the machine running, so unless you explicitly shut it off, you’re going to be billed for every second that those machines are still on.  
+      
+    _Pro tip_:  
+    
+    > _Automation is the only way to ensure that you don’t have runaway resources._
+    
+    Behavioral and organizational change can only go so far; again, we’re only human. Automation can ensure that you’re only paying for the resources that you need.
+
+The road to cloud isn’t a straight line and every organization faces a learning curve as they adapt and grow. If any of the scenarios above sound familiar, think of it as an opportunity. Amazon continues to evolve and innovate, and we can too. By thoughtfully balancing and optimizing our AWS environments – and relying on automation whenever we can – we can make the most of Amazon’s tremendous offerings and control costs along the way.

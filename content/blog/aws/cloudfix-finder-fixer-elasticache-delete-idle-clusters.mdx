@@ -1,0 +1,91 @@
+---
+title: "CloudFix Finder/Fixer: ElastiCache Delete Idle Clusters"
+description: "The ElastiCache Delete Idle Clusters tool helps optimize your AWS costs by identifying and safely removing unused Amazon ElastiCache clusters that continue to i..."
+date: 2025-04-07 00:22:34
+modified: 2025-04-07 00:22:34
+category: "AWS"
+tags: ["AWS","cloud","s3","rds","monitoring"]
+published: true
+slug: "cloudfix-finder-fixer-elasticache-delete-idle-clusters"
+---
+
+The **ElastiCache Delete Idle Clusters** tool helps optimize your AWS costs by identifying and safely removing unused Amazon ElastiCache clusters that continue to incur hourly charges but provide no business value.
+
+## What It Does
+
+This Finder identifies ElastiCache clusters in your AWS environment that have been idle (no read or write activity) for an extended period (7 days or more), indicating they are unused resources that can be safely removed to reduce costs.
+
+## How It Works
+
+The ElastiCache Delete Idle Clusters Finder:
+
+-   Analyzes CloudWatch metrics to identify clusters with no read or write commands for the last 7 days
+-   For Redis clusters, monitors the sum of the GetTypeCmds and SetTypeCmds metrics
+-   For Memcached clusters, checks the sum of the CmdGet and CmdSet metrics
+-   Verifies the cluster is not part of critical infrastructure through tags and configuration
+-   Creates a remediation plan based on the cluster engine type (Redis or Memcached)
+
+## AWS Services Affected
+
+This CloudFix feature interacts with the following AWS services:
+
+![Amazon ElastiCache](/media/uploads/ElastiCache.svg)
+
+![Amazon CloudWatch](/media/uploads/CloudWatch.svg)
+
+[Amazon ElastiCache](https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/WhatIs.html)
+
+[Amazon CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/)
+
+This Finder specifically targets resources in the Amazon ElastiCache service, including both Redis and Memcached engines. CloudFix analyzes CloudWatch metrics to identify clusters with no activity for an extended period and safely removes them to optimize your AWS costs.
+
+## Benefits
+
+1.  **Cost Savings:** Eliminate 100% of costs for idle Memcached clusters and approximately 99% for idle Redis clusters (with minimal snapshot storage costs)
+2.  **Resource Optimization:** Remove unnecessary clusters that consume quota limits and management overhead
+3.  **Simplified Monitoring:** Reduce noise in your monitoring dashboards by eliminating unused resources
+4.  **Environment Cleanup:** Maintain a cleaner, more organized ElastiCache deployment
+5.  **Safer Operations:** Prevent accidental use of outdated, unmaintained clusters
+
+## Implementation Details
+
+When executing this Fixer, CloudFix will:
+
+1.  **For Redis clusters:**
+    -   Create a final snapshot using the ElastiCache DeleteCacheCluster API with the FinalSnapshotIdentifier parameter
+    -   Delete the cluster while preserving the snapshot for potential restoration
+2.  **For Memcached clusters:**
+    -   Extract and backup the cluster’s configuration as JSON to an S3 bucket
+    -   Store the backup at: cloudfix-fixer-executions<AccountId>/EcCleanupIdleClusters/<Engine>/<ClusterName>.json
+    -   Delete the cluster using the ElastiCache DeleteCacheCluster API
+3.  Log all actions taken for audit purposes
+4.  Provide a detailed report of the clusters removed and the estimated monthly cost savings
+
+## Frequently Asked Questions
+
+### Is this implemented automatically?
+
+No. CloudFix will only implement this change when you explicitly approve the suggested action. You maintain full control over which clusters are deleted.
+
+### Can I roll back if I delete a cluster by mistake?
+
+Yes, but the rollback procedure differs depending on cluster type:
+
+**For Redis clusters:** Use the CreateCacheCluster API (for single-node clusters) or CreateReplicationGroup API (for clusters with read replicas), passing the snapshot ARN using the SnapshotArns parameter.
+
+**For Memcached clusters:** Retrieve the configuration backup file from S3, parse it, and pass the parameters to the CreateCacheCluster API.
+
+### Will this cause downtime?
+
+No. Since the clusters identified are confirmed to be idle (no read/write activity for 7+ days), there should be no impact on running applications or services.
+
+### How are clusters determined to be idle?
+
+A cluster is considered idle if it has shown no read or write activity for at least 7 consecutive days. For Redis clusters, we monitor the GetTypeCmds and SetTypeCmds metrics, while for Memcached clusters, we track the CmdGet and CmdSet metrics. All must sum to zero over the monitoring period.
+
+## Related Resources
+
+-   [AWS Documentation: Deleting ElastiCache Clusters](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/Clusters.Delete.html)
+-   [AWS Documentation: Monitoring ElastiCache with CloudWatch](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/CacheMetrics.html)
+-   [AWS Documentation: ElastiCache Backup and Restore](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/backups-automatic.html)
+-   [AWS Blog: ElastiCache Best Practices](https://aws.amazon.com/blogs/database/best-practices-redis-clients-and-amazon-elasticache-for-redis/)

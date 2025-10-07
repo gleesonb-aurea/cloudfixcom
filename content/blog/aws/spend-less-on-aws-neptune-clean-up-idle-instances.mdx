@@ -1,0 +1,272 @@
+---
+title: "Spend less on AWS Neptune by cleaning up idle instances"
+description: "16 hours – the length of one day on the planet Neptune On Neptune, the old adage “The days are long, but the years are short” is reversed. A day, or one rotatio..."
+date: 2023-06-20 09:27:41
+modified: 2023-09-05 06:36:12
+category: "AWS"
+tags: ["AWS","cloud","serverless","rds","storage"]
+published: true
+slug: "spend-less-on-aws-neptune-clean-up-idle-instances"
+---
+
+**16 hours**  
+_– the length of one day on the planet [Neptune](https://solarsystem.nasa.gov/planets/neptune/in-depth/)  
+_
+
+On Neptune, the old adage “The days are long, but the years are short” is reversed. A day, or one rotation of the planet, takes just 16 hours, while a year – the time it takes to orbit around the sun – amounts to 165 Earth years. Neptunians, if they were out there, wouldn’t get to celebrate many birthdays. 
+
+<figure>\n  <img src="/media/uploads/futurama-neptunians-min.png" alt="The Neptunians of Futurama" />\n  <figcaption>The Neptunians of Futurama</figcaption>\n</figure>
+
+They would, however, have to make the most of their 16-hour days. I like to think that Neptunians would be particularly partial to streamlining and automating processes. With so few hours in a day, why waste them on mundane tasks? In that spirit, let’s look at another way to optimize your AWS environment and reduce AWS costs: removing idle Amazon Neptune clusters. 
+
+## Table of contents
+
+1.  [Why you’re probably paying too much for Amazon Neptune](#why-you-re-probably-paying-too-much-for-amazon-neptune)
+2.  [How to identify idle Neptune clusters](#how-to-identify-idle-neptune-clusters)
+    1.  [Use the CUR to find all Neptune clusters](#use-the-cur-to-find-all-neptune-clusters)
+    2.  [Use CloudWatch to determine if the Neptune cluster is idle](#use-cloudwatch-to-determine-if-the-neptune-cluster-is-idle)
+3.  [How to remove idle Neptune clusters](#how-to-remove-idle-neptune-clusters)
+4.  [Optimize Amazon Neptune easily and automatically with CloudFix](#optimize-amazon-neptune-easily-and-automatically-with-cloudfix)
+
+## 1\. Why you’re probably paying too much for Amazon Neptune
+
+[Amazon Neptune](https://aws.amazon.com/neptune/) is a graph database. Graph databases have a different data model than either a standard relational database (table) or document databases (JSON objects). In a graph database, the fundamental structure is objects and the relationships between them. Both these objects and their relationships have properties attached to them.
+
+Neptune's default configuration is in a cluster, although a serverless offering was announced in October 2022 at [AWS re:Invent](https://reinvent.awsevents.com/). In the non-serverless version, Neptune can run as either a single instance or as a cluster of multiple instances. The strongly recommended configuration is to have at least two instances, split into different availability zones within the same region. For the sake of this conversation, we’ll refer to either situation as a “Neptune cluster.” 
+
+The pricing for Neptune is based on a combination of compute, storage, and data transfer. Here’s what it costs in us-east-1 as of June 2023:
+
+**Charge type**
+
+**Description**
+
+Compute
+
+db.\* instances, billed hourly
+
+Storage
+
+$0.10 per GB-month
+
+IO
+
+$0.20 per 1 million requests
+
+Data transfer to internet
+
+$0.09 per GB for first 40 GB
+
+Data transfer to other AWS regions
+
+See [Amazon Neptune pricing page](https://aws.amazon.com/neptune/pricing/)
+
+Clusters that are actively being used will rack up charges in all of these categories. But here’s the catch: you pay for compute and storage regardless of how busy, or not busy, the cluster is. That means that clusters that aren’t being actively used – idle clusters – still incur these costs. Accumulate enough unused clusters, and suddenly you’re spending a significant amount of money on idling infrastructure.
+
+How much money? A db.t4g.medium instance costs $0.093 per hour. If you’re experimenting with a cluster, you will have two of them. $0.093 \* 24 hours \* 30 days \* 2 instances = $134 per month, just for the instances! Larger clusters with larger instances can increase costs much faster. From pricing example 2 on the [AWS Neptune pricing page](https://aws.amazon.com/neptune/pricing/), a cluster of 4 db.r5d.2xlarge would cost $5,529.60 per month, calculated as $1.92 per instance \* 4 instances \* 24 hours/day \* 30 days/month. Ouch.
+
+Regular Fixer blog readers know what’s coming next: to stop wasting money on idle Neptune clusters, we need to find them and delete them. Let’s tackle this (ice) giant.
+
+## 2\. How to identify idle Neptune clusters
+
+To identify Amazon Neptune clusters that aren’t being actively used, we rely on two steps:
+
+1.  Use the AWS Cost and Usage Report (CUR) to find Neptune clusters across the organization.
+2.  Use CloudWatch to check if a cluster is idle. The TotalRequestsPerSec metric represents the number of requests per second going into the cluster. If there are no requests going into the cluster, it's fair to say that it’s idle. 
+
+### 2.1. Use the CUR to find all Neptune clusters
+
+We start with our old friend the AWS Cost and Usage Report. One of our most-used tools here in Fixer blog land, the CUR allows for querying detailed billing data using Athena. It’s the easiest way to find all of the resources used at an organization account level.
+
+A CUR query to find Neptune resources looks like:
+
+```sql
+SELECT
+  line_item_usage_account_id AS account_id,
+  product_region AS region,
+  line_item_resource_id AS instance_id
+FROM <YOUR CUR DB>.<YOUR CUR TABLE>  
+WHERE
+  line_item_product_code = 'AmazonNeptune'
+  AND line_item_usage_start_date >= date_trunc('day', current_date - interval '31' day)
+  AND line_item_usage_start_date < date_trunc('day', current_date - interval '1' day)
+GROUP BY 1,2,3;
+```
+
+The main idea here is that we’re querying for database instances. You may want to add other criteria to your filter, but this is a good query to get started.
+
+You will get an output like this:
+
+**account\_id**
+
+**region**
+
+**instance\_id**
+
+123456789012
+
+us-east-1
+
+arn:aws:rds:us-east-1:123456789012:db:neptuneA-inst-1
+
+123456789012
+
+us-east-1
+
+arn:aws:rds:us-east-1:123456789012:db:neptuneA-inst-2
+
+123456789012
+
+us-west-2
+
+arn:aws:rds:us-west-2:123456789012:db:neptuneB-inst-1
+
+123456789012
+
+us-west-2
+
+arn:aws:rds:us-west-2:123456789012:db:neptuneB-inst-2
+
+In the sample output above, we see that there are two instances per region. Note that we can see the instance names in the last part of the ARN. Ideally, your instance names are consistent and denote what cluster they’re a part of. We recommend adopting a naming convention that conveys this information.
+
+Here’s where it gets a little hairy. The CUR, in general, returns items that are incurring costs using a particular billing unit. In Neptune’s case, the billing unit is instances, as well as storage, IO, and data transfer. A cluster, which is what we’re after, is composed of a set of instances. So to find our idle clusters, we need to take our list of instance ARNs and translate it to cluster ARNs.
+
+We can do that with this bit of code:
+
+aws neptune describe-db-instances --db-instance-identifier {YOUR_ARN} --query 'DBInstances[0].DBClusterIdentifier'
+
+This lets us get the cluster identifier, and has to be done for every instance in your list from the previous step. The trickiest part is managing the credentials. You need to make sure to call the command above with the correct credentials for each database instance. Since there can be multiple instances in a cluster, you should expect less clusters than instances. The following pseudocode gives a good approach:
+
+1.  Create an empty map. The keys of the map should contain (account, region, DBClusterIdentifier) and the values will be a list of `instance_id`s.
+2.  For each account/region/instance\_id in the query from step 1:
+    1.  Get credentials for the corresponding `account` and `region`
+    2.  Run the `describe-db-instances` command with current `instance_id`
+    3.  Get the `DBClusterIdentifier` associated with `instance_id`
+    4.  Check if (`account`, `region`, `DBClusterIdentifier`) is in the map
+        -   True: Add the `instance_id` to the value associated with the key
+        -   False: Add the key to the map, with a 1-element list containing instance\_id for the value
+
+At the end of this process, you should have a map that looks like:
+
+{
+    (1234567890, 'us-east-1', 'clusterA') : set(['instanceA-1', 'instanceA-2']),
+    (2345678901, 'us-west-2', 'clusterB') : set(['instanceB-1', 'instanceB-2', 'instanceB-3'])
+}
+
+This map gives us the cluster identifier and the list of associated instances with that cluster. Time for the next step: figuring out if the cluster is idle.
+
+### 2.2. Use CloudWatch to determine if the Neptune cluster is idle
+
+Now that we’ve found all of the cluster identifiers, we can use CloudWatch to determine if the cluster is idle or not. CloudWatch is one of our favorite tools as well; check out our Foundation blog for a deep dive into [getting started with CloudWatch](/blog/aws-foundational-skills-cloudwatch/).
+
+There is no `ClusterIsIdle` metric, but we can look at `TotalRequestsPerSec` or `VolumeReadIOPs`. If either of these values is zero, it effectively means that the cluster isn't being used.
+
+Getting this value can be done using the following command in the AWS CLI. 
+
+aws cloudwatch get-metric-data \
+    --start-time "2022-01-01T00:00:00Z" \
+    --end-time "2022-01-31T23:59:59Z" \
+    --metric-data-queries '[
+      {
+        "Id": "total_requests",
+        "MetricStat": {
+          "Metric": {
+            "Namespace": "AWS/Neptune",
+            "MetricName": "TotalRequestsPerSec",
+            "Dimensions": [{
+              "Name": "DBClusterIdentifier",
+              "Value": "your-neptune-cluster"
+            }]
+          },
+          "Period": 86400,
+          "Stat": "Sum"
+        },
+        "ReturnData": true
+      }
+    ]'
+
+Looking at the CloudWatch query above, take note of a few things:
+
+1.  We’re querying the `TotalRequestsPerSec` metric, but we are aggregating over an 86,400 second period, or one day (on Earth, that is. Not Neptune.)
+2.  We’re using a time span (`end-time` minus `start-time`) of one month, which we’ve found to be a reasonable definition of idle.
+3.  The query is identified by the `DBClusterIdentifier` from earlier, and a region and credentials (and therefore, account) are implicit in the environment.
+
+The results of this CloudWatch query will show us which Neptune clusters are idle. It should look like this:
+
+{
+    "Messages": [],
+    "MetricDataResults": [
+        {
+            "Id": "total_requests",
+            "Label": "TotalRequestsPerSec",
+            "Timestamps": [
+                "2022-01-01T00:00:00Z",
+                "2022-01-02T00:00:00Z",
+                "2022-01-03T00:00:00Z",
+                ...
+                "2022-01-30T00:00:00Z",
+                "2022-01-31T00:00:00Z"
+            ],
+            "Values": [
+                0,
+                0,
+                0,
+                ...
+                0,
+                0
+            ],
+            "StatusCode": "Complete",
+            "ResponseMetadata": {
+                "RequestId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                "HTTPStatusCode": 200,
+                "RetryAttempts": 0
+            }
+        }
+    ]
+}
+
+We’re looking for Neptune clusters where all the values are zero. This means that it had zero requests per second over the past 31 days, so we can assume that it’s idle. These are the ones we can delete on our intergalactic journey to greater AWS cost savings.
+
+## 3\. How to remove idle Neptune clusters
+
+Alright: we’ve figured out which Neptune clusters are just sitting around, costing us money. Time to get rid of them. 
+
+To actually delete the idle clusters, we need to iterate over all of the instances and delete them, and then delete the cluster itself. This would obviously be tedious and time-consuming to do manually, so we recommend automating this process by making a snapshot (if, of course, you aren’t using CloudFix to do it the super easy way.)
+
+AWS supports snapshotting the individual instances and/or the cluster as a whole. We favor snapshotting the cluster, but not the instances. You also want to save the cluster configuration information. We find it convenient to store this information in the snapshot tags, since you will need it if you ever need to restore the cluster from the snapshot. 
+
+This command creates a snapshot. You will need to choose a name for a snapshot and provide the identifier.
+
+```bash
+aws neptune create-db-cluster-snapshot --db-cluster-snapshot-identifier MY-SNAPSHOT-IDENTIFIER --db-cluster-identifier MY-CLUSTER-IDENTIFIER
+```
+
+To automate this, iterate over the map of cluster identifiers to instances from the previous section. Tying this whole step together, follow this process for each idle cluster:
+
+1.  Get the appropriate credentials for the associated account and region.
+2.  Iterate over each instance in the cluster. For each instance in the cluster, issue the `delete-db-instance` command. To do this, use this:
+    
+    ```bash
+    aws neptune delete-db-instance --db-instance-identifier {MY_INSTANCE_IDENTIFIER} --skip-final-snapshot
+    ```
+    
+3.  Delete the cluster using the `delete-db-cluster` command, creating a final snapshot during the process.
+    
+    ```bash
+    aws neptune delete-db-cluster \
+      --db-cluster-identifier MY-CLUSTER-IDENTIFIER \
+      --final-db-snapshot-identifier MY-FINAL-SNAPSHOT-IDENTIFIER \
+      --tags Key=ParameterGroup,Value=DB_CLUSTER_PARAMETER_GROUP_NAME,Key=EngineVersion,Value=ENGINE_VERSION,Key=OtherConfigKey,Value=OtherConfigValue
+    ```
+    
+    where `MY_SNAPSHOT_IDENTIFIER` is the name of the final snapshot and configuration information is stored in the tags. 
+    
+
+That’s it! Congratulations on fine-(Nep)tuning your graph database and paying less for AWS.
+
+## 4\. Optimize Amazon Neptune easily and automatically with CloudFix
+
+Like many of our fixes, implementing the process described above isn’t hard. But it’s also not one of your core business objectives, especially given the relatively modest amount of savings and the value of your engineering team’s time. That’s where CloudFix comes in. 
+
+With CloudFix, you can simply run the fix and approve the proposed changes. Like all of our fixes, this automation has been tried, tested, and proven to save thousands of dollars for our customers. It’s also 100% risk free; if you ever need to restore the cluster, all of the configuration information is safely stored in the tags. 
+
+That’s a wrap on our guide to cleaning up idle Amazon Neptune clusters. No matter how you go about it, we hope your AWS savings are simply astronomical.

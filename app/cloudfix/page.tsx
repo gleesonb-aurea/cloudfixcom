@@ -1,3 +1,5 @@
+// ABOUTME: CloudFix product page with features, testimonials, and pricing
+// ABOUTME: Includes strong CTAs and comparison table
 import Hero from '@/components/Hero';
 import type { Metadata } from 'next';
 import ContentBlock, { FeatureCard } from '@/components/ContentBlock';
@@ -7,6 +9,7 @@ import Container from '@/components/ui/Container';
 import RelatedProducts from '@/components/RelatedProducts';
 import PricingCard from '@/components/ui/PricingCard';
 import ComparisonTable from '@/components/ui/ComparisonTable';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'CloudFix – Automated AWS Cost Optimization',
@@ -60,8 +63,8 @@ export default function CloudFixPage() {
           <h2 className="text-3xl font-bold mb-6">Ready to Optimize Your AWS Costs?</h2>
           <p className="text-xl mb-8">Join hundreds of companies saving millions with CloudFix</p>
           <div className="flex gap-4 justify-center">
-            <a href="/assessment" className="bg-accent text-gray-900 px-8 py-4 rounded-lg font-semibold">Start Free Assessment</a>
-            <a href="/contact" className="border-2 border-white px-8 py-4 rounded-lg font-semibold">Schedule Demo</a>
+            <Link href="/assessment" className="bg-accent text-gray-900 px-8 py-4 rounded-lg font-semibold">Start Free Assessment</Link>
+            <Link href="/contact" className="border-2 border-white px-8 py-4 rounded-lg font-semibold">Schedule Demo</Link>
           </div>
         </Container>
       </Section>

@@ -1,0 +1,80 @@
+---
+title: "CloudFix Finder/Fixer: EBS Retype IO1/IO2 to Gp3 Volumes"
+description: "This CloudFix feature identifies Amazon EBS volumes that can be cost-optimized by converting them from io1/io2 volume types to gp3, while maintaining equivalent..."
+date: 2025-04-07 00:15:38
+modified: 2025-04-07 00:15:38
+category: "AWS"
+tags: ["AWS","cloud","ec2","storage"]
+published: true
+slug: "cloudfix-finder-fixer-ebs-retype-io1-io2-to-gp3-volumes"
+---
+
+This CloudFix feature identifies Amazon EBS volumes that can be cost-optimized by converting them from io1/io2 volume types to gp3, while maintaining equivalent performance. The conversion process is automated and requires no downtime, offering significant cost savings with minimal risk.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [Identification Criteria](#identification-criteria)
+-   [Potential Cost Savings](#cost-savings)
+-   [Implementation Process](#implementation)
+-   [Rollback Options](#rollback)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+The EBS Retype IO1/IO2 to Gp3 Volumes feature identifies opportunities to optimize your AWS storage costs by converting high-performance io1/io2 volumes to more cost-effective gp3 volumes when appropriate. This conversion maintains equivalent performance while potentially reducing costs by up to 60%.
+
+## AWS Services Affected
+
+![Amazon EBS](/media/uploads/Elastic-Block-Store.svg)
+
+[Amazon Elastic Block Store (EBS)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AmazonEBS.html)
+
+## Identification Criteria
+
+CloudFix identifies EBS volumes that meet the following criteria for potential conversion:
+
+-   Current volume type is io1 or io2
+-   Provisioned IOPS is 16,000 or less (maximum supported by gp3)
+-   Volume has been in use for at least 7 days
+-   Volume is attached to a single instance (multi-attach volumes are excluded)
+-   io2 Block Express volumes are excluded
+
+## Potential Cost Savings
+
+The cost savings from converting io1/io2 volumes to gp3 can be substantial:
+
+-   GP3 volumes are 36% cheaper than io1/io2 volumes in storage size
+-   GP3 includes 3,000 provisioned IOPS at no additional cost
+-   Additional IOPS on GP3 are up to 13x cheaper than on io1/io2
+
+For example, a 1TB volume in the US East 1 region with 10,000 provisioned IOPS and 1000MiBps throughput costs:
+
+-   GP3: $1,590 per year
+-   IO1/IO2: $9,300 per year
+-   Potential savings: 87%
+
+## Implementation Process
+
+When the CloudFix Fixer is executed, it:
+
+1.  Takes a snapshot of the volume as a precautionary measure
+2.  Retypes the volume from io1/io2 to GP3
+3.  Configures equivalent provisioned IOPS and throughput settings
+4.  Deletes the snapshot after successful conversion
+
+The entire process is performed without any service disruption or downtime, as AWS supports live volume type modifications for volumes with the Elastic Volumes feature (supported for all volumes attached after November 3, 2016).
+
+## Rollback Options
+
+If needed, you have two rollback options:
+
+-   Manual retype back to the original io1/io2 type without service disruption
+-   In rare failure cases, restore from the snapshot taken before the conversion
+
+## Related Resources
+
+-   [Amazon EBS Volume Types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html)
+-   [Modifying EBS Volume Types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/requesting-ebs-volume-modifications.html)
+-   [AWS Blog: Migrate your Amazon EBS volumes from gp2 to gp3](https://aws.amazon.com/blogs/storage/migrate-your-amazon-ebs-volumes-from-gp2-to-gp3-and-save-up-to-20-on-costs/)

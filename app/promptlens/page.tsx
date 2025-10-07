@@ -1,3 +1,5 @@
+// ABOUTME: PromptLens product page for LLM optimization
+// ABOUTME: Highlights features, supported providers, and CTA
 import Hero from '@/components/Hero';
 import type { Metadata } from 'next';
 import ContentBlock, { FeatureCard } from '@/components/ContentBlock';
@@ -5,6 +7,7 @@ import Section from '@/components/ui/Section';
 import Container from '@/components/ui/Container';
 import RelatedProducts from '@/components/RelatedProducts';
 import IntegrationLogo from '@/components/ui/IntegrationLogo';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'PromptLens – LLM Optimization',
@@ -50,7 +53,7 @@ export default function PromptLensPage() {
         <Container className="text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to Optimize LLM Costs?</h2>
           <p className="text-xl mb-8">We’ll help you design scalable, cost-efficient LLM workloads</p>
-          <a href="/contact" className="inline-block bg-accent text-gray-900 px-8 py-4 rounded-lg font-semibold">Schedule Strategy Call</a>
+          <Link href="/contact" className="inline-block bg-accent text-gray-900 px-8 py-4 rounded-lg font-semibold">Schedule Strategy Call</Link>
         </Container>
       </Section>
 

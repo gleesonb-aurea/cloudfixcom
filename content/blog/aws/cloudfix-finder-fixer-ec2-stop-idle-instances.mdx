@@ -1,0 +1,86 @@
+---
+title: "CloudFix Finder/Fixer: EC2 Stop Idle Instances"
+description: "It's common for AWS accounts to accumulate idle EC2 instances over time due to various reasons like product re-architectures, workload migrations, or temporary..."
+date: 2025-04-09 18:04:15
+modified: 2025-04-09 18:04:15
+category: "AWS"
+tags: ["AWS","cloud","ec2","s3","migration"]
+published: true
+slug: "cloudfix-finder-fixer-ec2-stop-idle-instances"
+---
+
+It's common for AWS accounts to accumulate idle EC2 instances over time due to various reasons like product re-architectures, workload migrations, or temporary proof-of-concept setups. These idle instances, while not actively used, continue to incur costs. CloudFix identifies these idle instances and allows you to stop them easily, thereby reducing unnecessary EC2 spending. Stopped instances do not incur charges (except for attached EBS volumes and Elastic IPs) and can be restarted quickly if needed.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+Unused or idle EC2 instances represent wasted cloud expenditure. Identifying these instances manually can be challenging, especially in large environments. These instances might have been launched for temporary tasks, testing, or development and were never properly decommissioned. They consume resources and contribute to higher AWS bills without providing any business value.
+
+### Solution Impact
+
+CloudFix's "Stop Idle EC2 Instances" feature helps you identify and stop these unused resources systematically. By stopping idle instances, you can achieve significant cost savings, potentially reducing your EC2 spending by identifying the ~3% of instances typically found to be idle across CloudFix users. This optimization ensures you only pay for the compute resources you actively use.
+
+## AWS Services Affected
+
+![Amazon EC2](/media/uploads/EC2.svg)
+
+[Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Instances.html)
+
+## How It Works
+
+### Finder Component
+
+The Finder component identifies potentially idle EC2 instances based on the following criteria:
+
+-   **Low CPU Utilization**: Instances must have a Maximum CPU CloudWatch metric of less than 1% over the previous 31 days.
+-   **Exclusions**: The following types of instances are excluded from the check:
+    -   Instances part of an Auto Scaling Group (ASG).
+    -   Instances that support ephemeral storage (instance store volumes).
+    -   Instances with termination protection enabled.
+
+### Fixer Component
+
+When you approve the recommendation to stop an idle instance, the Fixer performs the following actions:
+
+1.  **Creates Launch Template**: A launch template is created for the instance to facilitate potential rollback or restarting. This template is tagged with the original \`InstanceId\` and a \`cf-fixer-execution-id\`.
+2.  **Saves Template Details**: The launch template content and its ID are saved to a CloudFix S3 bucket (\`cloudfix-fixer-executions<AccountId>\`) under the key \`Ec2CleanUpIdleInstances/<TemplateId>\`.
+3.  **Stops the Instance**: The \`StopInstances\` API call is executed to stop the identified EC2 instance.
+
+## FAQ
+
+**What are the potential cost savings?**
+
+Roughly 3% of EC2 instances across the CloudFix user base are identified as idle, corresponding to approximately 1% of total EC2 spending. Stopping these instances can lead to direct cost reductions.
+
+**Is it possible to roll back the fix?**
+
+Yes. You can initiate a rollback via the CloudFix Runbook (\`Cloudfix-Runbook-Ec2CleanupIdleInstances-Rollback-prod\`) with the \`InstanceId\`. This will restart the instance if it's stopped. If the instance was terminated (which this specific fixer does not do, but related scenarios might), the saved launch template can be used.
+
+**Can CloudFix implement the fix automatically?**
+
+Yes, once you accept the recommendation in the CloudFix interface, the fixer can automatically stop the idle instance.
+
+**Does stopping an instance require downtime?**
+
+Stopping the instance itself means the application running on it will become unavailable (downtime for that specific instance). However, since the identified instances are already idle (less than 1% CPU), stopping them should not impact active workloads. Restarting the instance later takes only a few minutes.
+
+**Are there charges for stopped instances?**
+
+You are not charged for instance usage while it is stopped. However, you are still charged for any attached EBS volume storage and any Elastic IP addresses associated with the instance.
+
+## Related Resources
+
+-   [Stop and start Amazon EC2 instances (AWS Documentation)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Stop_Start.html)
+-   [StopInstances API Reference (AWS Documentation)](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_StopInstances.html)
+-   [Stop idle EC2 instances (CloudFix Support Article)](https://support.cloudfix.com/article/16931-stop-idle-ec2-instances)

@@ -1,0 +1,22 @@
+---
+title: "Identify hidden costs caused by CloudTrail’s management event recording"
+description: "AWS cloudtrail pricing varies depending on the trails selected. A cloudtrail free tier where you can deliver one copy of your management events to Amazon S3"
+date: 2022-06-09 14:26:03
+modified: 2022-11-17 14:00:35
+category: "AWS"
+tags: ["AWS","cloud","s3"]
+published: true
+slug: "cloudtrail-costs"
+---
+
+## Finding savings: Understanding your CloudTrail cost and purpose
+
+Having a thorough understanding of your AWS from an administrative perspective is crucial to optimizing your costs and performance. AWS CloudTrail helps you do that by providing governance on actions taken in your AWS accounts. However, it also creates duplicate reports that cost money, creating unnecessary spend on your bill. AWS creates the duplicate record so that you can have a report accessible from two different S3 buckets. However, the duplicated event adds a cost, whereas the first record is free. Paying for a duplicate record as a default setting does not make sense, and making this change can save you money.
+
+## Realizing savings: How to deduplicate unnecessary expenses
+
+AWS allows you to change this setting manually in your instance so that you are not wasting spend on unnecessary resources. The process is straightforward and can be performed easily for each trail. [Read here](https://awsmadeeasy.com/blog/cloudtrail-costs/) to learn more and understand fully how these costs are created, and how to take manual steps to amend them.
+
+## Optimizing savings: Optimize your AWS instances more efficiently with CloudFix
+
+Modern businesses need efficient solutions to these kinds of problems. Manually changing every instance of a trail with a duplicated record is not a sustainable solution for either your current implementation or for your future ones. Thankfully, CloudFix optimizes your AWS accounts for you and regularly monitors your usage and costs across your organization to search for this and other opportunities for savings. CloudFix offers real solutions for your business. Read more about how CloudFix uniquely manages your risk-free savings opportunities [here](/resources/).

@@ -1,0 +1,68 @@
+---
+title: "AWS cost optimization tool CloudFix - Reviewed by TechGenix"
+description: "Public cloud providers have traditionally marketed themselves as a less expensive and less complex alternative to hosting workloads and datasets on-premises. Wh..."
+date: 2021-11-04 15:47:00
+modified: 2023-11-07 13:25:44
+category: "AWS"
+tags: ["AWS","cloud","ec2","s3","rds"]
+published: true
+slug: "techgenix-review"
+---
+
+Public cloud providers have traditionally marketed themselves as a less expensive and less complex alternative to hosting workloads and datasets on-premises. While history has conclusively proven that there are some significant advantages to hosting certain workloads in the cloud, moving a resource to the cloud may or may not ultimately deliver cost savings. In many cases, it can actually be more expensive to operate in the cloud than to keep a particular resource in an on-premises datacenter.
+
+A big part of the reason for this is that cloud platforms such as AWS charge their customers for the resources they consume. These charges are often minuscule (in the range of a fraction of a cent per unit consumed), but as workloads scale, these tiny charges quickly add up, and an organization’s total monthly bill can be quite expensive.
+
+[CloudFix](/) is a tool that is designed to help organizations to drive down their AWS-related costs. Simply put, CloudFix analyzes an organization’s AWS resource usage and identifies areas in which costs can be reduced. For example, there might be unused EC2 virtual machine instances that can be deprovisioned, or workloads could be configured to use a less expensive storage tier (without impacting the workload’s performance).
+
+### Why use CloudFix?
+
+When I first heard about CloudFix, I initially wondered if there was truly a need for such a product. While it is true that nearly every organization that uses AWS wastes money on unnecessary, idle, or over-provisioned resources, Amazon provides native tools and documentation that are designed to help its customers to reduce their cloud costs. Being that these resources are readily available to anyone who chooses to use them, I wondered if there was any benefit to using a third-party tool (although, in all fairness, there are many third-party cloud cost optimization tools on the market). The more I thought about it, though, I began to realize that if organizations were indeed using the resources that Amazon provides, then overspending on cloud resources would be a nonissue.
+
+There are several possible reasons why organizations are not leveraging Amazon’s native cost control resources. One reason is that IT pros are busy and might simply lack the time, expertise, or motivation to track down areas of potential cost savings. This might be especially true in large deployments where thousands of things can be adjusted to yield very small individual savings, but that might collectively represent very significant savings (more on that later).
+
+A second reason organizations might not be using every available resource to reduce cloud costs is a lack of internal governance and control. In other words, an organization’s IT department might not know who deployed an EC2 instance, why it was deployed, or if it is still being used.
+
+A third reason for not aggressively trying to reign in cloud costs is a fear among IT professionals of accidentally breaking something in the process of trying to save a few dollars.
+
+CloudFix was designed to automate the processes of finding and implementing cost reduction methods within the AWS cloud. That way, busy IT pros don’t have to spend their time trying to figure out how to cost optimize their organization’s AWS deployment.
+
+This brings up another important point. CloudFix is not the first cloud optimization tool to have ever been created. Cost optimization tools exist for various types of cloud and on-premises resources. For example, there are tools for reducing an organization’s on-premises storage cost or for reducing virtual machine costs.
+
+Over the years, I have come to treat such tools with a degree of skepticism and suspicion. The reason for this is simple. The number of licenses that a cost optimization vendor can sell probably ties directly to the level of savings that the vendor claims to be able to produce. There are two tricks that I have seen cost optimization vendors engage in in the past. One of those tricks is to generate inflated cost savings estimates. The other trick is to make unrealistic recommendations. For example, a product might tell a customer that they can save a lot of money if they take a particular action, even though it might adversely impact a workload’s performance or put the workload in an unsupported state.
+
+I am happy to say that based on my observations, CloudFix does not appear to engage in either of these practices. In fact, the company is extremely transparent with regard to the way that they do things. Savings estimates are calculated from Amazon’s pricing tables, which are available to the public. Additionally, any recommendations that the software makes come directly from Amazon’s documentation. There is a link that you can click within the dashboard that goes directly to a CloudFix help center page that displays the specific Amazon criteria used to find cost optimization opportunities so that you can see exactly why CloudFix made a particular recommendation. Most importantly, CloudFix is designed to avoid making any recommendation that would result in downtime or diminish a workload’s performance. You can see an [example of a CloudFix Help Center page here](https://support.cloudfix.com/hc/en-us/articles/6042981066642-EBS-Volume-Cost-Optimizations-gp2-to-gp3-).
+
+The CloudFix software is designed to be up and running in under five minutes, and it is super-easy to use. The software analyzes an organization’s usage patterns and then displays a series of cost-saving recommendations. You can see what the CloudFix interface looks like in the screenshot below.
+
+[  
+![](/media/uploads/CloudFix-Review-1-1024x539-1.webp)](/wp-content/uploads/CloudFix-Review-1-1024x539-1.webp)
+
+This is what the CloudFix software looks like.
+
+As you can see in the screenshot, the user interface is really simple. Even so, there are several things in the screenshot that I want to point out. For starters, you will notice that the list of recommendations includes an Account column. This column exists because CloudFix is designed to be used in large environments and therefore supports multi-tenancy. It is possible to use CloudFix to optimize many thousands of accounts through a single dashboard.
+
+Another thing that I wanted to point out is that the Savings column reflects the cost savings that can be expected by implementing a particular recommendation. I mentioned earlier that some cost optimization vendors give their customers hugely inflated savings estimates. That is clearly not the case here. As you can see in the figure, most of the recommendations only yield a savings of a dollar or two, and that’s over the course of an entire year. However, in a large organization, the software can easily find thousands of little things that can be optimized. While none of those optimizations save much money by themselves, collectively, they can amount to huge cost savings, as illustrated by the screenshot.
+
+As great as all of that may sound, I think that it’s probably safe to say that nobody wants to take the time to implement thousands of individual recommendations. The good news is that you don’t have to. Just select the recommendations that you want to implement (or select the checkbox at the top of the list to select all of the recommendations), and then click the Run Now button, shown in the next screenshot. CloudFix will automatically implement the recommendations on your behalf. Incidentally, the recommendations are designed to be non-disruptive, but you can schedule them to run at an off-peak time if you so choose.
+
+[  
+![](/media/uploads/CloudFix-Review-2-1024x543-1.webp)](/wp-content/uploads/CloudFix-Review-2-1024x543-1.webp)
+
+Select the recommendations that you want to implement and click Run Now.
+
+CloudFix provides cost reduction recommendations for EBS, S3, and EC2 cRIs. Support is planned for additional services in the future. This means that while the software is likely to yield a significant return on investment right now, it will get even better over time.
+
+### The verdict
+
+Whenever I review a product for TechGenix, I conclude the review by giving the product a score ranging from zero to five stars (with five stars being the highest possible score). I decided to give CloudFix a perfect score of five stars.
+
+Those who have read some of my other software reviews know that I don’t like to give perfect scores. In this case, however, I could not find anything wrong with CloudFix, nor could I think of anything that the software could improve upon. CloudFix does one thing and does it very well. Additionally, I absolutely love the fact that CloudFix is extremely easy to use and that it doesn’t expect you to manually implement its recommendations.
+
+The only real disadvantage to using CloudFix is that it only finds and fixes AWS cost optimizations. It does not support cost optimization for Microsoft Azure, Google Cloud, or others public cloud providers. Having said that, there are certainly plenty of exclusive as well as multi-cloud AWS users of all sizes that would welcome the effortless, zero downtime and zero performance risk cost optimizations that CloudFix delivers.
+
+Rating 5/5
+
+![](/media/uploads/review-1.webp)
+
+[Read the original review here](https://techgenix.com/review-aws-cost-optimization-tool-cloudfix/)

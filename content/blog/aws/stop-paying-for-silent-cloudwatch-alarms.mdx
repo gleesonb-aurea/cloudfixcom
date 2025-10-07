@@ -1,0 +1,148 @@
+---
+title: "Stop Paying for Silent CloudWatch Alarms"
+description: "Amazon CloudWatch alarms are essential for reliability. They are also billed per alarm and per metric—regardless of whether they trigger. In busy AWS environmen..."
+date: 2025-08-14 22:47:09
+modified: 2025-08-14 22:47:09
+category: "AWS"
+tags: ["AWS","cloud","ec2","monitoring"]
+published: true
+slug: "stop-paying-for-silent-cloudwatch-alarms"
+---
+
+Amazon CloudWatch alarms are essential for reliability. They are also billed per alarm
+
+and per metric—regardless of whether they trigger. In busy AWS environments, alarms
+
+proliferate via Auto Scaling, CloudFormation, and service defaults. The result is alarm
+
+sprawl: thousands of alarms that never notify anyone, never transition state, and never
+
+get cleaned up. 
+
+To piggyback on the famous expression, if a CloudWatch Alarm goes off in a forest and nobody hears it,
+
+do you still want to pay for it?
+
+In this post, we cover CloudWatch alarm pricing, the most common waste patterns,
+
+and how CloudFix identifies and helps you clean up unused alarms safely.
+
+# Pricing of CloudWatch Alarms
+
+Let's do a quick overview of CloudWatch alarm pricing. This data is available from the [AWS CloudWatch Pricing Page](https://aws.amazon.com/cloudwatch/pricing/).
+
+-   [Standard Alarms](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/AlarmThatSendsEmail.html): $0.10 per alarm per month (60-second evaluation)
+-   [High-Resolution Alarms](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html): $0.30 per alarm per month (10–30 second evaluation)
+-   [Composite Alarms](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Create_Composite_Alarm.html): $0.50 per alarm per month
+-   [Anomaly Detection Alarms](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Create_Anomaly_Detection_Alarm.html): ~$0.30 per alarm per month (uses 3 metrics)
+-   [GetMetricData](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_GetMetricData.html) API: $0.0651 per 1,000 metrics requested
+-   [SNS Notifications](https://docs.aws.amazon.com/sns/latest/dg/sns-monitoring-using-cloudwatch.html): $0.50 per million notification.
+
+> **Critical detail:** you pay for alarms by their existence, not by activity. Dormant alarms still incur monthly charges.
+
+# Stories of Disconnected CloudWatch Alarms
+
+![](/media/uploads/cloudwatch_alarm_charges_question.wrapped-1-591x600.png)
+
+_[Reddit - Perpetually charged for CloudWatch alarms from months ago?](https://www.reddit.com/r/aws/comments/y3b3p4/perpetually_charged_for_cloudwatch_alarms_from/)_
+
+![Cloudwatch deleting alarms with INSUFFICIENT_DATA](/media/uploads/cloudwatch_deleting_alarms_insufficient_data.wrapped-591x600.png)
+
+[_Cloudwatch deleting alarms with INSUFFICIENT\_DATA_](https://stackoverflow.com/questions/48998966/cloudwatch-deleting-alarms-with-insufficient-data)
+
+![Mass Remove Cloudwatch Alarms for Non-Existant Resources](/media/uploads/massremovecloudwatchalarms.wrapped-591x600.png)
+
+_[Mass Remove Cloudwatch Alarms for Non-Existant Resources](https://www.reddit.com/r/aws/comments/49tkta/mass_remove_cloudwatch_alarms_for_nonexistant/)_
+
+This is just a small sample of AWS users who have came across this issue. Note that one of the Reddit posts are 10 years old! Clearly, we are on to something. In the Stack Overflow post, we are seeing that people are trying to automate this. At CloudFix, we've already done this work, tested it, and delivered serious savings for our customers.
+
+# CloudFix CloudWatch Alarm Cleanup Points
+
+-   Alarms cost money whether they trigger or not
+-   Two dominant waste categories:
+-   Alarms stuck in `INSUFFICIENT_DATA` for 30+ days (metrics disappeared or resources deleted)
+-   Alarms with no notification targets (no `AlarmActions`, `OKActions`, `InsufficientDataActions`)
+-   In enterprise accounts, alarm sprawl routinely reaches thousands of alarms
+-   Real cost impact: documented cases show thousands of dollars wasted annually
+
+## A Concrete Example
+
+An enterprise account discovered ~5,000 unused alarms across regions and accounts. Between standard, high-resolution, composite, and anomaly-detection alarms, their costs averaged out to roughly $1.60/alarm/month—about $8,000 per month. Deleting dormant and no-target alarms eliminated that spend while preserving meaningful monitoring.
+
+# How CloudFix's Alarm Cleanup Finder/Fixers Work
+
+## Finding Alarm Waste
+
+We analyze CloudWatch alarms across accounts and regions using `DescribeAlarms` and `DescribeAlarmHistory`. We look for two patterns:
+
+### Unused Alarms (`INSUFFICIENT_DATA`)
+
+-   State: `INSUFFICIENT_DATA`
+-   History: No transitions to `OK` or `ALARM` over a configurable lookback (default 30 days)
+-   Common causes: terminated EC2s, renamed metrics/dimensions, disabled publishing
+
+### No-Target Alarms
+
+-   No actions configured: empty `AlarmActions`, `OKActions`, and `InsufficientDataActions`
+-   Age gate: older than a configurable threshold (default 30 days)
+
+For both categories, we apply sensible guardrails (e.g., minimum alarm inventory in a region, age thresholds) to ensure we only flag clear-cut waste.
+
+## Estimating Cost and Savings
+
+We combine your alarm inventory with regional price points to estimate current monthly costs and potential savings. At scale, even a modest number of high-resolution or composite alarms can materially shift spend.
+
+## The Cleanup Process
+
+Cleaning up alarms is simple and reversible (you can recreate alarms any time):
+
+\# List candidate alarms (example)
+
+aws cloudwatch describe-alarms \\
+    --state-value INSUFFICIENT\_DATA \\
+    --query'MetricAlarms\[\].AlarmName' | cat
+
+## Delete specific alarms
+
+aws cloudwatch delete-alarms \\
+    --alarm-names "my-stale-alarm-1" "my-stale-alarm-2"
+
+Tip: Before deleting, export alarm definitions you want to keep using your IaC (e.g., CloudFormation/Terraform) or by saving `describe-alarms` output.
+
+## Multi-Account and Multi-Region
+
+Alarm sprawl is usually multi-account and multi-region. CloudFix scans across your
+
+organization and summarizes waste and savings with per-account and per-region rollups.
+
+# CloudFix Finder/Fixer
+
+Here is what it looks like in the CloudFix UI:
+
+![CW Alarm a medium fixer](/media/uploads/cw-alarm-medium-fixer.wrapped-1200x714.png)
+
+_CloudWatch Delete Unused Alarms, a Medium-Difficulty Finder/Fixer_
+
+![Massive savings](/media/uploads/cw-unused-alarms-savings.wrapped-1200x714.png)
+
+_Potential Savings for Deleting Unused Alarms_
+
+## Facts about CloudFix Alarm Cleanup
+
+-   Detection windows and age thresholds are configurable (default 30 days)
+-   Uses `DescribeAlarms` and `DescribeAlarmHistory` for high-confidence candidates
+-   Produces explainable reports:
+-   Current inventory by account/region
+-   Candidate lists (names and counts)
+-   Estimated monthly and annual savings
+-   Before/after cost headlines
+
+## Getting Started
+
+Available now for all CloudFix customers in the “Medium” section. Point CloudFix at your accounts, review the findings, and clean up alarms with confidence.
+
+# Wrapping up and Call to Action
+
+CloudWatch alarms are essential—but only when they’re meaningful. Silent, stuck, or target-less alarms quietly add up. CloudFix helps you find and remove the clutter so you keep the signals and drop the noise (and the bill).
+
+If you’re a CloudFix customer, log in and try the CloudWatch Alarm Cleanup now. If not, use the approach above to identify and remove unused alarms—and consider CloudFix to keep it tidy over time.

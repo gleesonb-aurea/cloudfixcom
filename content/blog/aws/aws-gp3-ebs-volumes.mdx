@@ -1,0 +1,71 @@
+---
+title: "Reduce Your Cloud Spend and Improve Performance with AWS gp3 EBS Volumes"
+description: "If you don’t already have someone in your organization focused on FinOps, it’s probably time to get started. AWS cost optimization can be an overwhelming topic...."
+date: 2021-03-11 15:04:00
+modified: 2023-08-21 11:16:51
+category: "AWS"
+tags: ["AWS","cloud","ec2","rds","cost optimization"]
+published: true
+slug: "aws-gp3-ebs-volumes"
+---
+
+If you don’t already have someone in your organization focused on FinOps, it’s probably time to get started. AWS cost optimization can be an overwhelming topic. In this article, we cover a common use case where you can start taking action almost immediately. If your organization deploys applications to EC2 instances, then you likely have this opportunity in place right now.
+
+EC2 instances often use general purpose Solid State Drive (SSD) EBS (Elastic Block Store) storage volumes. Until late last year, the standard general porpuse type was gp2. That changed at re:Invent 2020 when [AWS announced the next-generation general purpose SSD volumes called gp3](https://aws.amazon.com/blogs/aws/new-amazon-ebs-gp3-volume-lets-you-provision-performance-separate-from-capacity-and-offers-20-lower-price/).
+
+EBS volumes are disk drives attached to your EC2 instances. Their lifecycle is not tied to the instance, meaning they can persist beyond the shutdown of your virtual machines. SSD general purpose volumes work well with a variety of workloads, and they offer a good balance of price and performance.
+
+AWS delivers on their principle of customer obsession here by providing a better value than gp2 without sacrificing performance. In fact, [not only are gp3 volumes less expensive, they offer higher maximum throughput rates](/ssd-aws-gp3-ebs-volumes/). Thus, you should seriously consider making this upgrade In the vast majority of cases. See below for more information on exception cases where it may not be beneficial.
+
+### Wait, this must be too good to be true …
+
+Where is the catch, you ask? Well, there doesn’t seem to be one. You get these benefits from gp3 while at the same time maintaining the same stringent levels of durability and availability. Additionally, a nice feature is the ability to provision IOPS and throughput separate from the storage capacity.
+
+At CloudFix, we thoroughly tested this upgrade opportunity and strongly recommend [migrating gp2 volumes with less than 3000 IOPS to gp3](/blog/migrate-gp2-to-gp3-better-performance-lower-costs/). You can realize savings of approximately 20% on an annual basis by performing this migration, as gp3 volumes cost $0.08 / GB compared to $0.10 / GB for gp2.
+
+There is little downside because your performance will be as good or better than your current gp2 volumes. The performance numbers for both types can be found in the [AWS documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html#solid-state-drives).
+
+Furthermore, there is a straightforward, in-place migration path. No downtime is required to take advantage of this upgrade in the vast majority of cases.
+
+### Are There Cases Where I Should Not Upgrade?
+
+There are still a few cases where it may not be beneficial to upgrade your gp2 volumes.
+
+Some uncommon cases include older EC2 instances launched before November 2016 that require [initialization of elastic attachments](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/requesting-ebs-volume-modifications.html#initialize-modification-support). Unfortunately, this step requires some downtime because you need to either detach/attach the volume or else stop/start the instance.
+
+The ideal migration candidate is a volume for which peak IOPS is less than 3000 and peak throughput is less than 125 MB/s. The baseline IOPS of gp3 is always 3000 IOPS. If your requirements are between 3000 and 16000 IOPS, then use gp3 but also provision the additional IOPS required. This effectively raises the cost up to $0.095 / GB, but there are still some savings to be gained. If you need more than 16000 IOPS, use io2 instead.
+
+Finally, short-lived volumes that are only around for a week or two may not be worth the effort.
+
+### Migration Procedures
+
+There are two migration approaches to consider. The first option is to conduct the migrations manually using the following procedure:
+
+1.  Select the gp2 volume in the AWS console
+2.  Verify the volume was created after 3 Novermber, 2016. Volumes created prior to this date require downtime to migrate.
+3.  Verify the volume’s IOPS is less than 3,000 (Read IOPS Sum + Write IOPS Sum for each minute should be less than 180,000, i.e. 3000 x 60)
+4.  Verify the throughput is less than 125 Mbps (Read Bytes Sum + Write Bytes Sum for each minutes should be less than 7500, i.e. 125 x 60)
+5.  If both of these conditions are met, continue and use either the AWS console or CLI to modify the volume.
+6.  Repeat these steps for each volume
+
+The EC2 console allows you to make the modification to the volume. Select your desired EBS volume and choose the Modify action. You will see a dialog similar to one shown below. Change the drop down value to gp3 and click Modify.
+
+![](/media/uploads/ModifyVolume-gp2.png)  
+  
+![](/media/uploads/ModifyVolume-gp3.png)
+
+Your volumes are migrated in place with no downtime. If you need to rollback, you can modify the property using the same technique to go back to gp2. As an extra precaution, we recommend taking a snapshot of the EBS gp2 volume before performing the migration.
+
+Alternatively, you can use the EC2 CLI (or API) using the following command:
+
+This approach works for a small number of volumes, however it can be time consuming and error prone. An alternative is to sign up for a free [CloudFix](/demo/) account and automate the process in a few minutes. CloudFix easily scales to handle large numbers of volumes and performs safe upgrades, automated upgrades.
+
+CloudFix automatically monitors your account, identifies migration opportunities, and safely modifies volumes with the click of a button. It also takes a backup snapshot before the migration as a best practice.
+
+Browse to [CloudFix](/demo/) and create a free account. Setup monitoring on your AWS account by clicking Run Template. This creates the IAM role used by CloudFix.
+
+Review the recommendations on the dashboard and select one or more volumes to migrate. Click the Play button to perform the migrations now or the Schedule button to have CloudFix run them during a maintenance window. You can migrate selected volumes, or simply select all to apply all recommended migrations with one click.
+
+![](/media/uploads/DashboardSavings-1200x673.png)
+
+Saving 20% with no performance degradation or downtime sounds like a pretty good deal, and it is. You should give serious consideration to making the upgrade where applicable based on the criteria discussed above. In the vast majority of cases, the migration will be beneficial in the end. To top it all off, your FinOps career will also be off to a good start!

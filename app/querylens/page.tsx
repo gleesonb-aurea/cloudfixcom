@@ -1,9 +1,12 @@
+// ABOUTME: QueryLens product page outlining features and CTA
+// ABOUTME: Includes benefit sections and related products
 import Hero from '@/components/Hero';
 import type { Metadata } from 'next';
 import ContentBlock, { FeatureCard } from '@/components/ContentBlock';
 import Section from '@/components/ui/Section';
 import Container from '@/components/ui/Container';
 import RelatedProducts from '@/components/RelatedProducts';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'QueryLens – Database Query Optimization',
@@ -50,7 +53,7 @@ export default function QueryLensPage() {
         <Container className="text-center">
           <h2 className="text-3xl font-bold mb-6">See QueryLens in Action</h2>
           <p className="text-xl mb-8">Request a live walkthrough tailored to your database</p>
-          <a href="/contact" className="inline-block bg-accent text-gray-900 px-8 py-4 rounded-lg font-semibold">Schedule Demo</a>
+          <Link href="/contact" className="inline-block bg-accent text-gray-900 px-8 py-4 rounded-lg font-semibold">Schedule Demo</Link>
         </Container>
       </Section>
 

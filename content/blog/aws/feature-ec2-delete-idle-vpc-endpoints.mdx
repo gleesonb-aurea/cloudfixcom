@@ -1,0 +1,133 @@
+---
+title: "CloudFix Finder/Fixer: EC2 Delete Idle VPC Endpoints"
+description: "Amazon VPC Endpoints that remain idle continue to generate hourly charges even when not transferring any data. This Finder/Fixer automatically identifies VPC In..."
+date: 2025-04-09 18:03:13
+modified: 2025-04-09 18:03:13
+category: "AWS"
+tags: ["AWS","cloud","ec2","s3","vpc"]
+published: true
+slug: "feature-ec2-delete-idle-vpc-endpoints"
+---
+
+Amazon VPC Endpoints that remain idle continue to generate hourly charges even when not transferring any data. This Finder/Fixer automatically identifies VPC Interface Endpoints and Gateway Load Balancer Endpoints that haven't processed any data in the past 31 days, then safely deletes them to eliminate unnecessary costs. By implementing this optimization, you can reduce your VPC endpoint expenses while maintaining all your active connections.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+VPC Endpoints provide secure, private connectivity between your VPC and supported AWS services without requiring an internet gateway, NAT device, or VPN connection. However, both Interface Endpoints and Gateway Load Balancer Endpoints incur hourly charges regardless of actual usage. These endpoints are often created during development, testing, or as part of services that are later deprecated, but they're frequently forgotten and left running—continuing to generate costs with no business value.
+
+At approximately $90 per idle endpoint per year, organizations can waste thousands of dollars annually on endpoints that serve no purpose. This is particularly problematic as VPC usage grows more complex and the number of endpoints increases across your AWS environment.
+
+### Solution
+
+The EC2 Delete Idle VPC Endpoints Finder/Fixer analyzes your AWS Cost and Usage Report data to identify endpoints with zero data processing charges over the past 31 days. After finding idle endpoints that were created more than 31 days ago, CloudFix can automatically delete them while providing detailed documentation for potential restoration if needed.
+
+Since only endpoints with no data transfer are targeted, and each deletion is fully documented, you can eliminate these costs with confidence that no active services will be affected.
+
+### Benefits
+
+By implementing this Finder/Fixer, you can:
+
+-   Eliminate unnecessary costs from idle VPC endpoints (~$90/year per endpoint)
+-   Reduce AWS infrastructure complexity by removing unused resources
+-   Improve security by minimizing potential attack surfaces
+-   Maintain detailed documentation for any deleted endpoints
+-   Implement consistent endpoint lifecycle management across your organization
+
+## AWS Services Affected
+
+![Amazon EC2](/media/uploads/EC2.svg)
+
+[Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html)
+
+![Amazon VPC](/media/uploads/Virtual-Private-Cloud.svg)
+
+[Amazon VPC](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html)
+
+## How It Works
+
+### Finder Component
+
+The Finder component identifies idle VPC endpoints using the following process:
+
+1.  Analyzes the AWS Cost and Usage Report to identify all VPC endpoints (both Interface and Gateway Load Balancer types)
+2.  Filters for endpoints that have had zero data processing charges for the past 31 days
+3.  Verifies that these endpoints were created more than 31 days ago
+4.  Checks that the endpoints are in the "Available" state using the DescribeVpcEndpoints API
+5.  Generates a comprehensive report of idle endpoints eligible for deletion
+
+Only endpoints that meet all of these criteria are flagged for optimization.
+
+### Fixer Component
+
+Once idle VPC endpoints are identified, the Fixer component:
+
+1.  Documents all endpoint configuration details for potential future reference
+2.  Calls the DeleteVpcEndpoints API to safely remove the idle endpoints
+3.  Sends a detailed email notification containing all parameters of the deleted endpoint
+4.  Verifies successful deletion by checking the API response
+
+The documentation generated during this process includes all parameters necessary to recreate the endpoint if needed in the future.
+
+## FAQ
+
+**What criteria are used to identify idle VPC endpoints?**
+
+CloudFix identifies VPC endpoints as idle when they meet all of the following criteria:
+
+-   No data charges in the past 31 days
+-   Created more than 31 days ago
+-   Currently in the "Available" state
+
+**Which types of VPC endpoints does this Finder/Fixer target?**
+
+This Finder/Fixer targets two types of VPC endpoints that incur hourly charges:
+
+-   Interface Endpoints: Connect your VPC to supported AWS services and services hosted by AWS PrivateLink
+-   Gateway Load Balancer Endpoints: Connect your VPC to services hosted by third parties
+
+Gateway Endpoints (for S3 and DynamoDB) are not targeted as they don't incur charges.
+
+**Is it possible to roll back after CloudFix deletes an endpoint?**
+
+Yes. Every time this Fixer removes a VPC Endpoint, it sends an email to the address configured during CloudFix onboarding. This email contains all the parameters of the deleted endpoint, including:
+
+-   VPC Endpoint Type
+-   VPC ID
+-   Service Name
+-   Policy Document
+-   Subnet IDs (if applicable)
+-   Security Group IDs (if applicable)
+-   Private DNS settings
+-   Tags
+
+With this information, you can manually recreate the endpoint using the AWS CLI, Console, or API if needed.
+
+**How much can I expect to save with this Finder/Fixer?**
+
+Customers typically save approximately 47% of their VPC Endpoint hourly charges by removing idle endpoints. Each idle endpoint costs about $90 per year ($0.01/hour), so the savings depend on how many idle endpoints you have. Organizations with complex environments often save thousands of dollars annually.
+
+**Does this fix require downtime?**
+
+No. Since the VPC Endpoints targeted by this Finder/Fixer are not being used (no data has transferred through them for at least 31 days), deleting them will not cause any service disruption or downtime.
+
+**How quickly will I see savings after implementing this fix?**
+
+The hourly charges for VPC endpoints stop as soon as they are deleted. You'll see the impact in your next AWS bill, with full monthly savings realized in the following complete billing cycle.
+
+## Related Resources
+
+-   [Reduce Your AWS Costs Today: Clean Up Your Idle VPC Endpoints](/blog/eliminating-idle-vpc-endpoints-achieve-aws-cost-savings/)
+-   [Remove Idle VPC Endpoints](https://support.cloudfix.com/article/17081-remove-idle-vpc-endpoints)
+-   [AWS PrivateLink concepts](https://docs.aws.amazon.com/vpc/latest/privatelink/concepts.html)

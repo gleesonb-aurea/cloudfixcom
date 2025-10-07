@@ -1,0 +1,152 @@
+---
+title: "Announcing CloudFix Role-Based Access Control"
+description: "Introduction We are happy to announce that CloudFix now supports Role-Based Access Control. With this new feature, administrators have much more fine-grained co..."
+date: 2025-03-14 23:21:06
+modified: 2025-04-06 00:01:01
+category: "AWS"
+tags: ["AWS","cloud","cost optimization"]
+published: true
+slug: "announcing-rbac"
+---
+
+# **Introduction**
+
+We are happy to announce that CloudFix now supports Role-Based Access Control. With this new feature, administrators have much more fine-grained control over permissions and privileges. Additionally, with SSO support and automatic role assignment, it is easier than ever to onboard new users without managing a new permissions mapping. In this blog post, I’ll explain how it works.
+
+# **Supported User Roles**
+
+CloudFix supports 4 different roles: Administrator, Runbook Manager, Executor, and Reader. These roles should be self-explanatory as their names suggest. 
+
+**Permission**
+
+**Administrator**
+
+**Runbook Manager**
+
+**Resource Manager**
+
+**Reader**
+
+Full System Access
+
+✅
+
+❌
+
+❌
+
+❌
+
+Execute Finder/Fixers
+
+✅
+
+✅
+
+❌
+
+❌
+
+Submit Finder/Fixers
+
+✅
+
+✅
+
+✅
+
+❌
+
+Read Access
+
+✅
+
+✅
+
+✅
+
+✅
+
+# **Role Details and Default Roles**
+
+**Read Access** - This default role, _Read Access_, is for users who simply want to see information produced by the CloudFix UI. This is great for granting access to folks within the organization who may be interested in the information, while controlling access to who can actually make changes. By default, newly created users (or users granted access via SSO) are admitted at a Reader level. Roles can then be updated by the administrator. 
+
+**Resource Manager** - This role, _Executor_, can execute Finder/Fixers. Executors can select Savings Recommendations, and then click on the Execute button. Note that clicking on the Execute Button does not mean that the change immediately happens. It means that the [AWS Systems Manager Change Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/change-manager.html) Runbook. All changes that CloudFix makes to AWS infrastructure go through Change Manager. Hitting the Execute button submits a runbook to Change Manager.
+
+A sample Runbook which converts [gp2 to gp3 EBS volumes](/blog/migrate-gp2-to-gp3-better-performance-lower-costs/) would look like this:  
+
+![](/media/uploads/runbook.png)
+
+**Runbook Manager** - The _Runbook Manager_ is able to execute the Change Manager Runbooks. **Users with this permission level will be able to make changes to AWS account resources.**
+
+**Administrator -** The administrator is able to do everything that the Executor and the Runbook Manager can do. In addition, the Administrator can change the roles of other users, and also adjust the scope of those roles. To learn more about role scoping, read on.
+
+# **Permission Scoping**
+
+The permissions associated with each user can be seth . This may make sense for smaller organizations, but for larger organizations this may be overly permissive. To deal with this appropriately, each of the roles can be scoped through 4 properties:
+
+**Organizational Units (OUs)**  - AWS Organizations are subdivided into [Organizational Units (OUs)](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_ous.html). OU layout is specific to an organization, but each OU may have one or more member accounts. OUs are typically governed by a single policy, so OU-level cost optimization makes sense.
+
+**Accounts** - Permissions for an individual CloudFix user can also be scoped to an AWS account.
+
+**Regions** - Same as above, permissions can also be restricted to a given region.
+
+**Tags** - Permissions can be restricted to the matching of one or more tags. For example, you could restrict permissions to {“owner” : “[user@example.com](mailto:user@example.com)”, “project” : “code\_name”}. 
+
+If multiple filters are specified, these filters all apply. For example, you can specify that a user Robert can only work with resources within a certain OU which are tagged with {“owner” : “[robert@example.com](mailto:robert@example.com)”}. We do not support logical operators on tags. If you need more sophisticated filtering than what this can provide, let us know. Our _CloudFix Professional Services_ team can create a solution for you.
+
+# **Automatic Role Assignment**
+
+[CloudFix also supports Single-Sign On (SSO)](/blog/single-sign-on-sso-support-new-feature/). SSO offers many benefits vs creating users manually, and is the preferred authentication mechanism. With SSO systems, there are often attributes such as roles attached to the user. The meanings of these roles are internal to the organization. For example, you may have a role such as ‘emea\_cloud\_admin’. The semantics of this role is defined within the organization and cannot be mechanically mapped to CloudFix permissions. However, using the CloudFix API, it is possible to define a mapping between SSO roles and CloudFix permissions. Consider this example mapping:
+
+**sso\_role**
+
+**cloudfix\_role**
+
+**regions**
+
+**tags**
+
+emea\_cloud\_admin
+
+Administrator
+
+eu-west-1, eu-central-1, eu-south-1, eu-north-1, me-south-1
+
+{}
+
+emea\_cloud\_reporting
+
+Reader
+
+eu-west-1, eu-central-1, eu-south-1, eu-north-1, me-south-1
+
+{}
+
+namer\_cloud\_admin
+
+Administrator
+
+us-east-1, us-east-2, us-west-1, us-west-2, ca-central-1
+
+{}
+
+apac\_cloud\_admin
+
+Administrator
+
+ap-southeast-1, ap-southeast-2, ap-northeast-1, ap-northeast-2, ap-south-1
+
+{}
+
+latam\_cloud\_admin
+
+Administrator
+
+sa-east-1
+
+{}
+
+In this case, there are organization SSO roles which map particular users to administrators of regions within the Cloud. These SSO roles may serve other purposes within the organization, e.g. for IAM user management. With this mapping, the organization SSO roles remain the single source of truth for authorization within the organization, and the CloudFix administrator does not need to manage the role of new users manually. 
+
+For help setting up automatic roll assignment, CloudFix professional services can help. Contact your account manager for details.

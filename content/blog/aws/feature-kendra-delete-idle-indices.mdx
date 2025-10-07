@@ -1,0 +1,106 @@
+---
+title: "CloudFix Finder/Fixer: Kendra Delete Idle Indices"
+description: "Amazon Kendra indices generate costs even when not being used. This Finder/Fixer identifies and removes Kendra indices that have been idle for more than 31 days..."
+date: 2025-04-09 18:02:45
+modified: 2025-04-09 18:02:45
+category: "AWS"
+tags: ["AWS","cloud","s3","backup"]
+published: true
+slug: "feature-kendra-delete-idle-indices"
+---
+
+Amazon Kendra indices generate costs even when not being used. This Finder/Fixer identifies and removes Kendra indices that have been idle for more than 31 days, helping you save on AWS costs. By automatically detecting and deleting these unused resources, CloudFix ensures you're not paying for enterprise search capabilities that aren't being utilized.
+
+## Contents
+
+-   [Overview](#overview)
+-   [AWS Services Affected](#aws-services-affected)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [FAQ](#faq)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Problem Statement
+
+Amazon Kendra is a powerful intelligent search service that uses natural language processing to help users find information in enterprise data. However, Kendra indices continue to incur charges even when they're not being actively used. With costs starting at $810 per index per month for the Developer Edition and $1,008 per index per month for the Enterprise Edition, idle indices can quickly become a significant drain on your AWS budget.
+
+### Solution
+
+The Kendra Delete Idle Indices Finder/Fixer automatically identifies Kendra indices that have been idle for at least 31 days. After identifying these unused resources, CloudFix can securely back up their configuration details and delete them, eliminating unnecessary costs. If needed, these indices can be recreated using the saved configuration.
+
+### Benefits
+
+By implementing this Finder/Fixer, you can:
+
+-   Eliminate unnecessary costs from idle Kendra indices
+-   Automatically identify unused search resources across your AWS accounts
+-   Maintain the ability to restore indices if needed through secure configuration backups
+-   Implement a consistent approach to managing Kendra resources
+
+## AWS Services Affected
+
+![Amazon Kendra](/media/uploads/Kendra.svg)
+
+[Amazon Kendra](https://docs.aws.amazon.com/kendra/latest/dg/what-is-kendra.html)
+
+## How It Works
+
+### Finder Component
+
+The Finder component uses a combination of AWS Cost and Usage Report (CUR) data, Kendra APIs, and CloudWatch metrics to identify idle indices. The process includes:
+
+1.  Analyzing the AWS Cost and Usage Report to find all Kendra indices generating costs
+2.  Using the Kendra `DescribeIndex` API to determine if indices are in an ACTIVE or FAILED state
+3.  Checking CloudWatch metrics for the `IndexQueryCount` metric to verify that no queries have been performed in the past 31 days
+4.  Confirming that indices were created more than 31 days ago
+
+Only indices meeting all of these criteria are flagged as idle and eligible for deletion.
+
+### Fixer Component
+
+Once idle indices have been identified, the Fixer component:
+
+1.  Preserves the current configuration by saving it to an S3 bucket (bucket name: cloudfix-fixer-executions{account id}-prod)
+2.  Stores the index configuration JSON file with the path: KendraCleanUpIdleIndexes/{index\_id}.json
+3.  Uses the Kendra `DeleteIndex` API to remove the idle index
+
+The backed-up configuration allows for potential restoration of the index if needed in the future.
+
+## FAQ
+
+**What criteria are used to identify idle Kendra indices?**
+
+CloudFix identifies Kendra indices as idle when they meet all of the following criteria:
+
+-   No queries have been performed for at least 31 days (determined by the IndexQueryCount metric)
+-   The index was created more than 31 days ago
+-   The index is in either an ACTIVE or FAILED state
+
+**What happens when the Fixer is executed?**
+
+The current configuration of the idle Kendra index is saved to an S3 bucket, and then the index is deleted. This eliminates all costs associated with the index while preserving the ability to restore it if needed.
+
+**Is it possible to rollback once CloudFix implements the fixer?**
+
+Yes, rollback is possible by manually initiating the rollback document (Cloudfix-Runbook-KendraCleanupIdleIndexes-Rollback). When started, the change request will recreate the Kendra index with the previous configuration from the S3 backup.
+
+**Does this fix require downtime?**
+
+No, this fix does not require any downtime since it only targets indices that are already idle and not being used.
+
+**Will this fix delete any data sources associated with the Kendra index?**
+
+No, this fix only removes the index itself. The underlying data (such as documents in S3 buckets or other data repositories) remains untouched. If you restore the index, you'll need to decide when to restore the data sources.
+
+**How much can I save with this Finder/Fixer?**
+
+Since the idle index will be deleted, you will save all costs associated with it. This can amount to significant savings, as Kendra pricing starts at $810 per index per month for the Developer Edition and $1,008 per index per month for the Enterprise Edition.
+
+## Related Resources
+
+-   [Save Costs on AWS by Identifying and Deactivating idle Kendra Indices](/blog/save-big-on-amazon-kendra-by-deleting-idle-indices/)
+-   [Kendra Cleanup Idle Indexes](https://support.cloudfix.com/article/17001-kendra-cleanup-idle-indexes)
+-   [What is Amazon Kendra?](https://docs.aws.amazon.com/kendra/latest/dg/what-is-kendra.html)

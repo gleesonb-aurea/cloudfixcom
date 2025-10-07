@@ -1,9 +1,10 @@
+// ABOUTME: Blog RSS feed route generating RSS 2.0 XML
 import { NextResponse } from 'next/server';
 import { getAllPosts } from '@/lib/blog';
 
 export async function GET() {
   const posts = await getAllPosts();
-  const site = 'https://cloudfix.com';
+  const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudfix.com';
   const rssItems = posts
     .map(
       (p) => `
@@ -34,4 +35,3 @@ export async function GET() {
     },
   });
 }
-

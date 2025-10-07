@@ -1,0 +1,121 @@
+---
+title: "CloudFix Finder/Fixer: Delete EBS Volumes Attached to Long-Stopped EC2 Instances"
+description: "CloudFix helps you identify and safely delete EBS volumes that are attached to EC2 instances that have been stopped for an extended period. This feature helps r..."
+date: 2025-04-06 23:40:22
+modified: 2025-04-06 23:40:22
+category: "AWS"
+tags: ["AWS","cloud","ec2","rds","cost optimization"]
+published: true
+slug: "feature-ebs-delete-stopped-instances-volumes"
+---
+
+CloudFix helps you identify and safely delete EBS volumes that are attached to EC2 instances that have been stopped for an extended period. This feature helps reduce storage costs while maintaining data safety through automatic snapshot creation.
+
+## Contents
+
+-   [Overview](#overview)
+    -   [Key Benefits](#key-benefits)
+-   [AWS Services Affected](#aws-services-affected)
+    -   [Dependencies](#dependencies)
+    -   [Service Limits](#service-limits)
+-   [How It Works](#how-it-works)
+    -   [Finder Component](#finder-component)
+    -   [Fixer Component](#fixer-component)
+-   [Implementation Details](#implementation-details)
+-   [Important Considerations](#important-considerations)
+-   [Safety and Rollback](#safety-and-rollback)
+    -   [Safety Measures](#safety-measures)
+    -   [Rollback Process](#rollback-process)
+-   [Related Resources](#related-resources)
+
+## Overview
+
+### Key Benefits
+
+-   Reduce storage costs by removing unnecessary volumes
+-   Automatic snapshot creation for data safety
+-   Easy rollback process if needed
+-   Compliance with AWS best practices
+
+## AWS Services Affected
+
+![AWS EBS icon](/media/uploads/Elastic-Block-Store.svg)
+
+![AWS EC2 icon](/media/uploads/EC2.svg)
+
+[Amazon Elastic Block Store (EBS)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AmazonEBS.html)
+
+[Amazon Elastic Compute Cloud (EC2)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html)
+
+### Dependencies
+
+-   [AWS CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html) (for monitoring)
+-   [AWS CloudTrail](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html) (for logging)
+
+### Service Limits
+
+-   Maximum number of concurrent volume deletions
+-   API rate limits for volume operations
+-   Snapshot storage limits
+
+## How It Works
+
+### Finder Component
+
+-   Identifies volumes attached to stopped instances
+-   Checks instance stop duration
+-   Calculates potential cost savings
+-   Verifies volume eligibility
+
+### Fixer Component
+
+-   Creates snapshots of selected volumes
+-   Detaches volumes from instances
+-   Deletes eligible volumes
+-   Records actions in CloudTrail
+
+## Implementation Details
+
+The implementation process involves:
+
+1.  Volume Analysis
+    -   Identify target volumes
+    -   Check instance status
+    -   Verify dependencies
+2.  Snapshot Creation
+    -   Create volume snapshots
+    -   Verify snapshot completion
+    -   Tag snapshots appropriately
+3.  Volume Cleanup
+    -   Detach volumes
+    -   Delete volumes
+    -   Update metadata
+
+## Important Considerations
+
+-   Snapshot storage costs
+-   API rate limits
+-   Regional restrictions
+-   Recovery time objectives
+
+## Safety and Rollback
+
+### Safety Measures
+
+-   Automatic snapshot creation
+-   Volume metadata preservation
+-   CloudTrail logging
+-   Staged implementation
+
+### Rollback Process
+
+-   Create new volume from snapshot
+-   Attach volume to instance
+-   Verify data integrity
+
+## Related Resources
+
+-   [CloudFix Blog: Reduce Costs by Removing EBS Volumes from Stopped Instances](/blog/reduce-aws-ebs-costs-stopped-instances)
+-   [Support Article: Delete EBS Volumes from Stopped Instances](https://support.cloudfix.com/article/16957-delete-ebs-volumes-stopped-instances)
+-   [AWS Documentation: Deleting an Amazon EBS Volume](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-deleting-volume.html)
+-   [AWS Blog: Cost Optimization with EBS Volume Management](https://aws.amazon.com/blogs/storage/delete-ebs-volumes-cost-optimization/)

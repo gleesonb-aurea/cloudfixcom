@@ -1,0 +1,72 @@
+---
+title: "CloudFix Finder/Fixer: OpenSearch Retype Instances to Graviton"
+description: "Looking to optimize your OpenSearch costs while improving performance? CloudFix's OpenSearch Graviton Finder/Fixer automatically identifies OpenSearch domains t..."
+date: 2025-04-06 23:44:49
+modified: 2025-04-07 00:18:47
+category: "AWS"
+tags: ["AWS","cloud","migration"]
+published: true
+slug: "feature-opensearch-retype-instances-to-graviton"
+---
+
+Looking to optimize your OpenSearch costs while improving performance? CloudFix's OpenSearch Graviton Finder/Fixer automatically identifies OpenSearch domains that can be migrated to AWS Graviton2 processors, delivering both cost savings and performance improvements.
+
+## Contents
+
+-   [AWS Services Affected](#aws-services)
+-   [Opportunity Description](#opportunity-description)
+-   [How It Works](#how-it-works)
+-   [Key Benefits](#benefits)
+-   [Important Considerations](#considerations)
+-   [Related Resources](#related-resources)
+
+## AWS Services Affected
+
+![Amazon OpenSearch Service](/media/uploads/OpenSearch-Service.svg)
+
+[Amazon OpenSearch Service](https://aws.amazon.com/opensearch-service/)
+
+## Opportunity Description
+
+CloudFix identifies OpenSearch domains running on Intel-based instances (M5, C5, R5) that can be migrated to AWS Graviton2 processors. Graviton2-based instances offer a 10% cost reduction while providing significant performance improvements: 38% better indexing throughput, 50% lower indexing latency, and 30% improved query performance.
+
+## How It Works
+
+1.  Finder Phase:
+    -   Identifies OpenSearch domains running Elasticsearch 7.9+ or any OpenSearch version
+    -   Checks for on-demand instances in M, C, or R families
+    -   Verifies cluster eligibility for Graviton migration
+    -   Calculates potential cost savings
+2.  Fixer Phase:
+    -   Validates cluster health status
+    -   Performs blue/green deployment to minimize downtime
+    -   Migrates to equivalent Graviton2 instance type (C6g, M6g, or R6g)
+    -   Monitors migration progress and health metrics
+
+## Key Benefits
+
+-   **Cost Reduction:** 10% savings on instance costs
+-   **Performance Boost:**
+    -   38% better indexing throughput
+    -   50% lower indexing latency
+    -   30% improved query performance
+-   **Minimal Disruption:** Blue/green deployment strategy
+-   **Automated Migration:** Handles instance type mapping automatically
+
+## Important Considerations
+
+-   **Version Requirements:**
+    -   Elasticsearch version 7.9 or higher
+    -   Any OpenSearch version
+-   **Maintenance Window:** Schedule migration during off-peak hours
+-   **Health Checks:** Automated verification before and after migration
+-   **Rollback Option:** Manual rollback possible if needed
+
+## Related Resources
+
+-   [CloudFix Blog: Migrate Elasticsearch/OpenSearch to Graviton for Better Performance at Lower Cost](/blog/elasticsearch-opensearch-to-graviton/)
+-   [CloudFix Support: Convert Elasticsearch 7.9+ Instances to Graviton](https://support.cloudfix.com/article/17036-convert-elasticsearch-7-9-instances-to-graviton)
+-   [AWS Blog: Get started with Amazon OpenSearch Service Graviton instances](https://aws.amazon.com/blogs/big-data/get-started-with-amazon-opensearch-service-graviton-instances/)
+-   [AWS Blog: Run Amazon OpenSearch Service with Graviton2 for up to 38% better performance](https://aws.amazon.com/blogs/opensearch/run-amazon-opensearch-service-with-graviton2-for-up-to-38-better-performance/)
+-   [AWS Documentation: Amazon OpenSearch Service instance types](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/supported-instance-types.html)
+-   [AWS Documentation: Configuration changes in Amazon OpenSearch Service](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/managedomains-configuration-changes.html)

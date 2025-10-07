@@ -1,3 +1,5 @@
+// ABOUTME: Videos page displaying CloudFix video content grid
+// ABOUTME: Fetches and renders videos with modal player support
 import { getAllVideos } from '@/lib/videos';
 import VideoGrid from '@/components/videos/VideoGrid';
 

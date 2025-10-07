@@ -1,0 +1,282 @@
+---
+title: "Migrate io1/io2 to gp3 for Cost-Effective AWS EBS Optimization"
+description: "The technology you use impresses no one. The experience you create with it is everything. - Sean Gerety, User Experience Manager. io1 and io2, the highest-perfo..."
+date: 2023-02-13 13:33:52
+modified: 2025-01-23 10:12:15
+category: "AWS"
+tags: ["AWS","cloud","lambda","ec2","migration"]
+published: true
+slug: "optimize-aws-elastic-block-storage-by-migrating-io1-and-io2-volumes-to-gp3"
+---
+
+> The technology you use impresses no one. The experience you create with it is everything.
+> 
+> _\- Sean Gerety, User Experience Manager._
+
+io1 and io2, the highest-performing Elastic Block Storage (EBS) volumes that AWS offers, are impressive pieces of technology. They’re also costly, and in many circumstances, unnecessarily powerful.
+
+Think of io1/io2 volumes like an SUV. The SUV is designed to travel through mud, tow large payloads, and go on overland adventures. That’s great if you’re offroading across the savannah, but in reality, most SUVs spend their days traveling to school and soccer practice. The vehicle is over-provisioned – and overly expensive – for its actual use case of hauling families and their groceries.
+
+Then there’s the humble minivan. It’s purpose-built for families’ day-to-day activities. Cost, efficiency, and flexibility are the defining features. It’s not as flashy as the SUV, but it can usually get the job done just as well for less money.
+
+The minivan, in the Elastic Block Storage world, is gp3. In many situations, gp3 is more than adequate performance-wise and more cost effective than io1/io2 volumes – in fact, using gp3 can cut costs by approximately half. To effectively optimize EBS spend, it’s time to embrace the minivan and migrate, when appropriate, from io1/io2 to gp3.
+
+![SUV analogy of AWS io1/io2 great capabilities often not fully tapped by users](/media/uploads/midjourney_minivan.jpg)
+
+_Image generated with [Midjourney](https://levelup.gitconnected.com/midjournery-ai-art-generator-a73eb8188a8c), a [generative art AI](https://levelup.gitconnected.com/midjournery-ai-art-generator-a73eb8188a8c)_
+
+## How do io1/io2 and gp3 volumes compare on price and performance?
+
+First, some context. Elastic Block Store (EBS), as the name implies, is a service by Amazon for dynamically allocating storage that can be used by compute resources such as EC2 and Lambda. EBS offers multiple volume types that allow you optimize storage performance and cost. io1/io2 and gp3 are some of them.
+
+To understand how io1/io2 and gp3 compare on price and performance, it helps to start with the metrics used to describe EBS volumes. Volume size and durability describe the nature of the volume, and the key performance metrics are **IOPS** and **throughput**.
+
+IOPS, or Input/Output Operations Per Second, quantifies how many reads and writes the storage device can handle. This is especially important for random-access loads such as databases. Throughput looks at the total amount of data which can be transferred per second. Throughput tends to get maximized in situations where you are dealing with large objects, such as video.
+
+How do io1/io2 and gp3 match up on these metrics? AWS offers this helpful [comparison table](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html).
+
+### Performance comparison
+
+Supported
+
+**gp3**
+
+**io2 Block Express**
+
+**io2**
+
+**io1**
+
+**Durability**
+
+99.8%-99.9%
+
+99.999%
+
+99.999%
+
+99.8%-99.9%
+
+**Volume size**
+
+1 GiB - 16 TiB
+
+4 GiB - 64 TiB
+
+4 GiB - 16 TiB
+
+4 GiB - 16 TiB
+
+**Max IOPS per volume**
+
+16000
+
+256,000
+
+64,000
+
+64,000
+
+**Max throughput per vol.**
+
+1,000 MiB/s
+
+4,000 MiB/s
+
+1,000 MiB/s
+
+1,000 MiB/s
+
+**EBS Multi-Attach**
+
+Not supported
+
+Supported
+
+Supported
+
+Supported
+
+**Boot volume**
+
+Supported
+
+Supported
+
+Supported
+
+Supported
+
+A few key observations:
+
+1.  Both volume types have excellent durability, but the io2 volumes are an order of magnitude more durable. In contrast, the [durability of industry standard SSDs](https://www.backblaze.com/blog/ssd-drive-stats-mid-2022-review/#:~:text=Falling%20failure%20rate%3F%3A%20The,for%20Q2%202022%20was%200.92%25.) are around 1%, and around 2-3% for HDDs due to the moving parts.
+2.  Volumes between 4 GiB-16 TiB can be supported by any volume type. gp3 and io2 have the same upper limit of 16 TiB.
+3.  gp3 and io1/io2 have equivalent max throughput per volume. Io2 Block Express are far more capable in terms of throughput.
+4.  gp3 does not support [EBS Multi-Attach](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volumes-multi.html).
+5.  gp3 and the io1/io2 types all support functioning as a boot volume.
+
+Looking at the table holistically, we see that durability and IOPS are the main differentiators.
+
+Therefore, if we can identify volumes where (a) the durability provided by gp3 is sufficient, and (b) the required IOPS is less than or equal to 16K, then there is potential for volumes to be migrated to gp3.
+
+Furthermore, when the EBS volumes function in a cluster, then the IOPS of a cluster of gp3 volumes can match the IOPS of a cluster of io2 volumes by adding relatively more gp3 volumes. We will investigate this in the pricing section, but note that identifying clustered EBS volumes is beyond the scope of the CloudFix fixer (as of Feb. 2023).
+
+What about pricing? Let’s use us-east-1 as of Feb 2023 as a reference, with the standard disclaimer that prices of all AWS products can vary over time and by region.
+
+ 
+
+**gp3**
+
+**io2 Block Express**
+
+**io2**
+
+**io1**
+
+Storage
+
+$0.08 / GB-month
+
+$0.125/GB-month
+
+$0.125/GB-month
+
+$0.125/GB-month
+
+Provisioned IOPS
+
+3000 Free, $0.005 over 3000
+
+$0.065 up to 32,000. $0.046 for 32K-64K. $0.032 for > 64K
+
+$0.065 up to 32,000. $0.046 for 32K-64K.
+
+$0.065 per IOPS
+
+Provisioned Throughput
+
+125 MB/s free, $0.040 per MB/s over 125.
+
+ 
+
+NA
+
+NA
+
+Note that storage and provisioned IOPS are substantially more expensive in the io1/io2 volumes compared to gp3. Doing a sample calculation with a 5TB volume, with 6000 provisioned IOPS (including the 3000 included IOPS for gp3) and 500 MB/s of throughput (including the 125 MB/s free) we see:
+
+-   Gp3: 5000 \* $0.080 + (6000 - 3000) \* $0.005 + (500 - 125) \* $0.040 = $430 / month.
+-   Io2: 5000 \* $0.125 + 6000 \* $0.065 = $1015 / month.
+
+In this case, the gp3 volume costs **42% of the price** of an equivalently specified io2 volume.
+
+## What if we need more IOPS?
+
+If your application requires more IOPS than gp3 can provide, you are not out of luck. One of the main uses of EBS io2 volumes is in highly available databases. Check out this AWS article, [Choosing the best Amazon EBS volume type for your self-managed database deployment](https://aws.amazon.com/blogs/storage/how-to-choose-the-best-amazon-ebs-volume-type-for-your-self-managed-database-deployment/), for more on this exact use case. To cite an example from the article, consider a 4 node Oracle database where each node requires 12 TB of storage, for 48 TB total. A simplified version of the calculations is given below:
+
+ 
+
+**gp3**
+
+**io2 Block Express**
+
+**Volumes per Node**
+
+6
+
+4
+
+Storage per volume
+
+2000
+
+3000
+
+...total storage
+
+12000
+
+12000
+
+IOPS per volume
+
+16,000
+
+22,500
+
+...total IOPS
+
+96000
+
+90000
+
+Throughput per volume
+
+222
+
+4000
+
+...total throughput
+
+1332
+
+16000
+
+**Volume Cost**
+
+$223.50
+
+$1,830
+
+**Node Cost**
+
+$1,341.00
+
+$7,321
+
+**4 Node Database Cost**
+
+**$5,364.00**
+
+**$29,284**
+
+Since gp3 volumes max at 16K IOPS, even though we use more volumes per node to reach the IOPS requirement, the total cost per volume is drastically lower. In fact, the gp3 volume is an order of magnitude cheaper.
+
+This is driven mostly by the expensive IOPS of the io2 volume. This expense multiplies across the nodes and again across the cluster. The overall cost of io2 Block Express is nearly 6x more than an equivalent configuration for gp3. There is a slight amount of additional complexity in that there are more volumes per node, but all modern database engines (e.g. [Oracle Automatic Storage Management](https://docs.oracle.com/cd/E11882_01/server.112/e18951/asmcon.htm#OSTMG036)) can handle this.
+
+## How to manually migrate io2 volumes to gp3
+
+Fortunately, it is straightforward to modify the type of an EBS volume from io1/io2 to gp3. The most important pieces of information you need are:
+
+-   Which volumes should be migrated?
+-   What will be the provisioned IOPS?
+-   What will be the provisioned throughput?
+
+The IOPS and throughput requirements can be calculated based on historical usage data, the existing configuration of the io2 volume (for IOPS), and application requirements (for IOPS and throughput). By switching to gp3 for the same volume size and provisioned IOPS level for any EBS io2 volume provisioned with less than 16K IOPS, **you will save approximately 60%**.
+
+To perform the actual migration, you can use either the AWS Management Console or the [aws cli](https://aws.amazon.com/cli/) tool. However you perform the migration, remember that [**AWS performs these migrations live, without downtime** and without needing to detach the volume](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/requesting-ebs-volume-modifications.html). The modifications can take up to 24 hours, but typically complete in [under 6 hours for 1TiB of data](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitoring-volume-modifications.html).
+
+To use the management console, identify the EBS volume to be modified, click on the “Actions” menu, and click “Modify volume”.
+
+![](/media/uploads/ebs_modify_volume.png)
+
+Next, change the volume type to “General Purpose SSD (gp3)” and set the IOPS and Throughput levels to values determined appropriately for the particular volume.
+
+![](/media/uploads/ebs_modify_volume_detail.png)
+
+To make the modification via the command line tool, make sure that you have the appropriate AWS Access Key and Secret Key set, and then execute the following command:
+
+```
+aws ec2 modify-volume --volume-id <Volume ID> --volume-type gp3 --iops <IOPS> --throughput <Throughput>
+```
+
+## Migrate io1/io2 volumes to gp3 easily and automatically with CloudFix
+
+Even easier? Let CloudFix migrate the volumes for you. Using the io1/io2 to gp3 fixer in CloudFix, the process is fully automated. The inclusion criteria for eligible io1/io2 volumes are:
+
+-   Select io1/io2 volumes that require 16K or less in provisioned IOPS because 16K is the maximum IOPS supported by gp3. Skip volumes with insufficient data to prove that 16K of provisioned IOPS or less is required.
+-   Select volumes that cost more than $100.
+-   Do not select non-elastic volumes. In practice, this means volumes launched before November 2016 because these volumes require some downtime.
+-   Finally, do not select short-lived volumes that are only around for a week or two.
+
+Fire up CloudFix and the fixer will identify eligible volumes for transitioning. Simply approve the change and [Change Manager](/blog/aws-change-manager-cost-savings/) will take care of the rest. Time to sit back, enjoy your cost savings, and revel in the glory of the minivan.

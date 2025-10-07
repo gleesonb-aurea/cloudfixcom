@@ -1,0 +1,125 @@
+---
+title: "AWS Aurora I/O-Optimized Made Easy"
+description: "Do you find that your I/O-intensive applications are driving up your Aurora expenses? If so, it's time to explore the benefits of Amazon Web Services' Aurora I/..."
+date: 2024-02-05 13:53:38
+modified: 2024-02-05 15:35:39
+category: "AWS"
+tags: ["AWS","cloud","s3","rds","cost optimization"]
+published: true
+slug: "aws-aurora-i-o-optimized-made-easy"
+---
+
+Do you find that your I/O-intensive applications are driving up your Aurora expenses? If so, it's time to explore the benefits of Amazon Web Services' Aurora I/O-Optimized Configuration. This innovative solution is designed to enhance price performance for applications that require heavy input/output operations.
+
+Introduced last May, AWS Aurora I/O-Optimized is a new configuration and pricing model for Aurora. The original Aurora pricing model was designed for "cost-effective pricing for...low to moderate I/O usage." More precisely, you pay for storage, I/O, and instances at a metered rate. For I/O-heavy applications, this would often be the largest driver. With the new I/O-Optimized configuration, you pay a much higher rate for storage and a slightly higher rate for instance hours, but all I/O is included. Using this configuration when appropriate will lead to significantly lower costs. Therefore, understanding if Aurora I/O-Optimized is the right choice for your application really boils down to computing your pricing under both scenarios, and then choosing.
+
+In this blog post, we introduce the CloudFix Aurora I/O Optimizer Finder/Fixer, which automatically performs this analysis and makes it **one-click** easy to switch these clusters to I/O Optimized. CloudFix will analyze your data, compute your potential savings, and all you need to do is click "Execute" to make the changes happen! It couldn't be easier.
+
+Let's dive into the details of Aurora I/O-Optimized including pricing, how we decide if your clusters are eligible for a migration, and of course show you the Finder/Fixer.
+
+## The Challenge of I/O-Intensive Applications
+
+Databases are one of the most general tools in the app developers' toolkit. There are an infinite number of different use cases. These use cases can have wildly different amounts of throughput required. E-commerce databases need to store users, products, inventory, recommendations, etc. Social media need to store the users, content, and all of the interactions between them. Databases in healthcare settings need to store patient records, prescription information, appointments, and other related entities. IOT databases may need to store the inputs of thousands of sensors over time. 
+
+Contrasting these various use cases, we can imagine there being vastly different amounts of storage vs I/O. In the healthcare example, there may be huge amounts of data being stored, but the amount of data being retrieved at any given time may be limited, as the medical facility will only have a limited amount of active patients at any given time. By contrast, an E-commerce or IOT application may have a limited amount of entities, but a huge amount of traffic (sales, sensor data, etc).
+
+As stated by AWS, Aurora was designed initially for low to moderate I/O usage. But, like most AWS services, they will eventually be used for purposes far outside of the original design. The convenience of using these services makes up for the fact that the use case may not be ideal. Another example of this is S3; initially launched as a simple object store, it now has the ability to handle loads ranging from high-traffic websites to extremely low-cost archival storage. With S3, this was implemented through various usage tiers - S3 Standard, Infrequent Access, Glacier, etc. We are now seeing the same thing with Aurora through the I/O-optimized configuration; more configuration choices to make different configurations affordable.
+
+## Aurora Pricing - Standard vs I/O Optimized
+
+Diving into the pricing differences between Standard and I/O-Optimized, we need to first look at instance pricing. Visiting the [Aurora Pricing Page](https://aws.amazon.com/rds/aurora/pricing/) under the Aurora PostgreSQL-Compatible Edition section, in the Provisioned On-Demand Instance category, we can compare instance prices for Standard vs I/O-Optimized. Looking at the pricing for the Standard Instances, we see the following table (for `us-east-1`, as of Feb 2024):
+
+**Standard Instances - Current Generation**
+
+**Aurora Standard (Price Per Hour)**
+
+**Aurora I/O-Optimized (Price Per Hour)**
+
+db.t4g.medium
+
+$0.073
+
+$0.095
+
+db.t4g.large
+
+$0.146
+
+$0.19
+
+db.t3.medium
+
+$0.082
+
+$0.107
+
+db.t3.large
+
+$0.164
+
+$0.213
+
+As we see, the I/O-Optimized instances cost 30% more than their standard counterparts. Rounding out the pricing story, we see:
+
+![Aurora pricing comparison](/media/uploads/Aurora-pricing-comparison.png)
+
+Note that storage costs more than twice as much as I/O-Optimized vs Standard. However, it is the I/O rate where the equation may work out in our favor. Thus, to figure out what we need to do, we need to calculate our expected DB cost under both scenarios, and choose I/O-Optimized if it is the cheaper choice.
+
+If this were a math class, we could use the following equations:
+
+Let $$I$$ be the instance type, $$N$$ the number of instances, $$P\_i$$ the instance cost, $$S$$ is the storage amount, $$P\_s$$ is the price of storage, $$R$$ the number of requests in millions, $$P\_r$$ the price per million request, the calculate costs $$C$$ where:
+
+$$C\_{\\text{standard}} = N \* I \* P\_i + S \* P\_s + R \* P\_r$$
+
+and compare to
+
+$$C\_{\\text{i/o opt.}} = N \* I \* 1.3 \* P\_i + S \* 2.25 \* P\_s$$
+
+If $$C\_{\\text{i/o opt.}} < C\_{\\text{standard}}$$ then we are better of switching to I/O-Optimized. This is great from a theoretical perspective, but how do we put this into practice? And, what are the policies and rules of thumb we should follow to make this actionable and reliable? To answer that, read on...
+
+## CloudFix's Automation!
+
+At CloudFix, we are all about automated cost optimization. In order to automate this, we need a systematic way of understanding the I/O and storage usage, as these are the terms which drive the price differences.
+
+We have covered Cost and Usage Report (CUR) queries extensively, and they are core to many of our Finder / Fixers. For a tutorial on the CUR, check out our [AWS Foundational Skills - Optimizing AWS costs with the Cost and Usage Report](/blog/aws-foundational-skills-cost-and-usage-report-cur/) page. tl;dr - learning the CUR is a key skill in your AWS cost optimization skillset.
+
+For this question, we are looking for usage of type `InstanceUsage`, `Aurora:StorageIO`, and `Aurora:StorageUsage` within the line item type field. We have found that looking at the past 90 days of data is appropriate, as that is long enough to capture quarterly seasonality. These are the inputs to the cost equations above. Once we have found this, we have found a good rule of thumb is to switch when the savings are 15% or greater. Although this particular change is easy to make, we still err on the side of caution and choose to make changes when they are significant.
+
+For a highly detailed AWS blog post on how to use CloudWatch to estimate savings, check out [this AWS Database Blog post](https://aws.amazon.com/blogs/database/estimate-cost-savings-for-the-amazon-aurora-i-o-optimized-feature-using-amazon-cloudwatch/).
+
+To make the change, you can use the AWS Management Console. Or, as we recommend, use the AWS CLI. The command for this is the following:
+
+```bash
+aws rds modify-db-instance \
+    --db-instance-identifier your-instance-identifier \
+    --storage-type aurora-iopt1 \
+    --apply-immediately
+```
+
+With CloudFix, we perform the analysis on the CUR data for you through our automated account scans. Once we have identified a savings opportunity, it is surfaced through the CloudFix dashboard. It is found in the Advanced section, under the "RDS Retype IO Optimize" page.
+
+![Selecting RDS Retype IO Optimize](/media/uploads/Selecting-RDS-Retype-IO-Optimize.gif)
+
+For each savings opportunity found, meaning each database cluster that would benefit from being converted to IO.
+
+![Show details](/media/uploads/Show-details.gif)
+
+This can show potential savings, and any warnings along the way. For example:
+
+![Fix parameters](/media/uploads/Fix-parameters.png)
+
+In this dialog, we see that an upgrade is required before we can switch to Aurora I/O-Optimized. Once we have cleared any blockers, we can select the savings opportunity and click that renowned Execute button:
+
+![Cost and potential savings](/media/uploads/Cost-and-potential-savings.png)
+
+From here, an AWS Change Manager document is established and pushed to the account, where an administrator can inspect and approve the change, and those savings can be realized!
+
+## Realized Savings and Success Stories
+
+Aurora I/O-Optimized has the potential for enormous cost savings. We have seen upwards of 30% savings realized with this Finder/Fixer. As more and more of you try this Finder / Fixer, we are looking forward to hearing your success stories.
+
+Check out this interesting blog post by [Graphite.dev](http://graphite.dev), where they found a 90% cost reduction. Note that they had an exceptionally I/O-heavy workload!
+
+## Wrapping Up
+
+We are looking forward to hearing about the savings you are realizing from this Finder/Fixer. Please stay tuned for our weekly new cost-saving Finder/Fixers. Please reach out if you have any questions!

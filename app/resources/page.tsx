@@ -1,9 +1,11 @@
+// ABOUTME: Resources listing page with filtering, search, and pagination
+// ABOUTME: Displays all resource types (blog, podcast, video, case-study, success-story) with category-based quick filters
 import Link from 'next/link';
 import { getAllResources } from '@/lib/resources';
 import { paginate } from '@/lib/blog';
 import ResourceCard from '@/components/ui/ResourceCard';
 
-export const metadata = { title: 'Resources | CloudFix' };
+export const metadata = { title: 'Resources | CloudFix', description: 'Explore CloudFix resources including blogs, podcasts, videos, and case studies.', alternates: { canonical: '/resources' } };
 
 export default async function ResourcesPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
   const type = typeof searchParams?.type === 'string' ? searchParams?.type : undefined;
@@ -12,6 +14,8 @@ export default async function ResourcesPage({ searchParams }: { searchParams?: {
   const sort = typeof searchParams?.sort === 'string' ? searchParams?.sort : 'date-desc';
   const page = Number(searchParams?.page || 1) || 1;
   const resources = await getAllResources();
+  const categoriesSet = new Set(resources.map((r) => r.category));
+  const categories = Array.from(categoriesSet).sort();
   const filtered = resources.filter((r) => {
     if (type && r.type !== type) return false;
     if (category && r.category !== category) return false;
@@ -29,10 +33,10 @@ export default async function ResourcesPage({ searchParams }: { searchParams?: {
       case 'title-desc':
         return b.title.localeCompare(a.title);
       case 'date-asc':
-        return new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime();
+        return new Date(a.publishDate ?? a.date ?? '1970-01-01').getTime() - new Date(b.publishDate ?? b.date ?? '1970-01-01').getTime();
       case 'date-desc':
       default:
-        return new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime();
+        return new Date(b.publishDate ?? b.date ?? '1970-01-01').getTime() - new Date(a.publishDate ?? a.date ?? '1970-01-01').getTime();
     }
   });
   const { items, pages, current } = paginate(sorted, page, 9);
@@ -40,8 +44,27 @@ export default async function ResourcesPage({ searchParams }: { searchParams?: {
     <div className="min-h-screen">
       <section className="max-w-6xl mx-auto py-12 px-4">
         <h1 className="text-4xl font-bold mb-6">Resources</h1>
+        <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-gray-600">Quick filters:</span>
+          <Link href="/resources" className={`rounded-full border px-3 py-1 ${!type ? 'border-primary bg-primary text-white' : 'border-gray-200'}`}>All</Link>
+          <Link href="/resources?type=blog" className={`rounded-full border px-3 py-1 ${type === 'blog' ? 'border-primary bg-primary text-white' : 'border-gray-200'}`}>Blogs</Link>
+          <Link href="/resources?type=podcast" className={`rounded-full border px-3 py-1 ${type === 'podcast' ? 'border-primary bg-primary text-white' : 'border-gray-200'}`}>Podcasts</Link>
+          <Link href="/resources?type=video" className={`rounded-full border px-3 py-1 ${type === 'video' ? 'border-primary bg-primary text-white' : 'border-gray-200'}`}>Videos</Link>
+          <Link href="/resources?type=case-study" className={`rounded-full border px-3 py-1 ${type === 'case-study' ? 'border-primary bg-primary text-white' : 'border-gray-200'}`}>Case Studies</Link>
+          <Link href="/resources?type=success-story" className={`rounded-full border px-3 py-1 ${type === 'success-story' ? 'border-primary bg-primary text-white' : 'border-gray-200'}`}>Success Stories</Link>
+          <span className="ml-3 text-gray-600">Categories:</span>
+          {categories.map((c) => (
+            <Link
+              key={c}
+              href={`/resources?category=${encodeURIComponent(c)}`}
+              className={`rounded-full border px-3 py-1 ${category === c ? 'border-primary bg-primary text-white' : 'border-gray-200'}`}
+            >
+              {c}
+            </Link>
+          ))}
+        </div>
         <form method="get" className="mb-8 flex flex-col md:flex-row gap-4 md:items-center">
-          <input name="q" defaultValue={q} placeholder="Search resources" className="rounded-lg border border-gray-300 px-3 py-2 w-full md:w-80" />
+          <input aria-label="Search resources" name="q" defaultValue={q} placeholder="Search resources" className="rounded-lg border border-gray-300 px-3 py-2 w-full md:w-80" />
           <div className="flex gap-2 items-center">
             <select name="type" defaultValue={type} className="rounded-lg border border-gray-300 px-3 py-2">
               <option value="">All Types</option>
@@ -69,8 +92,9 @@ export default async function ResourcesPage({ searchParams }: { searchParams?: {
               href={r.url}
               thumbnailSrc={r.thumbnail}
               category={r.category}
-              date={new Date(r.publishDate).toLocaleDateString()}
+              date={new Date(r.publishDate ?? r.date ?? '1970-01-01').toLocaleDateString()}
               authorName={r.author}
+              badge={r.type?.replace(/-/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase())}
             />
           ))}
         </div>
@@ -87,7 +111,7 @@ export default async function ResourcesPage({ searchParams }: { searchParams?: {
               if (p !== 1) qs.set('page', String(p));
               const href = qs.toString() ? `/resources?${qs.toString()}` : '/resources';
               return (
-                <a key={p} href={href} className={`px-3 py-1 rounded border ${p===current ? 'bg-primary text-white border-primary' : 'border-gray-200'}`}>{p}</a>
+                <Link key={p} href={href} className={`px-3 py-1 rounded border ${p===current ? 'bg-primary text-white border-primary' : 'border-gray-200'}`}>{p}</Link>
               );
             })}
           </div>
