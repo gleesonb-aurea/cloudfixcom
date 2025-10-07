@@ -5,7 +5,6 @@ import VideoGrid from '@/components/videos/VideoGrid';
 
 export const metadata = { title: 'Videos | CloudFix' };
 export const revalidate = 21600; // 6 hours ISR
-export const revalidate = 21600; // 6 hours ISR for videos listing
 
 export default async function VideosPage() {
   const vids = await getAllVideos();

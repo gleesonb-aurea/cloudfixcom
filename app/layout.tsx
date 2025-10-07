@@ -1,3 +1,5 @@
+// ABOUTME: Root layout with global providers, fonts, header/footer, and metadata
+// ABOUTME: Ensures consistent SEO defaults and performance settings site-wide
 import type { Metadata } from "next";
 import { Inter } from 'next/font/google';
 import Script from "next/script";
@@ -7,7 +9,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], display: 'swap' });
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudfix.com'),

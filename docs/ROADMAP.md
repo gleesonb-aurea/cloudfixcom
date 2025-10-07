@@ -8,7 +8,7 @@
 
 ## 📊 Overall Progress
 
-```
+```text
 Pages:        18/24  (75%)  ████████████████████░░░░░░
 Components:   22/22 (100%) ████████████████████████████
 Features:     14/15  (93%)  ██████████████████████░░░░░
@@ -644,7 +644,7 @@ Content:      100%  (MDX Blog + Resources + Multimedia)
 **Dependencies**: Phase 5
 **Target Completion**: October 24, 2025
 
-### Remaining Pages (18 pages)
+### Remaining Pages (10 pages)
 - [ ] /how-it-works
 - [ ] /leadership
 - [ ] /careers
@@ -655,13 +655,6 @@ Content:      100%  (MDX Blog + Resources + Multimedia)
 - [ ] /sitemap (HTML version)
 - [ ] /404 (custom error page)
 - [ ] /500 (custom error page)
-- [ ] /blog (listing page)
-- [ ] /blog/[slug] (individual posts)
-- [ ] /resources
-- [ ] /podcast
-- [ ] /livestream
-- [ ] /videos
-- [ ] /success-stories
 - [ ] And other pages from SITE_ANALYSIS.json
 
 **Effort**: 2-3 hours per page = 36-54 hours

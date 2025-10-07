@@ -8,7 +8,6 @@ import PlatformBadges from '@/components/podcast/PlatformBadges';
 
 export const metadata = { title: 'Podcast | CloudFix', description: 'Tune into AWS cost optimization conversations with CloudFix and guests.' };
 export const revalidate = 21600; // 6 hours ISR
-export const revalidate = 21600; // 6 hours ISR for podcast listing
 
 export default async function PodcastPage({ searchParams }: { searchParams?: { episode?: string; tag?: string } }) {
   const episodes = await getAllEpisodes();

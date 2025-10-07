@@ -1,4 +1,11 @@
 // ABOUTME: Test blog post page to verify routing works
+// ABOUTME: Demo page used for validating blog post layout and SEO
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Test Blog Post — CloudFix',
+  description: 'Test post to verify individual blog post routing and layout for CloudFix.',
+};
 export default function TestBlogPost() {
   return (
     <div className="min-h-screen">

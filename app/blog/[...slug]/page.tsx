@@ -10,9 +10,9 @@ export const dynamic = 'force-static';
 export const revalidate = 3600; // 1 hour ISR for blog posts
 
 interface BlogPostPageProps {
-  params: Promise<{
+  params: {
     slug: string[];
-  }>;
+  };
 }
 
 export async function generateStaticParams() {
@@ -23,7 +23,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: BlogPostPageProps) {
-  const { slug } = await params;
+  const { slug } = params;
   const slugString = slug.join('/');
   const post = await getPostBySlug(slugString);
 
@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: BlogPostPageProps) {
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const { slug } = await params;
+  const { slug } = params;
   const slugString = slug.join('/');
   const post = await getPostBySlug(slugString);
 

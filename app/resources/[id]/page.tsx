@@ -2,7 +2,6 @@
 // ABOUTME: Shows category/tags chips, primary CTA, related resources, and social sharing
 import { notFound } from 'next/navigation';
 export const revalidate = 1800; // 30 minutes ISR
-export const revalidate = 1800; // 30 minutes ISR for resource detail
 import type { Metadata } from 'next';
 import { getResourceById, getAllResources } from '@/lib/resources';
 import { SocialShare } from '@/components/blog/SocialShare';
