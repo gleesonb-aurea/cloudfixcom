@@ -1,4 +1,5 @@
 /* ABOUTME: Minimal service worker for basic offline caching */
+/* ABOUTME: Implements network-first navigation and stale-while-revalidate for assets */
 const VERSION = 'v1';
 const RUNTIME = 'cloudfix-runtime';
 
@@ -10,7 +11,15 @@ const PRECACHE_URLS = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(PRECACHE).then((cache) => cache.addAll(PRECACHE_URLS)).then(self.skipWaiting())
+    caches
+      .open(PRECACHE)
+      .then((cache) => cache.addAll(PRECACHE_URLS))
+      .then(() => self.skipWaiting())
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error('SW install failed:', err);
+        throw err;
+      })
   );
 });
 
@@ -32,6 +41,16 @@ self.addEventListener('activate', (event) => {
 // Strategy:
 // - HTML navigation requests: network-first with cache fallback
 // - Static assets (images/css/js): stale-while-revalidate
+function isStaticAsset(req, url) {
+  return (
+    req.method === 'GET' &&
+    (req.destination === 'style' ||
+      req.destination === 'script' ||
+      req.destination === 'image' ||
+      url.pathname.startsWith('/_next/'))
+  );
+}
+
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
@@ -54,7 +73,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // For GET requests to same-origin static assets
-  if (req.method === 'GET' && (req.destination === 'style' || req.destination === 'script' || req.destination === 'image' || url.pathname.startsWith('/_next/'))) {
+  if (isStaticAsset(req, url)) {
     event.respondWith(
       caches.match(req).then((cached) => {
         const networkFetch = fetch(req)
@@ -69,4 +88,3 @@ self.addEventListener('fetch', (event) => {
     );
   }
 });
-

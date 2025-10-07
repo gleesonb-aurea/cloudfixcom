@@ -46,6 +46,10 @@ export default function RootLayout({
   const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
   return (
     <html lang="en">
+      <head>
+        <link rel="dns-prefetch" href="//www.googletagmanager.com" />
+        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="" />
+      </head>
       <body className={`${inter.className} antialiased`}>
         {GA_ID && (
           <>

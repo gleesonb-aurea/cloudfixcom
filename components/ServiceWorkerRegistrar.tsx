@@ -9,9 +9,13 @@ export default function ServiceWorkerRegistrar() {
     if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
       navigator.serviceWorker
         .register('/sw.js')
-        .catch(() => void 0);
+        .catch((err) => {
+          if (process.env.NODE_ENV !== 'production') {
+            // eslint-disable-next-line no-console
+            console.warn('Service worker registration failed:', err);
+          }
+        });
     }
   }, []);
   return null;
 }
-

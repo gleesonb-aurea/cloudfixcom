@@ -32,16 +32,16 @@ export async function generateMetadata({ params }: BlogPostPageProps) {
     title: post.seo?.title || post.title,
     description: post.seo?.description || post.description,
     keywords: post.seo?.keywords?.join(', ') || post.tags?.join(', '),
+    alternates: { canonical: `/blog/${slugString}` },
     openGraph: {
       title: post.seo?.title || post.title,
       description: post.seo?.description || post.description,
       type: 'article',
       publishedTime: post.date,
       authors: [post.author],
-      images: post.image ? [{
-        url: post.image,
-        alt: post.title,
-      }] : [],
+      images: [
+        { url: `/og/blog?slug=${encodeURIComponent(slugString)}`, alt: post.title },
+      ],
     },
   };
 }
