@@ -22,7 +22,13 @@ export default async function ResourceDetailPage({ params }: ResourceDetailProps
           <span>•</span>
           <time>{new Date(res.publishDate).toLocaleDateString()}</time>
         </div>
-        <a href={res.url} className="inline-block rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary-dark">View Resource</a>
+        {('downloadUrl' in res as any) && (res as any).downloadUrl ? (
+          <a href={(res as any).downloadUrl} className="inline-block rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary-dark" download>
+            Download {res.type === 'case-study' ? 'Case Study' : 'Resource'}
+          </a>
+        ) : (
+          <a href={res.url} className="inline-block rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary-dark">View Resource</a>
+        )}
         <SocialShare url={`https://cloudfix.com/resources/${res.id}`} title={res.title} />
         {related.length > 0 && (
           <div className="mt-10">

@@ -44,15 +44,29 @@ export default async function LivestreamPage() {
             <div className="rounded-xl border border-gray-200 bg-white p-6 text-gray-600">No past streams yet.</div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {past.map((s) => (
-                <div key={s.id} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="text-sm text-gray-500">{new Date(s.date).toLocaleDateString('en-GB', { dateStyle: 'medium' })}</div>
-                  <h3 className="mt-1 font-semibold text-gray-900">{s.title}</h3>
-                  <div className="mt-3">
-                    <a href={s.recordingUrl} target="_blank" rel="noopener noreferrer" className="inline-block rounded-lg bg-primary px-4 py-2 text-white">Watch recording</a>
+              {past.map((s) => {
+                const deriveEmbed = (url?: string) => {
+                  if (!url) return undefined;
+                  const yt = url.match(/[?&]v=([\w-]+)/) || url.match(/youtu\.be\/([\w-]+)/);
+                  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+                  return undefined;
+                };
+                const embed = (s as any).embedUrl || deriveEmbed(s.recordingUrl);
+                return (
+                  <div key={s.id} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="text-sm text-gray-500">{new Date(s.date).toLocaleDateString('en-GB', { dateStyle: 'medium' })}</div>
+                    <h3 className="mt-1 font-semibold text-gray-900">{s.title}</h3>
+                    {embed && (
+                      <div className="mt-3 aspect-video w-full rounded-lg overflow-hidden">
+                        <iframe className="w-full h-full" src={embed} title={s.title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                      </div>
+                    )}
+                    <div className="mt-3">
+                      <a href={s.recordingUrl} target="_blank" rel="noopener noreferrer" className="inline-block rounded-lg bg-primary px-4 py-2 text-white">Watch recording</a>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

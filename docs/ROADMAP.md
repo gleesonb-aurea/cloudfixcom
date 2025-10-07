@@ -185,6 +185,11 @@ Features:     6/15  (40%)  ████████░░░░░░░░░�
   - [ ] Add `<Analytics />` component to root layout
   - [ ] Configure analytics in Vercel dashboard
   - [ ] Verify data collection
+- [ ] **Vercel SpeedInsights Setup** (NEW)
+  - [ ] Install `@vercel/speed-insights` package
+  - [ ] Add `<SpeedInsights />` component to root layout
+  - [ ] Configure SpeedInsights in Vercel dashboard
+  - [ ] Verify performance metrics collection
 
 **Effort**: 2 hours
 

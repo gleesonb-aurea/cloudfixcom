@@ -46,6 +46,13 @@ export default async function PodcastPage({ searchParams }: { searchParams?: { e
                   </div>
                 </div>
                 <p className="text-gray-600 mt-3 line-clamp-2">{ep.description}</p>
+                {ep.tags?.length ? (
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                    {ep.tags.map((tg) => (
+                      <Link key={tg} href={`/podcast?tag=${encodeURIComponent(tg)}`} className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-gray-700 hover:bg-gray-200">#{tg}</Link>
+                    ))}
+                  </div>
+                ) : null}
               </article>
             </Link>
           ))}

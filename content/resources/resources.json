@@ -11,6 +11,7 @@
     "thumbnail": "/images/resources/acme-case-study.jpg",
     "author": "CloudFix Team",
     "url": "/resources/case-study-acme",
+    "downloadUrl": "/downloads/case-studies/acme.pdf",
     "metadata": { "views": 1200, "downloads": 400 }
   },
   {
@@ -28,4 +29,3 @@
     "metadata": { "views": 220, "downloads": 0 }
   }
 ]
-
