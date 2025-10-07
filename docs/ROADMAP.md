@@ -175,10 +175,16 @@ Features:     6/15  (40%)  ████████░░░░░░░░░�
   - [ ] Add `NEXT_PUBLIC_WEBHOOK_URL`
   - [ ] Add `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`
   - [ ] Add analytics keys (GA, HubSpot)
+  - [ ] Add Vercel Analytics
   - [ ] Add feature flags
 - [ ] Update Newsletter.tsx to use env vars
 - [ ] Create `.env.example` template
 - [ ] Add environment validation
+- [ ] **Vercel Analytics Setup** (NEW)
+  - [ ] Install `@vercel/analytics` package
+  - [ ] Add `<Analytics />` component to root layout
+  - [ ] Configure analytics in Vercel dashboard
+  - [ ] Verify data collection
 
 **Effort**: 2 hours
 
@@ -320,8 +326,8 @@ Features:     6/15  (40%)  ████████░░░░░░░░░�
 **Dependencies**: Phase 2
 **Target Completion**: October 27, 2025
 
-### 3.1 Product Pages
-- [ ] **/cloudfix Page**
+-### 3.1 Product Pages
+- [x] **/cloudfix Page**
   - [ ] Hero section
   - [ ] Features breakdown
   - [ ] How it works section
@@ -331,7 +337,7 @@ Features:     6/15  (40%)  ████████░░░░░░░░░�
   - [ ] SEO metadata
   - **Effort**: 12-15 hours
 
-- [ ] **/rightspend Page**
+- [x] **/rightspend Page**
   - [ ] Hero section
   - [ ] Features breakdown
   - [ ] Use cases
@@ -341,7 +347,7 @@ Features:     6/15  (40%)  ████████░░░░░░░░░�
   - [ ] SEO metadata
   - **Effort**: 12-15 hours
 
-- [ ] **/querylens Page**
+- [x] **/querylens Page**
   - [ ] Hero section
   - [ ] Features breakdown
   - [ ] SQL optimization examples
