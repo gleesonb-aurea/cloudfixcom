@@ -6,7 +6,6 @@ import MDXImage from '@/components/mdx/MDXImage';
 import Image from 'next/image';
 import Link from 'next/link';
 
-export const dynamic = 'force-static';
 export const revalidate = 3600; // 1 hour ISR for blog posts
 
 interface BlogPostPageProps {
@@ -15,12 +14,8 @@ interface BlogPostPageProps {
   };
 }
 
-export async function generateStaticParams() {
-  const posts = await getAllPosts();
-  return posts.map((post) => ({
-    slug: post.slug.split('/'),
-  }));
-}
+// Note: Do not prebuild all post routes to keep build memory usage low.
+// Posts are generated on-demand with ISR (revalidate above).
 
 export async function generateMetadata({ params }: BlogPostPageProps) {
   const { slug } = params;
