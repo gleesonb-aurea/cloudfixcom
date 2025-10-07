@@ -1,6 +1,7 @@
 // ABOUTME: Podcast episode detail page with player and JSON-LD
 // ABOUTME: Shows guest info, show notes, and platform badges
 import type { Metadata } from 'next';
+export const revalidate = 21600; // 6 hours ISR
 export const revalidate = 21600; // 6 hours ISR for podcast episodes
 import Link from 'next/link';
 import { getEpisodeById, getAllEpisodes } from '@/lib/podcast';

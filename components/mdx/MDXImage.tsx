@@ -12,7 +12,6 @@ interface MDXImageProps {
 export default function MDXImage({ src, alt, width, height, className }: MDXImageProps) {
   if (!src) return null;
   const safeAlt = alt && alt.trim().length > 0 ? alt : 'Illustration';
-  // If explicit dimensions are not provided, use responsive fill with aspect-auto
   if (!width || !height) {
     return (
       <span className={className} style={{ display: 'block', position: 'relative' }}>

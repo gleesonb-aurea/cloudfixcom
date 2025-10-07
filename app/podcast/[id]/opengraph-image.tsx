@@ -32,3 +32,4 @@ export default async function Image({ params }: { params: { id: string } }) {
     { ...size }
   );
 }
+
