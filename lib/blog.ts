@@ -88,7 +88,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
       if (stat.isDirectory()) {
         const found = findMdxFile(fullPath, targetSlug);
         if (found) return found;
-      } else if (entry === `${targetSlug}.mdx`) {
+      } else if (fullPath.endsWith(`${targetSlug}.mdx`)) {
         return fullPath;
       }
     }
