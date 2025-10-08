@@ -106,6 +106,31 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   if (!fullPath) return null;
   const raw = fs.readFileSync(fullPath, 'utf8');
   const { data, content } = matter(raw);
+
+  // Sanitize unsafe angle-bracket tokens that MDX would treat as JSX
+  // but are intended as plain text in imported WordPress content.
+  const sanitizeForMdx = (src: string) => {
+    const lines = src.split(/\r?\n/);
+    let inFence = false;
+    return lines
+      .map((line) => {
+        const fenceMatch = line.match(/^\s*```/);
+        if (fenceMatch) {
+          inFence = !inFence;
+          return line;
+        }
+        if (inFence) return line;
+        // Broadly escape problematic MDX tokens outside code fences
+        let out = line
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/\{/g, '&#123;')
+          .replace(/\}/g, '&#125;');
+        return out;
+      })
+      .join('\n');
+    };
+  const safeContent = sanitizeForMdx(content);
   return {
     slug,
     title: data.title || slug,
@@ -118,7 +143,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     readTime: data.readTime || calcReadTime(content),
     image: data.image,
     seo: data.seo,
-    content,
+    content: safeContent,
   } as BlogPost;
 }
 

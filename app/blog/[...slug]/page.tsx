@@ -10,6 +10,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 export const revalidate = 3600; // 1 hour ISR for blog posts
+// Dynamic rendering with ISR; we intentionally avoid full pre-rendering
+// to keep build memory low and tolerate legacy MDX content.
 
 interface BlogPostPageProps {
   params: {
