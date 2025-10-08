@@ -17,9 +17,6 @@ export default function SecurityPage() {
   ];
   const complianceBadges = [
     { name: 'SOC 2 Type II', logo: '/images/security/soc2.svg' },
-    { name: 'ISO 27001', logo: '/images/security/iso27001.svg' },
-    { name: 'GDPR', logo: '/images/security/gdpr.svg' },
-    { name: 'HIPAA', logo: '/images/security/hipaa.svg' },
   ];
 
   return (
@@ -76,4 +73,3 @@ export default function SecurityPage() {
     </div>
   );
 }
-

@@ -11,32 +11,39 @@ export const metadata = {
 export default function LeadershipPage() {
   const leadershipTeam = [
     {
-      name: 'John Smith',
-      role: 'Chief Executive Officer',
-      bio: '20+ years building cloud and SaaS products.',
-      photoSrc: '/images/CloudFix_Logo_Color.png',
-      socials: [
-        { type: 'linkedin' as const, href: 'https://linkedin.com' },
-        { type: 'twitter' as const, href: 'https://twitter.com' },
-      ],
+      name: 'Brandon Pizzacalla',
+      role: 'CEO',
+      bio: 'Leads CloudFix with a focus on scaling SaaS and customer outcomes.',
+      photoSrc: 'https://cloudfix.com/wp-content/uploads/brandon-with-background.png',
+      socials: [],
     },
     {
-      name: 'Jane Doe',
-      role: 'Chief Technology Officer',
-      bio: 'Scaled platforms to millions of workloads on AWS.',
-      photoSrc: '/images/CloudFix_Logo_Color.png',
-      socials: [
-        { type: 'linkedin' as const, href: 'https://linkedin.com' },
-      ],
+      name: 'Rahul Subramaniam',
+      role: 'Founder',
+      bio: 'Founder and long-time AWS advocate.',
+      photoSrc: 'https://cloudfix.com/wp-content/uploads/Rahul-600x600-1.jpg',
+      socials: [],
     },
     {
-      name: 'Alex Kim',
-      role: 'VP, Product',
-      bio: 'Leads product strategy and customer experience.',
-      photoSrc: '/images/CloudFix_Logo_Color.png',
-      socials: [
-        { type: 'linkedin' as const, href: 'https://linkedin.com' },
-      ],
+      name: 'Stephen Barr',
+      role: 'Chief Evangelist',
+      bio: 'Chief Evangelist for CloudFix and host of AWS Insiders.',
+      photoSrc: 'https://cloudfix.com/wp-content/uploads/stephen-barr_3-600x600.jpg',
+      socials: [],
+    },
+    {
+      name: 'Bill Gleeson',
+      role: 'Chief Solutions Architect',
+      bio: 'Drives solution architecture and customer success.',
+      photoSrc: 'https://cloudfix.com/wp-content/uploads/bill-gleeson.jpeg',
+      socials: [],
+    },
+    {
+      name: 'Dmitry Degtyarev',
+      role: 'Vice President of Technical Product Management',
+      bio: 'Leads technical product management for CloudFix.',
+      photoSrc: 'https://cloudfix.com/wp-content/uploads/dimitry-square.png',
+      socials: [],
     },
   ];
 

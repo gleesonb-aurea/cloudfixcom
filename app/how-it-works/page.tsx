@@ -42,8 +42,6 @@ export default function HowItWorksPage() {
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
           <PartnerLogo name="AWS Partner" logo="/images/aws-Partner.png" />
           <PartnerLogo name="SOC 2" logo="/images/soc2-img.webp" />
-          <PartnerLogo name="ISO 27001" logo="/images/security/iso27001.svg" />
-          <PartnerLogo name="GDPR" logo="/images/security/gdpr.svg" />
         </div>
       </ContentBlock>
 
@@ -59,4 +57,3 @@ export default function HowItWorksPage() {
     </div>
   );
 }
-

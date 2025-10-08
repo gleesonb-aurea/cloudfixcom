@@ -1,0 +1,696 @@
+
+
+<!doctype html>
+<html lang="en-US">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>security | CloudFix</title>
+	<style>img:is([sizes="auto" i], [sizes^="auto," i]) { contain-intrinsic-size: 3000px 1500px }</style>
+	<meta name="cs-utms" data-utms="eyJnY2xpZCI6WyJnY2xpZCIsImdjbGlkX19jIl0sInV0bV9hZGdyb3VwIjpbInV0bV9hZGdyb3VwIiwidXRtQWRncm91cCJdLCJ1dG1fY2FtcGFpZ24iOlsidXRtX2NhbXBhaWduIiwidXRtQ2FtcGFpZ24iXSwidXRtX2NvbnRlbnQiOlsidXRtX2NvbnRlbnQiLCJ1dG1Db250ZW50Il0sInV0bV9tZWRpdW0iOlsidXRtX21lZGl1bSIsInV0bU1lZGl1bSJdLCJ1dG1fc291cmNlIjpbInV0bV9zb3VyY2UiLCJ1dG1Tb3VyY2UiXSwidXRtX3Rlcm0iOlsidXRtX3Rlcm0iLCJ1dG1UZXJtIl19" />
+
+<!-- The SEO Framework by Sybre Waaijer -->
+<meta name="robots" content="noindex,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
+<meta name="theme-color" content="#ed8705" />
+<meta property="og:type" content="article" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:site_name" content="CloudFix" />
+<meta property="og:title" content="security" />
+<meta property="og:url" content="https://cloudfix.com/security/" />
+<meta property="og:image" content="https://cloudfix.com/wp-content/uploads/security.png" />
+<meta property="og:image:width" content="2000" />
+<meta property="og:image:height" content="1134" />
+<meta property="article:published_time" content="2022-01-14T17:38:30+00:00" />
+<meta property="article:modified_time" content="2022-01-14T17:38:30+00:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="security" />
+<meta name="twitter:image" content="https://cloudfix.com/wp-content/uploads/security.png" />
+<meta name="google-site-verification" content="FszjR3BZ3PkMtMhmsyN2N0rKP96dOocZNpowlzP2ET4" />
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://cloudfix.com/#/schema/WebSite","url":"https://cloudfix.com/","name":"CloudFix","inLanguage":"en-US","publisher":{"@type":"Organization","@id":"https://cloudfix.com/#/schema/Organization","name":"CloudFix","url":"https://cloudfix.com/","logo":{"@type":"ImageObject","url":"https://cloudfix.com/wp-content/uploads/cropped-cloudfix_favicon.png","contentUrl":"https://cloudfix.com/wp-content/uploads/cropped-cloudfix_favicon.png","width":512,"height":512,"contentSize":"29744"}}},{"@type":"WebPage","@id":"https://cloudfix.com/security/","url":"https://cloudfix.com/security/","name":"security | CloudFix","inLanguage":"en-US","isPartOf":{"@id":"https://cloudfix.com/#/schema/WebSite"},"potentialAction":{"@type":"ReadAction","target":"https://cloudfix.com/security/"},"datePublished":"2022-01-14T17:38:30+00:00","dateModified":"2022-01-14T17:38:30+00:00","author":{"@type":"Person","@id":"https://cloudfix.com/#/schema/Person/4d1638a89b687138058c34e1f2c6635c","name":"Alex Kager"}}]}</script>
+<!-- / The SEO Framework by Sybre Waaijer | 3.29ms meta | 0.41ms boot -->
+
+<link rel='dns-prefetch' href='//www.googletagmanager.com' />
+<link rel="dns-prefetch" href="//fonts.googleapis.com"><link rel="preconnect" href="//fonts.gstatic.com" crossorigin><link rel="preconnect" href="https://forms.hsforms.com"><style id='classic-theme-styles-inline-css' type='text/css'>
+/*! This file is auto-generated */
+.wp-block-button__link{color:#fff;background-color:#32373c;border-radius:9999px;box-shadow:none;text-decoration:none;padding:calc(.667em + 2px) calc(1.333em + 2px);font-size:1.125em}.wp-block-file__button{background:#32373c;color:#fff;text-decoration:none}
+</style>
+<style id='safe-svg-svg-icon-style-inline-css' type='text/css'>
+.safe-svg-cover{text-align:center}.safe-svg-cover .safe-svg-inside{display:inline-block;max-width:100%}.safe-svg-cover svg{fill:currentColor;height:100%;max-height:100%;max-width:100%;width:100%}
+
+</style>
+<link rel='stylesheet' id='main-style-css' href='http://cloudfix.com/wp-content/themes/cloudfix-3-theme/css/style.min.css?ver=fc056ebc' type='text/css' media='all' />
+<link rel='stylesheet' id='__EPYT__style-css' href='http://cloudfix.com/wp-content/plugins/youtube-embed-plus/styles/ytprefs.min.css?ver=14.2.3' type='text/css' media='all' />
+<style id='__EPYT__style-inline-css' type='text/css'>
+
+                .epyt-gallery-thumb {
+                        width: 33.333%;
+                }
+                
+</style>
+<script type="text/javascript" src="http://cloudfix.com/wp-content/themes/cloudfix-3-theme/js/jquery.min.js?ver=3.6.1" id="jquery-js"></script>
+<script type="text/javascript" src="http://cloudfix.com/wp-content/plugins/creativestudio-utms/creativestudio-utm-io.min.js?ver=1718192433" id="utm-io-js"></script>
+
+<!-- Google tag (gtag.js) snippet added by Site Kit -->
+<!-- Google Analytics snippet added by Site Kit -->
+<script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=GT-NFJ5M95M" id="google_gtagjs-js" async></script>
+<script type="text/javascript" id="google_gtagjs-js-after">
+/* <![CDATA[ */
+window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}
+gtag("set","linker",{"domains":["cloudfix.com"]});
+gtag("js", new Date());
+gtag("set", "developer_id.dZTNiMT", true);
+gtag("config", "GT-NFJ5M95M");
+/* ]]> */
+</script>
+<script type="text/javascript" id="__ytprefs__-js-extra">
+/* <![CDATA[ */
+var _EPYT_ = {"ajaxurl":"https:\/\/cloudfix.com\/wp-admin\/admin-ajax.php","security":"36f6f70855","gallery_scrolloffset":"20","eppathtoscripts":"http:\/\/cloudfix.com\/wp-content\/plugins\/youtube-embed-plus\/scripts\/","eppath":"http:\/\/cloudfix.com\/wp-content\/plugins\/youtube-embed-plus\/","epresponsiveselector":"[\"iframe.__youtube_prefs__\"]","epdovol":"1","version":"14.2.3","evselector":"iframe.__youtube_prefs__[src], iframe[src*=\"youtube.com\/embed\/\"], iframe[src*=\"youtube-nocookie.com\/embed\/\"]","ajax_compat":"","maxres_facade":"eager","ytapi_load":"light","pause_others":"","stopMobileBuffer":"1","facade_mode":"1","not_live_on_channel":""};
+/* ]]> */
+</script>
+<script type="text/javascript" src="http://cloudfix.com/wp-content/plugins/youtube-embed-plus/scripts/ytprefs.min.js?ver=14.2.3" id="__ytprefs__-js"></script>
+<meta name="generator" content="Site Kit by Google 1.162.1" />
+<!-- Google Tag Manager snippet added by Site Kit -->
+<script type="text/javascript">
+/* <![CDATA[ */
+
+			( function( w, d, s, l, i ) {
+				w[l] = w[l] || [];
+				w[l].push( {'gtm.start': new Date().getTime(), event: 'gtm.js'} );
+				var f = d.getElementsByTagName( s )[0],
+					j = d.createElement( s ), dl = l != 'dataLayer' ? '&l=' + l : '';
+				j.async = true;
+				j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+				f.parentNode.insertBefore( j, f );
+			} )( window, document, 'script', 'dataLayer', 'GTM-W5HRQV94' );
+			
+/* ]]> */
+</script>
+
+<!-- End Google Tag Manager snippet added by Site Kit -->
+<link rel="icon" href="https://cloudfix.com/wp-content/uploads/cropped-cloudfix_favicon-32x32.png" sizes="32x32" />
+<link rel="icon" href="https://cloudfix.com/wp-content/uploads/cropped-cloudfix_favicon-192x192.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="https://cloudfix.com/wp-content/uploads/cropped-cloudfix_favicon-180x180.png" />
+<meta name="msapplication-TileImage" content="https://cloudfix.com/wp-content/uploads/cropped-cloudfix_favicon-270x270.png" />
+		<style type="text/css" id="wp-custom-css">
+			.partner-logo-bar .logo-grid figure img {
+    max-height:80px
+}
+
+		</style>
+			<meta name="facebook-domain-verification" content="jltibmbve9twxwrm68qgyzx60lvnk6" />
+			
+<!-- RB2B Code Start -->
+	<script>!function () {var reb2b = window.reb2b = window.reb2b || [];if (reb2b.invoked) return;reb2b.invoked = true;reb2b.methods = ["identify", "collect"];reb2b.factory = function (method) {return function () {var args = Array.prototype.slice.call(arguments);args.unshift(method);reb2b.push(args);return reb2b;};};for (var i = 0; i < reb2b.methods.length; i++) {var key = reb2b.methods[i];reb2b[key] = reb2b.factory(key);}reb2b.load = function (key) {var script = document.createElement("script");script.type = "text/javascript";script.async = true;script.src = "https://s3-us-west-2.amazonaws.com/b2bjsstore/b/" + key + "/reb2b.js.gz";var first = document.getElementsByTagName("script")[0];first.parentNode.insertBefore(script, first);};reb2b.SNIPPET_VERSION = "1.0.1";reb2b.load("1W6Z57H88ZOX");}();</script>
+	
+<!-- Apollo Code Start 
+	<script>function initApollo(){var n=Math.random().toString(36).substring(7),o=document.createElement("script");
+o.src="https://assets.apollo.io/micro/website-tracker/tracker.iife.js?nocache="+n,o.async=!0,o.defer=!0,
+o.onload=function(){window.trackingFunctions.onLoad({appId:"6602e615b2af9b0439deed0c"})},
+document.head.appendChild(o)}initApollo();</script>
+-->
+
+<!-- Clearbit Code Start 
+	<script src="https://tag.clearbitscripts.com/v1/pk_d2ce159ab97f44bd0f0205c004a9a6df/tags.js" referrerpolicy="strict-origin-when-cross-origin"></script> 
+-->
+
+<!-- Vector.co -->
+<script>
+    !function(e,r){try{if(e.vector)return void console.log("Vector snippet included more than once.");var t={};t.q=t.q||[];for(var o=["load","identify","on"],n=function(e){return function(){var r=Array.prototype.slice.call(arguments);t.q.push([e,r])}},c=0;c<o.length;c++){var a=o[c];t[a]=n(a)}if(e.vector=t,!t.loaded){var i=r.createElement("script");i.type="text/javascript",i.async=!0,i.src="https://cdn.vector.co/pixel.js";var l=r.getElementsByTagName("script")[0];l.parentNode.insertBefore(i,l),t.loaded=!0}}catch(e){console.error("Error loading Vector:",e)}}(window,document);
+    vector.load("c508370a-07fb-4614-a57b-75d008706eb8");
+</script>
+
+<script src="https://cdn.brevo.com/js/sdk-loader.js" async></script>
+<script>
+    // Version: 2.0
+    window.Brevo = window.Brevo || [];
+    Brevo.push([
+        "init",
+        {
+        client_key: "d94u370r1z8zl177hhp0ebec",
+        // Optional: Add other initialization options, see documentation
+        }
+    ]);
+</script>
+
+</head>
+
+<body class="attachment wp-singular attachment-template-default single single-attachment postid-945 attachmentid-945 attachment-png wp-theme-cloudfix-3-theme eu">
+			<header id="top" class="page-header are-sticky">
+		<a class="screen-reader-shortcut" href="#main" tabindex="1">Skip to Main Content</a>
+		<nav class="inner">
+			<div class="logo-container"><a class="header-logo" href="https://cloudfix.com/"><svg width="196" height="38" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+						<symbol id="brandmark" viewBox="0 0 195 195">
+							<title>CloudFix logo</title>
+							<path fill="currentColor" d="M0 96.27C0 43.18 43.18 0 96.27 0v50.18c-25.09 0-44.93 19.84-46.1 44.34-1.17 25.68 18.67 46.67 44.35 47.84 25.67 1.17 46.67-18.67 47.85-44.34v-1.75h50.18v1.75c-1.17 52.51-43.76 94.52-96.27 94.52S0 149.37 0 96.27M109.11 0v50.18h33.26v33.25h50.18V0h-83.44Z" />
+						</symbol>
+						<symbol id="cloudfix-logo" viewBox="0 0 1080 202.26">
+							<path fill="currentColor" d="m98.4 13.811c-48.16 0-87.32 39.159-87.32 87.309 0 48.16 39.161 87.32 87.311 87.32 47.63 0 86.26-38.099 87.32-85.729v-1.5918h-45.512v1.5918 0.00976c-1.06 23.28-20.109 41.279-43.389 40.219-23.28-1.06-41.281-20.109-40.221-43.389 1.06-22.23 19.051-40.221 41.811-40.221v-45.52zm11.639 0.009765v45.51h30.16v30.16h45.512v-75.67h-75.672zm417.8 27.66c-7.0125 0-14.026 1.1903-20.906 3.5703-5.82 2.11-10.59 5.2895-14.82 9.5195-4.24 4.24-6.88 8.9991-9 14.289-2.11 5.82-3.1692 11.641-3.6992 17.461 0 2.12-0.53 4.7589 0 6.8789v7.9414 7.9395 6.8809c0.53 5.82 1.5792 11.639 3.6992 17.459 2.12 5.29 5.3 10.061 9 14.291 4.24 4.24 9.5303 7.4093 14.82 9.5293 13.23 4.76 28.051 4.76 41.811 0 5.29-2.11 10.59-5.2895 14.82-9.5195 4.24-4.24 6.88-9.001 9-14.291 2.11-5.82 3.1692-11.639 3.6992-17.459v-6.8809-7.9394-7.9395-6.8809c-0.53-5.82-1.5792-11.641-3.6992-17.461-2.12-5.29-5.3-10.059-9-14.289-4.24-4.24-9.0003-7.4093-14.82-9.5293-6.88-2.38-13.892-3.5703-20.904-3.5703zm-209.77 0.79492c-6.0128-0.11785-11.975 0.97617-17.531 3.2949-11.11 3.7-20.11 12.701-24.34 23.811-2.64 5.82-3.6985 12.17-4.2285 18.52-0.53 4.23-0.53125 8.4698-0.53125 13.76 0 4.76 0.53125 9.5298 0.53125 13.76 0.53 6.35 2.1085 12.7 4.2285 18.52 4.23 11.11 13.23 19.581 24.34 23.811 6.35 2.12 13.231 3.1797 20.111 3.1797 7.41 0 14.819-1.0492 21.699-3.6992 5.29-2.12 10.59-5.3 14.82-9 4.24-3.17 6.88-7.4099 9-12.17 1.59-4.23 2.6497-8.9998 3.1797-13.76 0.53-1.06-5.5e-4 -2.1216-1.0606-3.1816-1.06-0.53-2.1197-1.0586-3.1797-1.0586h-13.229c-1.06 0-2.1216 0.52859-3.1816 1.0586s-1.5898 2.1216-1.5898 3.1816l-0.00977 0.01953c-0.53 2.12-1.5891 4.7589-2.1191 6.8789-1.06 2.12-2.6398 4.2303-4.7598 5.8203-2.65 2.11-5.2914 3.1705-7.9414 4.2305-3.7 1.06-7.4094 1.5898-11.109 1.5898-3.7 0-7.4094-0.52914-11.109-2.1191-3.18-1.06-5.8214-3.171-7.9414-5.291-2.11-2.12-3.6998-4.7595-4.7598-7.9395-1.06-3.17-2.1192-6.8708-2.1192-10.051-0.53-4.23-0.52929-8.9998-0.52929-13.76 0-4.76 0.52929-9.5298 0.52929-13.76 0-3.18 1.0592-6.3493 2.1192-9.5293 1.06-3.18 2.6398-5.8214 4.7598-7.9414s4.7614-4.2291 7.9414-5.2891c3.7-1.59 7.4094-2.1211 11.109-2.1211 3.7 0 7.4094 0.5318 11.109 1.5918 2.65 1.05 5.8214 2.6385 7.9414 4.2285 1.58 1.59 3.6998 3.7003 4.7598 5.8203 1.06 2.12 1.5891 4.2296 2.1191 6.3496 0 1.06 0.52984 2.6516 1.5898 3.1816 1.06 0.53 2.1197 1.0586 3.1797 1.0586h13.23c1.06 0 2.1197 0.001405 3.1797-1.0586 0.53-0.53 1.0605-2.1216 1.0605-3.1816 0-4.76-1.5799-9.5298-3.1699-13.76-2.12-4.76-5.3-8.4699-9-12.17-4.24-3.71-9.5303-6.88-14.82-9-6.88-2.64-14.289-3.6992-21.699-3.6992-0.86-0.06625-1.7211-0.10816-2.5801-0.125zm401.31 0.4375c-0.795-0.024844-1.5898 0.47258-2.3848 1.2676-0.53 1.06-1.0606 2.1197-1.0606 3.1797v107.42c-0.53 1.06 5.5e-4 2.1197 1.0606 3.1797 1.06 0.53 2.1197 1.0605 3.1797 1.0605h41.281c6.88 0 13.759-1.0499 20.639-3.1699 5.82-1.59 10.59-4.77 14.82-9 3.71-3.71 6.88-9.001 9-14.291 2.11-6.35 3.1692-12.699 3.6992-19.049 0.53-7.94 0.53-16.4 0-24.34 0-6.88-1.5792-13.231-3.6992-19.051-4.23-11.11-13.23-20.111-24.34-23.811-6.88-2.12-13.76-3.1797-21.17-3.1797l-0.00977-0.009766h-40.221c-0.265-0.1325-0.52992-0.19875-0.79492-0.20703zm-33.064 0.20703-13.76 0.5293c-1.06-0.53-2.1197 5.48e-4 -3.1797 1.0605s-1.5918 2.1197-1.5918 3.1797v67.211c0 4.23-0.52914 7.9387-2.1191 11.639-1.06 3.18-3.1691 5.8214-5.2891 7.9414-2.12 1.58-4.7614 3.1705-7.9414 4.2305-3.17 1.06-6.8688 1.5898-10.049 1.5898-3.17 0-6.8708-0.52984-10.051-1.5898-3.18-0.53-5.8194-2.1105-7.9394-4.2305-2.64-2.12-4.231-4.7614-5.291-7.9414-1.06-3.7-1.5898-7.9387-1.5898-11.639v-67.211c0.53-1.06 0.00141-2.1197-1.0586-3.1797-1.06-0.53-2.1216-1.0605-3.1816-1.0605h-13.229c-1.06-0.53-2.1216 5.48e-4 -3.1816 1.0605-0.53 1.06-1.0586 2.1197-1.0586 3.1797v68.26c-0.52 6.35 0.53039 12.701 2.6504 18.521 2.12 5.29 4.77 10.059 9 14.289 4.24 3.71 9.5284 6.88 14.818 9 13.76 4.23 28.051 4.23 41.281 0 5.82-2.11 10.59-5.2895 14.82-9.5195 4.24-4.24 7.41-9.001 9-14.291 2.12-5.82 3.1797-12.17 3.1797-18.52v-68.26c0-1.06-5.5e-4 -2.1197-1.0606-3.1797-1.06-0.53-2.1197-1.0605-3.1797-1.0605v-0.009766zm219.08 0-70.381 0.5293c-1.06-0.53-2.1197 5.48e-4 -3.1797 1.0605-0.53 1.06-1.0605 2.1197-1.0605 3.1797v106.93c0 2.11 1.5805 4.2305 4.2305 4.2305h13.23c1.06 0.53 2.1197-5.5e-4 3.1797-1.0606s1.5898-2.1197 1.5898-3.1797v-38.1h49.211c1.06 0 2.1197-0.52985 3.1797-1.5898 0.53-1.06 1.0606-2.1197 1.0606-3.1797v-11.641c0.53-1.06-5.5e-4 -2.1197-1.0606-3.1797-1.06-0.53-2.1197-1.0605-3.1797-1.0605h-49.211v-32.279h52.391c1.06 0 2.1197-0.52984 3.1797-1.5898 0.53-1.06 1.0605-2.1197 1.0605-3.1797v-11.641c0-1.06-5.4e-4 -2.1197-1.0605-3.1797-1.06-0.53-2.1197-1.0605-3.1797-1.0605v-0.009766zm66.984 0.3125c-0.795-0.024844-1.5898 0.47258-2.3848 1.2676-0.53 1.06-1.0606 2.1197-1.0606 3.1797 0 0.53 5.5e-4 1.0611 1.0606 2.1211l35.98 50.799-37.57 52.92c-0.53 0.53-0.5293 1.0598-0.5293 1.5898-0.53 1.06-0.00141 2.1197 1.0586 3.1797 1.06 0.53 2.1197 1.0606 3.1797 1.0606h13.762c1.58 0 3.6998-0.52985 4.7598-1.5898 1.06-1.06 1.5892-2.1204 2.1192-2.6504l25.93-36.51 25.93 36.51c0.53 0.52999 1.0611 1.5904 2.1211 2.6504 1.06 1.06 3.1698 1.5898 4.7598 1.5898v-0.00977l13.23-0.52929c2.11 0 4.2304-1.5805 4.2304-4.2305 0-0.53-0.0012-1.0598-0.5312-1.5898l-37.039-52.391 35.99-51.33c0.53-0.53 0.5293-1.0598 0.5293-1.5898 0.53-1.06-6e-4 -2.1197-1.0606-3.1797-1.06-0.53-2.1197-1.0605-3.1797-1.0605h-13.76c-1.58 0-3.6998 0.52984-4.7598 1.5898s-1.5911 2.1204-2.1211 2.6504l-24.34 34.93-24.869-34.93c-0.53-0.53-1.0611-1.5904-2.1211-2.6504s-3.1698-1.5898-4.7598-1.5898h-13.76c-0.265-0.1325-0.52992-0.19875-0.79492-0.20703zm-580.03 0.009766c-0.795-0.024844-1.5898 0.47258-2.3848 1.2676-0.53 1.06-1.0605 2.1197-1.0605 3.1797v107.43c-0.53 1.06 5.4e-4 2.1216 1.0605 3.1816 1.06 0.53 2.1197 1.0586 3.1797 1.0586h71.969c1.06 0.52999 2.1216 0.0014 3.1816-1.0586 0.53-1.06 1.0586-2.1216 1.0586-3.1816v-11.639c0.52999-1.06 0.0014-2.1197-1.0586-3.1797s-2.1216-1.5898-3.1816-1.5898v0.52929h-54.5v-91.02c0.53-1.06 0.00141-2.1216-1.0586-3.1816-1.06-1.06-2.1197-1.5898-3.1797-1.5898h-13.23c-0.265-0.1325-0.52992-0.19875-0.79492-0.20703zm540.3 0c-0.795-0.024844-1.5898 0.47258-2.3848 1.2676-0.53 1.06-1.0586 2.1197-1.0586 3.1797v107.42c-0.53 1.06-0.00141 2.1197 1.0586 3.1797 1.06 0.53 2.1197 1.0606 3.1797 1.0606h13.23c1.06 0.53 2.1197-5.5e-4 3.1797-1.0606 0.52999-1.06 1.0605-2.1197 1.0605-3.1797v-107.42c0.53-1.06-5.5e-4 -2.1197-1.0605-3.1797-1.06-0.53-2.1197-1.0605-3.1797-1.0605h-13.23c-0.265-0.1325-0.52992-0.19875-0.79492-0.20703zm-407.64 19.215c0.84241-0.03 1.6947-0.013515 2.5547 0.052735h2.6504c13.23 0 23.809 11.641 23.279 24.871 0.53 4.24 0.5293 8.9991 0.5293 14.289 0 5.29-0.5293 10.061-0.5293 14.291 0 14.29-11.64 25.93-25.93 25.93-14.29 0-25.93-11.64-25.93-25.93-0.52999-4.24-0.53124-9.001-0.53124-14.291 0-5.29 0.53124-10.059 0.53124-14.289 0-6.88 2.6502-13.761 7.4102-18.521 4.6288-3.7012 10.068-6.1923 15.965-6.4023zm212.1 1.1133h22.23c4.23 0 8.4699 0.52914 12.17 2.1191 6.35 2.12 11.64 6.8805 13.76 13.23 1.06 3.17 2.1211 6.8708 2.1211 10.051h-0.00977c0.53 7.93 0.52875 16.399-0.53124 23.809 0 3.7-1.0592 6.8708-2.1192 10.051-1.06 3.18-2.6398 5.8194-4.7598 7.9394-2.65 2.12-5.2907 4.231-8.4707 5.291-3.7 1.59-7.9406 2.1191-11.641 2.1191h-22.75v-74.609z" />
+						</symbol>
+						<symbol id="twitter-logo" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M24 4.6c-.9.3-1.8.6-2.8.7a5 5 0 0 0 2.1-2.7c-1 .6-2 1-3 1.2a5 5 0 0 0-8.5 4.5A14 14 0 0 1 1.7 3a5 5 0 0 0 1.5 6.6c-.8 0-1.6-.2-2.2-.6A5 5 0 0 0 5 14a5 5 0 0 1-2.3 0 5 5 0 0 0 4.6 3.5 9.9 9.9 0 0 1-7.3 2A14 14 0 0 0 21.5 7.1 10 10 0 0 0 24 4.6z" />
+						</symbol>
+						<symbol id="linkedin-logo" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M5 3.5C5 4.9 3.9 6 2.5 6S0 4.9 0 3.5 1.1 1 2.5 1 5 2.1 5 3.5zM5 8H0v16h5V8zm8 0H8v16h5v-8.4c0-4.7 6-5 6 0V24h5V13.9c0-8-9-7.6-11-3.7V8z" />
+						</symbol>
+						<symbol id="youtube-logo" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M22.6 6.7c-.2-.9-1-1.7-1.9-1.9-1.8-.5-8.7-.5-8.7-.5s-6.9 0-8.6.4c-.9.3-1.7 1-1.9 2C1 8.4 1 12 1 12s0 3.6.4 5.3c.3.9 1 1.7 1.9 1.9 1.7.5 8.6.5 8.6.5s6.9 0 8.6-.4c.9-.3 1.7-1 1.9-1.9.6-1.8.6-5.4.6-5.4s0-3.6-.4-5.3zM9.8 15.3V8.7l5.7 3.3-5.7 3.3z" />
+						</symbol>
+						<use xlink:href="#cloudfix-logo"></use>
+					</svg></a></div>
+					<input class="menu-btn" type="checkbox" id="menu-btn" style="display:none" />
+		<div class="menu-container">
+			<ul id="menu-header-menu" class="header-nav menu"><li id="menu-item-14836" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-14836"><a href="#">Solutions</a>
+<ul class="sub-menu">
+	<li id="menu-item-10785" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10785"><a href="https://cloudfix.com/product/">CloudFix &#8211; Cost Optimization</a></li>
+	<li id="menu-item-15108" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-15108"><a href="https://cloudfix.com/rightspend/">RightSpend &#8211; Discount Optimization</a></li>
+	<li id="menu-item-16079" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-16079"><a href="https://cloudfix.com/querylens/">QueryLens &#8211; Database Upgrade Assistant</a></li>
+	<li id="menu-item-16613" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-16613"><a href="https://cloudfix.com/mcp-servers-for-aws-cost-optimization/">MCP Servers for AWS Cost Optimization</a></li>
+</ul>
+</li>
+<li id="menu-item-16626" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-16626"><a href="https://cloudfix.com/pricing/">Pricing</a></li>
+<li id="menu-item-16057" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-16057"><a href="https://cloudfix.com/assessment/">Assessment</a></li>
+<li id="menu-item-16058" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-16058"><a href="#">Services</a>
+<ul class="sub-menu">
+	<li id="menu-item-16069" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-16069"><a href="https://cloudfix.com/aws-cost-optimization-cloudfix-professional-services/">Cost Optimization Services</a></li>
+</ul>
+</li>
+<li id="menu-item-15946" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-15946"><a href="#">Partnerships</a>
+<ul class="sub-menu">
+	<li id="menu-item-10831" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10831"><a href="https://cloudfix.com/aws/">AWS Partnership</a></li>
+	<li id="menu-item-15947" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-15947"><a href="https://cloudfix.com/partnerships-become-a-referral-partner/">Become a Referral Partner!</a></li>
+	<li id="menu-item-15948" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-15948"><a href="https://cloudfix.com/partner-opportunity-submission/">Partner Opportunity Submission</a></li>
+</ul>
+</li>
+<li id="menu-item-10939" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10939"><a href="https://cloudfix.com/success-stories/">Success Stories</a></li>
+<li id="menu-item-10498" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-10498"><a href="#">Resources</a>
+<ul class="sub-menu">
+	<li id="menu-item-10783" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10783"><a href="https://cloudfix.com/resources/">All Resources</a></li>
+	<li id="menu-item-16665" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-16665"><a href="https://cloudfix.com/webinar-index/">Webinar Index</a></li>
+	<li id="menu-item-10596" class="menu-item menu-item-type-post_type menu-item-object-page current_page_parent menu-item-10596"><a href="https://cloudfix.com/blog/">Blog</a></li>
+	<li id="menu-item-12477" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-12477"><a href="https://cloudfix.com/livestream/">Livestream</a></li>
+	<li id="menu-item-11006" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-11006"><a href="https://cloudfix.com/videos/">Videos</a></li>
+	<li id="menu-item-10866" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10866"><a href="https://cloudfix.com/news-events/">News &#038; Events</a></li>
+	<li id="menu-item-10830" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10830"><a href="https://cloudfix.com/leadership/">Leadership</a></li>
+	<li id="menu-item-10503" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10503"><a href="https://cloudfix.com/about-us/">About Us</a></li>
+</ul>
+</li>
+</ul>		</div>
+        <div class="hamburger">
+            <label class="menu-icon" for="menu-btn"><span class="navicon"></span></label>
+        </div>
+				<ul class="social-icons">
+<li><a href="https://www.linkedin.com/company/cloudfix-saves/" target="_blank" rel="noopener noreferrer" class="icon">
+    <svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="display:none">
+    <title>LinkedIn</title>
+    <use xlink:href="#linkedin-logo" />
+    </svg>
+  </a></li>
+<li><a href="https://twitter.com/cloudfix_saves" target="_blank" rel="noopener noreferrer" class="icon">
+    <svg class="" aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="display:none">
+    <title>Twitter</title>  
+    <use xlink:href="#twitter-logo" />
+    </svg>
+  </a></li>
+<li><a href="https://www.youtube.com/@aureacloudfix" target="_blank" rel="noopener noreferrer" class="icon">
+    <svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="display:none">
+    <title>YouTube</title>
+    <use xlink:href="#youtube-logo" />
+    </svg>
+  </a></li>
+</ul>		</nav>
+		<div class="shape-container">
+			<div class="main-bg-shape"></div>
+		</div>
+	</header>
+	<main id="main" class="page-main"></main>
+<footer class="page-footer has-white-bg-color">
+	<div class="inner">
+		<div class="grid col-six has-black-color footer-nav">
+			<div class="sub footer-logo">
+				<img src="http://cloudfix.com/wp-content/themes/cloudfix-3-theme/images/CloudFix_Logo_Color.png?v2" width="208" height="39" alt="CloudFix Logo" />
+				<a class="primary-btn" href="/assessment/">Get a free savings assessment</a>
+			</div>
+			<div class="sub">
+				<ul id="menu-footer-1" class="menu"><li id="menu-item-10834" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10834"><a href="https://cloudfix.com/why-cloudfix/">Why CloudFix</a></li>
+<li id="menu-item-14838" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-14838"><a href="#">Products</a>
+<ul class="sub-menu">
+	<li id="menu-item-10833" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10833"><a href="https://cloudfix.com/product/">Cost Optimization</a></li>
+	<li id="menu-item-15109" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-15109"><a href="https://cloudfix.com/rightspend/">Discount Management</a></li>
+</ul>
+</li>
+<li id="menu-item-11092" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-11092"><a href="https://cloudfix.com/pricing/">Pricing</a></li>
+</ul>			</div>
+			<div class="sub">
+				<ul id="menu-footer-2" class="menu"><li id="menu-item-10835" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10835"><a href="https://cloudfix.com/aws/">AWS Partnership</a></li>
+<li id="menu-item-10581" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-10581"><a>Company</a>
+<ul class="sub-menu">
+	<li id="menu-item-10836" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10836"><a href="https://cloudfix.com/leadership/">Leadership</a></li>
+	<li id="menu-item-10583" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10583"><a href="https://cloudfix.com/about-us/">About us</a></li>
+	<li id="menu-item-10867" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10867"><a href="https://cloudfix.com/news-events/">News &#038; Events</a></li>
+</ul>
+</li>
+</ul>			</div>
+			<div class="sub">
+				<ul id="menu-footer-3" class="menu"><li id="menu-item-10585" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-10585"><a href="https://cloudfix.com/resources/">Resources</a>
+<ul class="sub-menu">
+	<li id="menu-item-10837" class="menu-item menu-item-type-post_type menu-item-object-page current_page_parent menu-item-10837"><a href="https://cloudfix.com/blog/">Blog</a></li>
+	<li id="menu-item-10938" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10938"><a href="https://cloudfix.com/success-stories/">Success Stories</a></li>
+	<li id="menu-item-10838" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10838"><a href="https://cloudfix.com/podcast/">Podcast</a></li>
+	<li id="menu-item-12476" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-12476"><a href="https://cloudfix.com/livestream/">Livestream</a></li>
+	<li id="menu-item-11007" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-11007"><a href="https://cloudfix.com/videos/">Videos</a></li>
+</ul>
+</li>
+</ul>			</div>
+			<div class="sub">
+				<ul id="menu-footer-4" class="menu"><li id="menu-item-10839" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-10839"><a href="https://cloudfix.com/contact-us/">Contact us</a></li>
+<li id="menu-item-10593" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-10593"><a target="_blank" href="https://support.cloudfix.com/">Support</a></li>
+<li id="menu-item-14693" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-14693"><a target="_blank" href="https://app.cloudfix.com/login/">Login</a></li>
+</ul>			</div>
+			<div class="sub partner-logos">
+				<img src="http://cloudfix.com/wp-content/themes/cloudfix-3-theme/images/aws_partner_logo.svg" width="100" height="100" alt="AWS Partner Logo" />
+				<img src="http://cloudfix.com/wp-content/themes/cloudfix-3-theme/images/finops_foundation_premier_partner.png" width="106" height="100" alt="Finops Foundation Premier Partner" />
+			</div>
+		</div>
+		<div class="footer-address">
+			2028 E Ben White Blvd., Ste 240-2650, Austin, TX 78741
+		</div>
+		<!-- <div class="footer-newsletter border">
+			<div class="grid col-two">
+				<div class="sub-one">
+					<p>Stay up to date with the latest news and content delivered to your inbox!</p>
+				</div>
+				 <div class="sub-two">
+					[hs_form form="896fabda-2a69-406c-a624-565d3652d600" analytics_name="newsletter-registration" validate="formSubmit"]				</div>
+				-->
+				
+<!-- CloudFix Newsletter Form - Embed this in WordPress -->
+<div class="cloudfix-newsletter-wrapper">
+    <style>
+        .cloudfix-newsletter-wrapper {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        .cloudfix-newsletter-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px 30px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            max-width: 800px;
+            margin: 40px auto;
+        }
+        
+        .cloudfix-newsletter-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            z-index: 1;
+        }
+        
+        .cloudfix-newsletter-section::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            z-index: 1;
+        }
+        
+        .newsletter-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .cloudfix-newsletter-section h3 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+        
+        .cloudfix-newsletter-section p {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 35px;
+            line-height: 1.5;
+        }
+        
+        .newsletter-form-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .newsletter-input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .newsletter-input-group {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .cloudfix-newsletter-section {
+                padding: 40px 20px;
+            }
+            .cloudfix-newsletter-section h3 {
+                font-size: 26px;
+            }
+        }
+        
+        .newsletter-email-input {
+            flex: 1;
+            padding: 16px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #2d3748;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+        
+        .newsletter-email-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+        
+        .newsletter-email-input::placeholder {
+            color: #718096;
+        }
+        
+        .newsletter-submit-btn {
+            background: #ffffff;
+            color: #667eea;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            box-sizing: border-box;
+        }
+        
+        @media (max-width: 768px) {
+            .newsletter-submit-btn {
+                width: 100%;
+            }
+        }
+        
+        .newsletter-submit-btn:hover {
+            background: #f7fafc;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .newsletter-submit-btn:disabled {
+            background: rgba(255, 255, 255, 0.7);
+            color: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .newsletter-form-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            display: none;
+            text-align: center;
+        }
+        
+        .newsletter-form-status.success {
+            background: rgba(72, 187, 120, 0.2);
+            color: #f0fff4;
+            border: 1px solid rgba(159, 230, 180, 0.5);
+        }
+        
+        .newsletter-form-status.error {
+            background: rgba(245, 101, 101, 0.2);
+            color: #fed7d7;
+            border: 1px solid rgba(254, 178, 178, 0.5);
+        }
+        
+        .newsletter-form-status.loading {
+            background: rgba(66, 153, 225, 0.2);
+            color: #ebf8ff;
+            border: 1px solid rgba(144, 205, 244, 0.5);
+        }
+        
+        .newsletter-privacy {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 20px;
+            line-height: 1.4;
+        }
+        
+        .newsletter-privacy a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: underline;
+        }
+    </style>
+    
+    <div class="cloudfix-newsletter-section">
+        <div class="newsletter-content">
+            <h3>Stay up to date with the latest news and content delivered to your inbox!</h3>
+            <p>Get insights on AWS cost optimization, industry trends, and CloudFix updates.</p>
+            
+            <div class="newsletter-form-container">
+                <form id="cloudfix-newsletter-form">
+                    <div class="newsletter-input-group">
+                        <input 
+                            type="email" 
+                            id="nl_email" 
+                            name="email" 
+                            class="newsletter-email-input"
+                            placeholder="Enter your email address" 
+                            required
+                        >
+                        <button type="submit" class="newsletter-submit-btn">Subscribe</button>
+                    </div>
+                    
+                    <div class="newsletter-form-status" id="nl-form-status"></div>
+                </form>
+                
+                <p class="newsletter-privacy">
+                    We respect your privacy. Unsubscribe at any time. 
+                    <a href="/privacy-policy" target="_blank">Privacy Policy</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.google.com/recaptcha/api.js?render=6LctAb8rAAAAAG900ftMg2zJq13aLpJa5joqZ9yb"></script>
+<script>
+(function() {
+    const WEBHOOK_URL = 'https://automate.billgleeson.com/webhook/cloudfix-website-forms';
+    const RECAPTCHA_SITE_KEY = '6LctAb8rAAAAAG900ftMg2zJq13aLpJa5joqZ9yb';
+    
+    const form = document.getElementById('cloudfix-newsletter-form');
+    const statusDiv = document.getElementById('nl-form-status');
+    const submitBtn = form.querySelector('.newsletter-submit-btn');
+    const emailInput = document.getElementById('nl_email');
+    
+    function showStatus(message, type) {
+        statusDiv.textContent = message;
+        statusDiv.className = `newsletter-form-status ${type}`;
+        statusDiv.style.display = 'block';
+    }
+    
+    function hideStatus() {
+        statusDiv.style.display = 'none';
+    }
+    
+    // Simple email validation
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const email = emailInput.value.trim();
+        
+        if (!email || !isValidEmail(email)) {
+            showStatus('Please enter a valid email address.', 'error');
+            emailInput.focus();
+            return;
+        }
+        
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Subscribing...';
+        showStatus('Processing your subscription...', 'loading');
+        
+        try {
+            // Execute reCAPTCHA
+            const token = await grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'newsletter_signup' });
+            
+            const data = {
+                email: email,
+                timestamp: new Date().toISOString(),
+                source: 'CloudFix Newsletter Signup',
+                page_url: window.location.href,
+                recaptcha_token: token,
+                user_agent: navigator.userAgent,
+                form_type: 'newsletter',
+                subscription_type: 'general_updates'
+            };
+            
+            const response = await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            
+            if (response.ok) {
+                showStatus('Success! Thank you for subscribing. Check your email for confirmation.', 'success');
+                form.reset();
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        } catch (error) {
+            console.error('Newsletter subscription error:', error);
+            showStatus('Sorry, there was an error subscribing. Please try again later.', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Subscribe';
+        }
+    });
+    
+    // Clear status when user starts typing again
+    emailInput.addEventListener('input', function() {
+        if (statusDiv.style.display === 'block' && statusDiv.classList.contains('error')) {
+            hideStatus();
+        }
+    });
+})();
+</script>
+			</div>
+			
+		</div>
+		<div class="footer-legal grid col-two">
+			<div class="sub-one">
+				<a href="/privacy/">Privacy Policy</a>
+			</div>
+			<div class="sub-two">
+				<a href="/terms-of-service/" target="_blank">Terms of Service</a>
+			</div>
+		</div>
+	</div>
+	</footer>
+<script type="text/javascript">
+  _nQc = '89534151';
+  _nQs = 'WordPress-Plugin';
+  _nQsv = '1.3.1';
+  _nQt = new Date().getTime();
+  (function() {
+    var no = document.createElement('script'); no.type = 'text/javascript'; no.async = true;
+    no.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'serve.albacross.com/track.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(no, s);
+  })();
+</script>
+<script type="speculationrules">
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"\/*"},{"not":{"href_matches":["\/wp-*.php","\/wp-admin\/*","\/wp-content\/uploads\/*","\/wp-content\/*","\/wp-content\/plugins\/*","\/wp-content\/themes\/cloudfix-3-theme\/*","\/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+</script>
+		<!-- Google Tag Manager (noscript) snippet added by Site Kit -->
+		<noscript>
+			<iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W5HRQV94" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+		</noscript>
+		<!-- End Google Tag Manager (noscript) snippet added by Site Kit -->
+					<div class="cookie-consent-banner cb-hidden" style="visibility: hidden;">
+				<div class="cb-inner">
+					<div class="cb-copy">
+						This site uses cookies to ensure you get the best experience on our website. For more information on cookies, please read our <a href="/privacy/">Privacy Policy</a>. To clear cookies on your device, please update your browser settings.					</div>
+					<div class="wp-block-buttons">
+						<div class="wp-block-button">
+							<a href="#" class="wp-block-button__link primary-btn" id="accept-cookies">
+								Accept
+							</a>
+						</div>
+						<div class="wp-block-button is-style-outline">
+							<a href="#" class="wp-block-button__link primary-btn" id="decline-cookies">
+								Decline
+							</a>
+						</div>
+					</div>
+				</div>
+				<button class="cb-close">&#x2715;</button>
+			</div>
+							<style>
+					div.cookie-consent-banner .cb-inner {
+  padding: 1.5rem 2rem;
+}
+
+.cookie-consent-banner .cb-inner .cb-copy {
+  font-size: .9rem;
+  margin-bottom: 8px;
+}
+
+.cookie-consent-banner .wp-block-buttons {
+  padding-top: .5rem;
+  display: flex;
+  column-gap: 1rem;
+}
+
+.cookie-consent-banner .wp-block-button__link {
+  padding: .5rem 1rem;
+  font-size: .8rem;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .cookie-consent-banner .cb-inner {
+    padding: 1rem 2.5rem 1rem 1rem!important;
+  }
+  .cookie-consent-banner .cb-inner .cb-copy {
+    font-size: .8rem;
+  }
+}				</style>
+						<script>
+				function initTracking() {
+					(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-TJXM2T7');				}
+
+				function optOutTracking() {
+									}
+			</script>
+			<link rel='stylesheet' id='aurea-gdpr-css-css' href='http://cloudfix.com/wp-content/plugins/aurea-gdpr/css/cookie-consent.min.css?ver=1718192433' type='text/css' media='all' />
+<script type="text/javascript" src="http://cloudfix.com/wp-content/themes/cloudfix-3-theme/js/sitewide-script.min.js?ver=e1e1d58c" id="sitewide-js"></script>
+<script type="text/javascript" src="http://cloudfix.com/wp-content/plugins/youtube-embed-plus/scripts/fitvids.min.js?ver=14.2.3" id="__ytprefsfitvids__-js"></script>
+<script type="text/javascript" src="http://cloudfix.com/wp-content/plugins/aurea-gdpr/js/cookie-consent.min.js?ver=1718192433" id="aurea-gdpr-js-js"></script>
+
+
+<!-- Start of HubSpot Embed Code
+<script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/20049174.js"></script>
+End of HubSpot Embed Code -->
+<!-- The blog uses this footer -->
+
+</body>
+<!-- <script src="https://app.reply.io/chatbot/chat.umd.cjs" data-client-id="webchat-f5cfe5fe-f958-4dc3-9859-9c6e42831826" data-client-secret="VYvhzQGPDcjYnGSrYN4LiufGT7wL27XWlCPIagd8s"></script> -->
+
+
+</html>
