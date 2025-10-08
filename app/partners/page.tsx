@@ -1,6 +1,7 @@
 import Hero from '@/components/Hero';
 import ContentBlock from '@/components/ContentBlock';
 import Image from 'next/image';
+import PartnerForm from '@/components/partners/PartnerForm';
 
 export const metadata = {
   title: 'Partners | CloudFix',
@@ -55,21 +56,19 @@ export default function PartnersPage() {
         <div className="container-custom">
           <h2 className="mb-6 text-3xl font-bold">Partner with CloudFix</h2>
           <p className="mb-8 max-w-3xl text-gray-600">
-            Interested in partnering with CloudFix? Explore opportunities to collaborate and bring automated AWS cost optimization to more customers.
+            Interested in partnering with CloudFix? Submit the form that best matches your needs and our team will follow up shortly.
           </p>
-          <div className="flex flex-wrap gap-3">
-            <a
-              href="https://cloudfix.com/partnerships-become-a-referral-partner/"
-              className="rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary/90"
-            >
-              Become a Referral Partner
-            </a>
-            <a
-              href="https://cloudfix.com/partner-opportunity-submission/"
-              className="rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-800 hover:bg-white"
-            >
-              Partner Opportunity Submission
-            </a>
+          <div className="grid gap-6 md:grid-cols-2">
+            <PartnerForm
+              variant="referral-partner"
+              title="Become a Referral Partner"
+              description="Refer opportunities and collaborate with CloudFix’s team."
+            />
+            <PartnerForm
+              variant="partner-opportunity"
+              title="Partner Opportunity Submission"
+              description="Share a customer or partnership opportunity with the CloudFix team."
+            />
           </div>
         </div>
       </section>
