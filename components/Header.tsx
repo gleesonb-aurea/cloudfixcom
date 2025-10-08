@@ -119,6 +119,7 @@ export default function Header() {
               width={208}
               height={39}
               priority
+              className="w-auto h-8 md:h-9 lg:h-[39px] transition-all duration-200"
             />
           </Link>
 
@@ -146,7 +147,7 @@ export default function Header() {
               {openDropdown === 'products' && (
                 <div
                   ref={dropdownRef}
-                  className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[280px] max-w-[320px] py-2"
+                  className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[280px] max-w-[320px] py-2 z-50 md:transform md:-translate-x-1/4 lg:transform-none lg:translate-x-0"
                   role="menu"
                   aria-labelledby="products-menu-button"
                   onKeyDown={handleKeyDown}
@@ -204,7 +205,7 @@ export default function Header() {
               {openDropdown === 'resources' && (
                 <div
                   ref={dropdownRef}
-                  className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[200px] max-w-[240px] py-2"
+                  className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[200px] max-w-[240px] py-2 z-50 md:transform md:-translate-x-1/4 lg:transform-none lg:translate-x-0"
                   role="menu"
                   aria-labelledby="resources-menu-button"
                   onKeyDown={handleKeyDown}
@@ -235,7 +236,7 @@ export default function Header() {
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-2"
+            className="md:hidden p-3 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors duration-200"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -256,7 +257,7 @@ export default function Header() {
             <div>
               <button
                 onClick={() => toggleDropdown('products')}
-                className="w-full flex items-center justify-between px-4 py-4 text-gray-700 hover:bg-gray-50 rounded-lg"
+                className="w-full flex items-center justify-between px-4 py-6 text-gray-700 hover:bg-gray-50 rounded-lg min-h-[48px]"
                 aria-expanded={openDropdown === 'products'}
               >
                 <span className="font-medium">Products</span>
@@ -279,7 +280,7 @@ export default function Header() {
                     <Link
                       key={product.href}
                       href={product.href}
-                      className="block pl-8 pr-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg"
+                      className="block pl-8 pr-4 py-4 text-gray-700 hover:bg-gray-50 rounded-lg min-h-[48px] flex items-center"
                       onClick={() => {
                         closeDropdown();
                         setMobileMenuOpen(false);
@@ -296,7 +297,7 @@ export default function Header() {
             {/* Features Link */}
             <Link
               href="/features"
-              className="block px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg"
+              className="block px-4 py-4 text-gray-700 hover:bg-gray-50 rounded-lg min-h-[48px] flex items-center"
               onClick={() => setMobileMenuOpen(false)}
             >
               Features
@@ -305,7 +306,7 @@ export default function Header() {
             {/* Pricing Link */}
             <Link
               href="/pricing"
-              className="block px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg"
+              className="block px-4 py-4 text-gray-700 hover:bg-gray-50 rounded-lg min-h-[48px] flex items-center"
               onClick={() => setMobileMenuOpen(false)}
             >
               Pricing
@@ -315,7 +316,7 @@ export default function Header() {
             <div>
               <button
                 onClick={() => toggleDropdown('resources')}
-                className="w-full flex items-center justify-between px-4 py-4 text-gray-700 hover:bg-gray-50 rounded-lg"
+                className="w-full flex items-center justify-between px-4 py-6 text-gray-700 hover:bg-gray-50 rounded-lg min-h-[48px]"
                 aria-expanded={openDropdown === 'resources'}
               >
                 <span className="font-medium">Resources</span>
@@ -338,7 +339,7 @@ export default function Header() {
                     <Link
                       key={resource.href}
                       href={resource.href}
-                      className="block pl-8 pr-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg"
+                      className="block pl-8 pr-4 py-4 text-gray-700 hover:bg-gray-50 rounded-lg min-h-[48px] flex items-center"
                       onClick={() => {
                         closeDropdown();
                         setMobileMenuOpen(false);

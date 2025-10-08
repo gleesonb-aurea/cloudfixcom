@@ -7,6 +7,15 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    screens: {
+      'xs': '414px',  // Small phones and large phones in portrait
+      'sm': '640px',  // Small tablets and large phones
+      'md': '768px',  // Tablets
+      'lg': '1024px', // Small desktops
+      'xl': '1280px', // Desktops
+      '2xl': '1536px', // Large desktops
+      '3xl': '1920px', // Ultra-wide screens
+    },
     extend: {
       colors: {
         // CloudFix Brand Colors (from Brand Consistency Audit)
@@ -43,7 +52,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/typography')],
 };
 
 export default config;

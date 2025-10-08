@@ -27,23 +27,23 @@ export default function Hero({
       <div className="relative container-custom section-padding">
         <div className="max-w-4xl mx-auto text-center">
           {subtitle && (
-            <div className="inline-block px-4 py-2 bg-primary/10 rounded-full text-primary font-semibold mb-6">
+            <div className="inline-block px-3 sm:px-4 py-1.5 sm:py-2 bg-primary/10 rounded-full text-primary font-semibold mb-4 sm:mb-6 text-sm sm:text-base">
               {subtitle}
             </div>
           )}
 
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-gray-900">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 text-gray-900 leading-tight">
             {title}
           </h1>
 
-          <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-600 mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed">
             {description}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Link
               href={ctaLink}
-              className="bg-accent text-gray-900 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-accent-dark transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              className="bg-accent text-gray-900 px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg font-semibold hover:bg-accent-dark transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               {ctaText}
             </Link>
@@ -51,7 +51,7 @@ export default function Hero({
             {secondaryCtaText && secondaryCtaLink && (
               <Link
                 href={secondaryCtaLink}
-                className="bg-white text-primary px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-50 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 border-2 border-primary"
+                className="bg-white text-primary px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg font-semibold hover:bg-gray-50 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 border-2 border-primary"
               >
                 {secondaryCtaText}
               </Link>
