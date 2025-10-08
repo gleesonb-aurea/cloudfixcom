@@ -49,7 +49,10 @@ export default function Footer() {
             <ul className="space-y-2">
               <li><Link href="/about" className="text-gray-600 hover:text-primary">About</Link></li>
               <li><Link href="/contact" className="text-gray-600 hover:text-primary">Contact</Link></li>
+              <li><Link href="/leadership" className="text-gray-600 hover:text-primary">Leadership</Link></li>
               <li><Link href="/careers" className="text-gray-600 hover:text-primary">Careers</Link></li>
+              <li><Link href="/partners" className="text-gray-600 hover:text-primary">Partners</Link></li>
+              <li><Link href="/security" className="text-gray-600 hover:text-primary">Security</Link></li>
             </ul>
           </div>
 
@@ -89,7 +92,7 @@ export default function Footer() {
 
         {/* Legal Links */}
         <div className="mt-8 flex flex-wrap gap-6 text-sm">
-          <Link href="/privacy" className="text-gray-600 hover:text-primary">
+          <Link href="/privacy-policy" className="text-gray-600 hover:text-primary">
             Privacy Policy
           </Link>
           <Link href="/terms-of-service" className="text-gray-600 hover:text-primary">
