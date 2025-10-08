@@ -182,7 +182,12 @@ Create `.env.local` for sensitive data:
 ```env
 NEXT_PUBLIC_NEWSLETTER_WEBHOOK=your-webhook-url
 NEXT_PUBLIC_GA_ID=your-google-analytics-id
+NEXT_PUBLIC_ASSESSMENT_WEBHOOK_URL=https://your-webhook.example/endpoint
 ```
+
+- `NEXT_PUBLIC_ASSESSMENT_WEBHOOK_URL` is used by both the Assessment form (`/assessment`) and the Partnerships forms (`/partners`). All submissions include a `source` field (either `cloudfix-assessment-form` or `cloudfix-partner-form`) and a `formType` for partner variants.
+
+Local testing tip: you can point this to a request bin or a Zapier test hook and submit a test entry from `/assessment` and both partner forms on `/partners`.
 
 ## 📦 Technologies
 
