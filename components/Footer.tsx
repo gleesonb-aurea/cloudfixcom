@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer className="bg-white border-t border-gray-200">
       <div className="container-custom py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-8">
           {/* Logo and CTA */}
           <div className="lg:col-span-2">
             <Image
@@ -56,6 +56,15 @@ export default function Footer() {
             </ul>
           </div>
 
+          {/* Legal */}
+          <div>
+            <h3 className="font-semibold mb-4">Legal</h3>
+            <ul className="space-y-2">
+              <li><Link href="/privacy-policy" className="text-gray-600 hover:text-primary">Privacy Policy</Link></li>
+              <li><Link href="/terms-of-service" className="text-gray-600 hover:text-primary">Terms of Service</Link></li>
+            </ul>
+          </div>
+
           {/* Partner Logos */}
           <div>
             <h3 className="font-semibold mb-4">Partners</h3>
@@ -90,15 +99,7 @@ export default function Footer() {
           <p>2028 E Ben White Blvd., Ste 240-2650, Austin, TX 78741</p>
         </div>
 
-        {/* Legal Links */}
-        <div className="mt-8 flex flex-wrap gap-6 text-sm">
-          <Link href="/privacy-policy" className="text-gray-600 hover:text-primary">
-            Privacy Policy
-          </Link>
-          <Link href="/terms-of-service" className="text-gray-600 hover:text-primary">
-            Terms of Service
-          </Link>
-        </div>
+        {/* (Removed inline legal links; now a dedicated Legal column above) */}
       </div>
 
       {/* Organization Schema */}
