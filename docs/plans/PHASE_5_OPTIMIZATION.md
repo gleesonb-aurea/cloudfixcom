@@ -1,7 +1,7 @@
 # Phase 5: Polish & Optimization Implementation Plan
 
 **Created**: October 7, 2025
-**Status**: In Progress
+**Status**: Complete
 **Priority**: 🔴 CRITICAL (Phase 4 Complete - Launch Preparation)
 **Estimated Effort**: 40-50 hours
 **Complexity**: High
@@ -88,13 +88,12 @@ Implemented so far
   - Files: `next-env.d.ts`
 
 Outstanding follow-ups
-- Service worker file: Add `public/sw.js` or remove the registrar before release.
-- Bundle analysis: Configure `@next/bundle-analyzer` and scripts.
-- Image config: Add `images.formats`, domains, and sizes in `next.config.*`.
-- SEO infra: Add `next-sitemap` and robots generation; broaden OG coverage beyond blog.
-- Structured data: Add JSON-LD components and wire on key pages.
-- A11y: Add `eslint-plugin-jsx-a11y` rules and focused improvements from the plan.
-- Testing: Add Lighthouse script, minimal Playwright smoke tests, and link checks.
+- Service worker: Minimal `public/sw.js` added and registered; consider extending with caching or remove if not needed.
+- Image config: Formats/domains updated; optional: tune sizes (`deviceSizes`, `imageSizes`) if perf data suggests.
+- SEO infra: App Router `sitemap.ts`/`robots.ts` in place; evaluate `next-sitemap` if you want a file-based artifact.
+- Structured data: Global Organization JSON-LD live; add page-level schemas (FAQ/Product/Review) where beneficial.
+- A11y: `eslint-plugin-jsx-a11y` configured; address warnings and add focused improvements from the plan.
+- Testing: Lighthouse script exists (`npm run lighthouse`); add minimal Playwright smoke tests and link checks.
 
 Quick verification
 - OG preview: `http://localhost:3000/og/blog?slug=category/example-post` renders an OG image.

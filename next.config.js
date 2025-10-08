@@ -17,10 +17,15 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 /** @type {import('next').NextConfig} */
 const nextConfig = withBundleAnalyzer(withMDX({
   images: {
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'cloudfix.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.cloudfix.com',
       },
     ],
   },
