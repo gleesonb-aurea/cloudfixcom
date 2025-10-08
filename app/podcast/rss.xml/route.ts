@@ -5,6 +5,17 @@ import { getAllEpisodes } from '@/lib/podcast';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * Generate an RSS 2.0 feed for the CloudFix Podcast using all episodes.
+ *
+ * The feed includes channel metadata and one <item> per episode (title, link, guid,
+ * pubDate, description, and optional enclosure for audio). Site URL is taken from
+ * NEXT_PUBLIC_SITE_URL with a fallback to https://cloudfix.com.
+ *
+ * @returns A NextResponse containing the RSS 2.0 XML for all episodes with
+ *          Content-Type `application/rss+xml; charset=utf-8` and a
+ *          `Cache-Control: s-maxage=3600, stale-while-revalidate` header.
+ */
 export async function GET() {
   const eps = await getAllEpisodes();
   const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudfix.com';

@@ -4,6 +4,11 @@ import { getAllPosts } from '@/lib/blog';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * Serve the CloudFix blog RSS feed as an RSS 2.0 XML HTTP response.
+ *
+ * @returns A NextResponse containing the RSS 2.0 XML for all blog posts. The response includes the `Content-Type: application/rss+xml; charset=utf-8` header and `Cache-Control: s-maxage=3600, stale-while-revalidate`.
+ */
 export async function GET() {
   const posts = await getAllPosts();
   const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudfix.com';

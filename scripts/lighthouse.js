@@ -4,6 +4,11 @@
 const lighthouse = require('lighthouse');
 const chromeLauncher = require('chrome-launcher');
 
+/**
+ * Run a Lighthouse audit against the specified URL and print key category scores.
+ *
+ * @param {string} url - The fully qualified URL to audit (including protocol and host).
+ */
 async function runLighthouse(url) {
   const chrome = await chromeLauncher.launch({ chromeFlags: ['--headless'] });
   const options = { logLevel: 'info', output: 'json', port: chrome.port };
@@ -18,6 +23,12 @@ async function runLighthouse(url) {
   console.log('SEO:', Math.round(lhr.categories.seo.score * 100));
 }
 
+/**
+ * Run Lighthouse audits for a predefined set of routes using a base URL.
+ *
+ * The base URL is taken from process.argv[2] if provided, otherwise 'http://localhost:3000'.
+ * Audits are performed sequentially for the routes: '/', '/features', '/pricing', '/blog', '/resources', '/podcast', and '/videos'.
+ */
 async function main() {
   const base = process.argv[2] || 'http://localhost:3000';
   const paths = ['/', '/features', '/pricing', '/blog', '/resources', '/podcast', '/videos'];
@@ -30,4 +41,3 @@ main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
-

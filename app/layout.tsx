@@ -39,6 +39,13 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * App root layout component that renders the HTML shell, global providers, site structured data, header/footer, and performance/analytics tooling.
+ *
+ * This layout sets the document language, preconnects to Google Tag Manager, injects Organization structured data for SEO, conditionally loads Google Analytics when NEXT_PUBLIC_GA_ID is set, and renders site chrome (Header, main children, Footer) plus service worker and performance tools.
+ *
+ * @returns The root HTML element containing the app layout and global integrations
+ */
 export default function RootLayout({
   children,
 }: Readonly<{
