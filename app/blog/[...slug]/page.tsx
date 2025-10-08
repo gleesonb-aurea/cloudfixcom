@@ -4,6 +4,8 @@ import { getPostBySlug, getAllPosts } from '@/lib/blog';
 import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import MDXImage from '@/components/mdx/MDXImage';
+import { H2, H3 } from '@/components/mdx/Heading';
+import { extractTocFromMdx } from '@/lib/toc';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -63,6 +65,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound();
   }
 
+  const toc = post ? extractTocFromMdx(post.content) : [];
+
   return (
     <div className="min-h-screen">
       <article className="max-w-4xl mx-auto py-12 px-4">
@@ -117,11 +121,28 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           )}
         </header>
 
-        <div className="prose prose-lg max-w-none">
+        {toc.length > 0 && (
+          <nav aria-label="Table of contents" className="mb-8 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div className="mb-2 text-sm font-semibold tracking-wide text-gray-700">On this page</div>
+            <ul className="space-y-1 text-sm">
+              {toc.map((item) => (
+                <li key={item.id} className={item.depth === 3 ? 'ml-4' : ''}>
+                  <a href={`#${item.id}`} className="text-gray-700 hover:text-primary">
+                    {item.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+
+        <div className="prose prose-lg max-w-none prose-headings:scroll-mt-24">
           <MDXRemote
             source={post.content}
             components={{
               img: (props: any) => <MDXImage {...props} />,
+              h2: (props: any) => <H2 {...props} />,
+              h3: (props: any) => <H3 {...props} />,
             }}
           />
         </div>
