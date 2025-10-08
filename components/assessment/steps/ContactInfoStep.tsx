@@ -138,8 +138,8 @@ export function ContactInfoStep({ form }: ContactInfoStepProps) {
           <p className="text-xs text-gray-600 font-medium">GDPR Compliant</p>
         </div>
         <div className="text-center">
-          <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
-            <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+          <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
+            <svg className="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 20 20">
               <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm5.5 2a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm4.5 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" />
             </svg>
           </div>

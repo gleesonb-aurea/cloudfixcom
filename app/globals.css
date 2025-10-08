@@ -101,7 +101,7 @@ code:not(pre code) {
 .hljs-number, .hljs-meta, .hljs-built_in, .hljs-builtin-name, .hljs-literal, .hljs-type, .hljs-params { color: #fca5a5; }
 .hljs-string, .hljs-symbol, .hljs-bullet { color: #86efac; }
 .hljs-title, .hljs-section { color: #fbbf24; }
-.hljs-keyword, .hljs-selector-tag { color: #c084fc; }
+.hljs-keyword, .hljs-selector-tag { color: #4DD0E1; }
 .hljs { background: #0f172a; color: #e2e8f0; }
 
 /* Headings anchor offset for TOC */

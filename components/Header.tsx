@@ -32,9 +32,11 @@ const PRODUCTS = [
 
 const RESOURCES = [
   { name: 'Blog', href: '/blog' },
+  { name: 'Resources', href: '/resources' },
   { name: 'Podcast', href: '/podcast' },
-  { name: 'Case Studies', href: '/case-studies' },
-  { name: 'Documentation', href: '/docs' },
+  { name: 'Livestream', href: '/livestream' },
+  { name: 'Videos', href: '/videos' },
+  { name: 'Success Stories', href: '/success-stories' },
 ];
 
 export default function Header() {
