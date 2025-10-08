@@ -57,7 +57,7 @@ export default function RootLayout({
           data={{
             name: 'CloudFix',
             url: process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudfix.com',
-            logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudfix.com'}/images/logo.png`,
+            logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://cloudfix.com'}/images/CloudFix_Logo_Color.png`,
             sameAs: [
               'https://twitter.com/cloudfix',
               'https://www.linkedin.com/company/cloudfix',
