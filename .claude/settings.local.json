@@ -23,7 +23,15 @@
       "Bash(node:*)",
       "Bash(git checkout:*)",
       "Bash(lsof:*)",
-      "Bash(xargs kill:*)"
+      "Bash(xargs kill:*)",
+      "Read(//home/bill/.config/**)",
+      "Read(//mnt/c/Users/bill/**)",
+      "Bash(docker:*)",
+      "Bash(npx playwright-cli:*)",
+      "Read(//tmp/**)",
+      "Bash(for:*)",
+      "Bash(do echo:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []
