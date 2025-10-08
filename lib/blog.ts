@@ -76,6 +76,12 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
   return posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
+/**
+ * Load a blog post by its slug from the content/blog MDX files.
+ *
+ * @param slug - The post slug (filename without the `.mdx` extension) to locate.
+ * @returns The corresponding `BlogPost` populated from the file's front matter and content, or `null` if no matching MDX file is found. Missing front-matter fields are filled with sensible defaults: `title` defaults to the slug, `description` to an empty string, `author` to "CloudFix Team", `date` to the current ISO string, `category` to "General", `tags` to an empty array, `featured` coerced to a boolean, `readTime` computed from content when absent, and `image`/`seo` preserved if present.
+ */
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   // Search recursively for the MDX file with matching slug
   function findMdxFile(dir: string, targetSlug: string): string | null {
